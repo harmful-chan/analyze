@@ -15,10 +15,16 @@ namespace analyze
 
         public static void Main(string[] args)
         {
-            if (args[0].Equals("ListRefunds"))
-            {
-                ListRefunds(args[1], args[2]);
-            }
+            //if (args[0].Equals("ListRefunds"))
+            //{
+            //    ListRefund
+            //
+            //    s(args[1], args[2]);
+            //}
+
+            ManageClient manageClient = new ManageClient();
+            manageClient.LoginAdminAsync();
+            manageClient.LoginUserAsync("5377150");
         }
 
 
