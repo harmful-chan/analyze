@@ -8,9 +8,9 @@ namespace analyze.Models
 {
     public class TotalOrder
     {
-        public string StoreName { get; set; }
-        public string Operator { get; set; }
-        public string OrderId { get; set; }
+        public string StoreName { get; set; } // A
+        public string Operator { get; set; } // B
+        public string OrderId { get; set; }  // E
         public DateTime OrderTime { get; set; }
 
         public double Cost { get; set; }

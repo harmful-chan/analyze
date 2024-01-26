@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace analyze.Models
 {
-    public class Refund
+    public class ShopRefund
     {
         public string OrderId { get; set; }
         public string ProductId { get; set; }

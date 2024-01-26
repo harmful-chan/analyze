@@ -112,12 +112,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ManageClient.cs" />
-    <Compile Include="Models\Lending.cs" />
-    <Compile Include="Models\Order.cs" />
-    <Compile Include="Models\Refund.cs" />
+    <Compile Include="Models\ShopLend.cs" />
+    <Compile Include="Models\ShopOrder.cs" />
+    <Compile Include="Models\ShopRefund.cs" />
     <Compile Include="Models\TotalOrder.cs" />
+    <Compile Include="Models\TotalPurchase.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SheetHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

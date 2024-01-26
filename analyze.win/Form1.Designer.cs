@@ -31,48 +31,54 @@ namespace analyze.win
         {
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.panel2 = new System.Windows.Forms.Panel();
+            this.panel1 = new System.Windows.Forms.Panel();
+            this.label18 = new System.Windows.Forms.Label();
+            this.textBox18 = new System.Windows.Forms.TextBox();
+            this.shipment_id = new System.Windows.Forms.TextBox();
+            this.label17 = new System.Windows.Forms.Label();
+            this.reference = new System.Windows.Forms.TextBox();
+            this.textBox16 = new System.Windows.Forms.TextBox();
+            this.shipper = new System.Windows.Forms.TextBox();
+            this.label16 = new System.Windows.Forms.Label();
+            this.recipient = new System.Windows.Forms.TextBox();
+            this.textBox17 = new System.Windows.Forms.TextBox();
+            this.label3 = new System.Windows.Forms.Label();
+            this.weight = new System.Windows.Forms.TextBox();
+            this.delivery_date = new System.Windows.Forms.TextBox();
+            this.ship_date = new System.Windows.Forms.TextBox();
+            this.service_type = new System.Windows.Forms.TextBox();
+            this.delivery_location = new System.Windows.Forms.TextBox();
+            this.signed_fo_by = new System.Windows.Forms.TextBox();
+            this.delivered_to = new System.Windows.Forms.TextBox();
+            this.status = new System.Windows.Forms.TextBox();
+            this.tracking_number = new System.Windows.Forms.TextBox();
+            this.carrier_code = new System.Windows.Forms.TextBox();
+            this.label1 = new System.Windows.Forms.Label();
+            this.label15 = new System.Windows.Forms.Label();
+            this.label2 = new System.Windows.Forms.Label();
+            this.label14 = new System.Windows.Forms.Label();
+            this.label13 = new System.Windows.Forms.Label();
+            this.label4 = new System.Windows.Forms.Label();
+            this.label12 = new System.Windows.Forms.Label();
+            this.label5 = new System.Windows.Forms.Label();
+            this.label11 = new System.Windows.Forms.Label();
+            this.label6 = new System.Windows.Forms.Label();
+            this.label10 = new System.Windows.Forms.Label();
+            this.label7 = new System.Windows.Forms.Label();
+            this.label9 = new System.Windows.Forms.Label();
+            this.label8 = new System.Windows.Forms.Label();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.textBox1 = new System.Windows.Forms.TextBox();
-            this.label1 = new System.Windows.Forms.Label();
-            this.label2 = new System.Windows.Forms.Label();
-            this.label4 = new System.Windows.Forms.Label();
-            this.label5 = new System.Windows.Forms.Label();
-            this.label6 = new System.Windows.Forms.Label();
-            this.label7 = new System.Windows.Forms.Label();
-            this.label8 = new System.Windows.Forms.Label();
-            this.label9 = new System.Windows.Forms.Label();
-            this.label10 = new System.Windows.Forms.Label();
-            this.label11 = new System.Windows.Forms.Label();
-            this.label12 = new System.Windows.Forms.Label();
-            this.label13 = new System.Windows.Forms.Label();
-            this.label14 = new System.Windows.Forms.Label();
-            this.label15 = new System.Windows.Forms.Label();
-            this.panel1 = new System.Windows.Forms.Panel();
-            this.carrier_code = new System.Windows.Forms.TextBox();
-            this.tracking_number = new System.Windows.Forms.TextBox();
-            this.status = new System.Windows.Forms.TextBox();
-            this.delivered_to = new System.Windows.Forms.TextBox();
-            this.signed_fo_by = new System.Windows.Forms.TextBox();
-            this.delivery_location = new System.Windows.Forms.TextBox();
-            this.service_type = new System.Windows.Forms.TextBox();
-            this.ship_date = new System.Windows.Forms.TextBox();
-            this.delivery_date = new System.Windows.Forms.TextBox();
-            this.weight = new System.Windows.Forms.TextBox();
-            this.recipient = new System.Windows.Forms.TextBox();
-            this.shipper = new System.Windows.Forms.TextBox();
-            this.reference = new System.Windows.Forms.TextBox();
-            this.shipment_id = new System.Windows.Forms.TextBox();
-            this.panel2 = new System.Windows.Forms.Panel();
-            this.label3 = new System.Windows.Forms.Label();
-            this.textBox17 = new System.Windows.Forms.TextBox();
-            this.textBox16 = new System.Windows.Forms.TextBox();
-            this.label16 = new System.Windows.Forms.Label();
-            this.textBox18 = new System.Windows.Forms.TextBox();
-            this.label17 = new System.Windows.Forms.Label();
-            this.label18 = new System.Windows.Forms.Label();
+            this.textBox2 = new System.Windows.Forms.TextBox();
+            this.comboBox1 = new System.Windows.Forms.ComboBox();
+            this.button1 = new System.Windows.Forms.Button();
+            this.dateTimePicker2 = new System.Windows.Forms.DateTimePicker();
+            this.dateTimePicker1 = new System.Windows.Forms.DateTimePicker();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.panel1.SuspendLayout();
+            this.tabPage2.SuspendLayout();
             this.SuspendLayout();
             // 
             // tabControl1
@@ -98,159 +104,12 @@ namespace analyze.win
             this.tabPage1.Text = "tp1";
             this.tabPage1.UseVisualStyleBackColor = true;
             // 
-            // tabPage2
+            // panel2
             // 
-            this.tabPage2.Location = new System.Drawing.Point(4, 22);
-            this.tabPage2.Name = "tabPage2";
-            this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(628, 305);
-            this.tabPage2.TabIndex = 1;
-            this.tabPage2.Text = "tabPage2";
-            this.tabPage2.UseVisualStyleBackColor = true;
-            // 
-            // textBox1
-            // 
-            this.textBox1.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.textBox1.Location = new System.Drawing.Point(0, 501);
-            this.textBox1.Multiline = true;
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(867, 98);
-            this.textBox1.TabIndex = 0;
-            this.textBox1.TextChanged += new System.EventHandler(this.textBox1_TextChanged);
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(50, 7);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(137, 12);
-            this.label1.TabIndex = 0;
-            this.label1.Text = "承运商(Carrier code)：";
-            this.label1.Click += new System.EventHandler(this.label1_Click);
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(32, 31);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(155, 12);
-            this.label2.TabIndex = 0;
-            this.label2.Text = "运单号(Tracking number)：";
-            this.label2.Click += new System.EventHandler(this.label1_Click);
-            // 
-            // label4
-            // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(74, 56);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(113, 12);
-            this.label4.TabIndex = 0;
-            this.label4.Text = "包裹状态(Status)：";
-            this.label4.Click += new System.EventHandler(this.label1_Click);
-            // 
-            // label5
-            // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(26, 80);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(161, 12);
-            this.label5.TabIndex = 0;
-            this.label5.Text = "收件人名称(Delivered To)：";
-            this.label5.Click += new System.EventHandler(this.label1_Click);
-            // 
-            // label6
-            // 
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(44, 105);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(143, 12);
-            this.label6.TabIndex = 0;
-            this.label6.Text = "签字人(Signed for by)：";
-            this.label6.Click += new System.EventHandler(this.label1_Click);
-            // 
-            // label7
-            // 
-            this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(8, 130);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(179, 12);
-            this.label7.TabIndex = 0;
-            this.label7.Text = "收货地址(Delivery Location)：";
-            this.label7.Click += new System.EventHandler(this.label1_Click);
-            // 
-            // label8
-            // 
-            this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(38, 155);
-            this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(149, 12);
-            this.label8.TabIndex = 0;
-            this.label8.Text = "服务类型(Service type)：";
-            this.label8.Click += new System.EventHandler(this.label1_Click);
-            // 
-            // label9
-            // 
-            this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(56, 180);
-            this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(131, 12);
-            this.label9.TabIndex = 1;
-            this.label9.Text = "发货时间(Ship date)：";
-            // 
-            // label10
-            // 
-            this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(32, 205);
-            this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(155, 12);
-            this.label10.TabIndex = 1;
-            this.label10.Text = "妥投时间(Delivery date)：";
-            // 
-            // label11
-            // 
-            this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(98, 230);
-            this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(89, 12);
-            this.label11.TabIndex = 2;
-            this.label11.Text = "重量(Weight)：";
-            this.label11.Click += new System.EventHandler(this.label11_Click);
-            // 
-            // label12
-            // 
-            this.label12.AutoSize = true;
-            this.label12.Location = new System.Drawing.Point(68, 255);
-            this.label12.Name = "label12";
-            this.label12.Size = new System.Drawing.Size(119, 12);
-            this.label12.TabIndex = 3;
-            this.label12.Text = "签收地(Recipient)：";
-            // 
-            // label13
-            // 
-            this.label13.AutoSize = true;
-            this.label13.Location = new System.Drawing.Point(80, 280);
-            this.label13.Name = "label13";
-            this.label13.Size = new System.Drawing.Size(107, 12);
-            this.label13.TabIndex = 4;
-            this.label13.Text = "发货地(Shipper)：";
-            // 
-            // label14
-            // 
-            this.label14.AutoSize = true;
-            this.label14.Location = new System.Drawing.Point(56, 305);
-            this.label14.Name = "label14";
-            this.label14.Size = new System.Drawing.Size(131, 12);
-            this.label14.TabIndex = 5;
-            this.label14.Text = "证明编码(Reference)：";
-            // 
-            // label15
-            // 
-            this.label15.AutoSize = true;
-            this.label15.Location = new System.Drawing.Point(44, 330);
-            this.label15.Name = "label15";
-            this.label15.Size = new System.Drawing.Size(143, 12);
-            this.label15.TabIndex = 6;
-            this.label15.Text = "发货号码(Shipment ID)：";
+            this.panel2.Location = new System.Drawing.Point(411, 6);
+            this.panel2.Name = "panel2";
+            this.panel2.Size = new System.Drawing.Size(440, 423);
+            this.panel2.TabIndex = 8;
             // 
             // panel1
             // 
@@ -294,92 +153,37 @@ namespace analyze.win
             this.panel1.Size = new System.Drawing.Size(373, 435);
             this.panel1.TabIndex = 7;
             // 
-            // carrier_code
+            // label18
             // 
-            this.carrier_code.Location = new System.Drawing.Point(193, 4);
-            this.carrier_code.Name = "carrier_code";
-            this.carrier_code.Size = new System.Drawing.Size(171, 21);
-            this.carrier_code.TabIndex = 7;
+            this.label18.AutoSize = true;
+            this.label18.Location = new System.Drawing.Point(347, 230);
+            this.label18.Name = "label18";
+            this.label18.Size = new System.Drawing.Size(17, 12);
+            this.label18.TabIndex = 21;
+            this.label18.Text = "KG";
             // 
-            // tracking_number
+            // textBox18
             // 
-            this.tracking_number.Location = new System.Drawing.Point(193, 28);
-            this.tracking_number.Name = "tracking_number";
-            this.tracking_number.Size = new System.Drawing.Size(171, 21);
-            this.tracking_number.TabIndex = 8;
+            this.textBox18.Location = new System.Drawing.Point(193, 377);
+            this.textBox18.Name = "textBox18";
+            this.textBox18.Size = new System.Drawing.Size(171, 21);
+            this.textBox18.TabIndex = 14;
             // 
-            // status
+            // shipment_id
             // 
-            this.status.Location = new System.Drawing.Point(193, 53);
-            this.status.Name = "status";
-            this.status.Size = new System.Drawing.Size(171, 21);
-            this.status.TabIndex = 9;
-            this.status.Text = "Delivered";
+            this.shipment_id.Location = new System.Drawing.Point(193, 327);
+            this.shipment_id.Name = "shipment_id";
+            this.shipment_id.Size = new System.Drawing.Size(171, 21);
+            this.shipment_id.TabIndex = 20;
             // 
-            // delivered_to
+            // label17
             // 
-            this.delivered_to.Location = new System.Drawing.Point(193, 77);
-            this.delivered_to.Name = "delivered_to";
-            this.delivered_to.Size = new System.Drawing.Size(171, 21);
-            this.delivered_to.TabIndex = 10;
-            // 
-            // signed_fo_by
-            // 
-            this.signed_fo_by.Location = new System.Drawing.Point(193, 102);
-            this.signed_fo_by.Name = "signed_fo_by";
-            this.signed_fo_by.Size = new System.Drawing.Size(171, 21);
-            this.signed_fo_by.TabIndex = 11;
-            this.signed_fo_by.Text = "Signature not required";
-            // 
-            // delivery_location
-            // 
-            this.delivery_location.Location = new System.Drawing.Point(193, 127);
-            this.delivery_location.Name = "delivery_location";
-            this.delivery_location.Size = new System.Drawing.Size(171, 21);
-            this.delivery_location.TabIndex = 12;
-            // 
-            // service_type
-            // 
-            this.service_type.Location = new System.Drawing.Point(193, 152);
-            this.service_type.Name = "service_type";
-            this.service_type.Size = new System.Drawing.Size(171, 21);
-            this.service_type.TabIndex = 13;
-            this.service_type.Text = "Home Delivery";
-            // 
-            // ship_date
-            // 
-            this.ship_date.Location = new System.Drawing.Point(193, 177);
-            this.ship_date.Name = "ship_date";
-            this.ship_date.Size = new System.Drawing.Size(171, 21);
-            this.ship_date.TabIndex = 14;
-            // 
-            // delivery_date
-            // 
-            this.delivery_date.Location = new System.Drawing.Point(193, 202);
-            this.delivery_date.Name = "delivery_date";
-            this.delivery_date.Size = new System.Drawing.Size(171, 21);
-            this.delivery_date.TabIndex = 15;
-            // 
-            // weight
-            // 
-            this.weight.Location = new System.Drawing.Point(193, 227);
-            this.weight.Name = "weight";
-            this.weight.Size = new System.Drawing.Size(148, 21);
-            this.weight.TabIndex = 16;
-            // 
-            // recipient
-            // 
-            this.recipient.Location = new System.Drawing.Point(193, 252);
-            this.recipient.Name = "recipient";
-            this.recipient.Size = new System.Drawing.Size(171, 21);
-            this.recipient.TabIndex = 17;
-            // 
-            // shipper
-            // 
-            this.shipper.Location = new System.Drawing.Point(193, 277);
-            this.shipper.Name = "shipper";
-            this.shipper.Size = new System.Drawing.Size(171, 21);
-            this.shipper.TabIndex = 18;
+            this.label17.AutoSize = true;
+            this.label17.Location = new System.Drawing.Point(62, 380);
+            this.label17.Name = "label17";
+            this.label17.Size = new System.Drawing.Size(125, 12);
+            this.label17.TabIndex = 13;
+            this.label17.Text = "系统单号(Order No)：";
             // 
             // reference
             // 
@@ -389,19 +193,42 @@ namespace analyze.win
             this.reference.TabIndex = 19;
             this.reference.Text = "648363282030726";
             // 
-            // shipment_id
+            // textBox16
             // 
-            this.shipment_id.Location = new System.Drawing.Point(193, 327);
-            this.shipment_id.Name = "shipment_id";
-            this.shipment_id.Size = new System.Drawing.Size(171, 21);
-            this.shipment_id.TabIndex = 20;
+            this.textBox16.Location = new System.Drawing.Point(193, 404);
+            this.textBox16.Name = "textBox16";
+            this.textBox16.Size = new System.Drawing.Size(171, 21);
+            this.textBox16.TabIndex = 12;
             // 
-            // panel2
+            // shipper
             // 
-            this.panel2.Location = new System.Drawing.Point(411, 6);
-            this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(440, 423);
-            this.panel2.TabIndex = 8;
+            this.shipper.Location = new System.Drawing.Point(193, 277);
+            this.shipper.Name = "shipper";
+            this.shipper.Size = new System.Drawing.Size(171, 21);
+            this.shipper.TabIndex = 18;
+            // 
+            // label16
+            // 
+            this.label16.AutoSize = true;
+            this.label16.Location = new System.Drawing.Point(86, 407);
+            this.label16.Name = "label16";
+            this.label16.Size = new System.Drawing.Size(101, 12);
+            this.label16.TabIndex = 11;
+            this.label16.Text = "币种(Currency)：";
+            // 
+            // recipient
+            // 
+            this.recipient.Location = new System.Drawing.Point(193, 252);
+            this.recipient.Name = "recipient";
+            this.recipient.Size = new System.Drawing.Size(171, 21);
+            this.recipient.TabIndex = 17;
+            // 
+            // textBox17
+            // 
+            this.textBox17.Location = new System.Drawing.Point(193, 352);
+            this.textBox17.Name = "textBox17";
+            this.textBox17.Size = new System.Drawing.Size(171, 21);
+            this.textBox17.TabIndex = 10;
             // 
             // label3
             // 
@@ -413,53 +240,277 @@ namespace analyze.win
             this.label3.Text = "运单号(Tracking number)：";
             this.label3.Click += new System.EventHandler(this.label3_Click);
             // 
-            // textBox17
+            // weight
             // 
-            this.textBox17.Location = new System.Drawing.Point(193, 352);
-            this.textBox17.Name = "textBox17";
-            this.textBox17.Size = new System.Drawing.Size(171, 21);
-            this.textBox17.TabIndex = 10;
+            this.weight.Location = new System.Drawing.Point(193, 227);
+            this.weight.Name = "weight";
+            this.weight.Size = new System.Drawing.Size(148, 21);
+            this.weight.TabIndex = 16;
             // 
-            // textBox16
+            // delivery_date
             // 
-            this.textBox16.Location = new System.Drawing.Point(193, 404);
-            this.textBox16.Name = "textBox16";
-            this.textBox16.Size = new System.Drawing.Size(171, 21);
-            this.textBox16.TabIndex = 12;
+            this.delivery_date.Location = new System.Drawing.Point(193, 202);
+            this.delivery_date.Name = "delivery_date";
+            this.delivery_date.Size = new System.Drawing.Size(171, 21);
+            this.delivery_date.TabIndex = 15;
             // 
-            // label16
+            // ship_date
             // 
-            this.label16.AutoSize = true;
-            this.label16.Location = new System.Drawing.Point(86, 407);
-            this.label16.Name = "label16";
-            this.label16.Size = new System.Drawing.Size(101, 12);
-            this.label16.TabIndex = 11;
-            this.label16.Text = "币种(Currency)：";
+            this.ship_date.Location = new System.Drawing.Point(193, 177);
+            this.ship_date.Name = "ship_date";
+            this.ship_date.Size = new System.Drawing.Size(171, 21);
+            this.ship_date.TabIndex = 14;
             // 
-            // textBox18
+            // service_type
             // 
-            this.textBox18.Location = new System.Drawing.Point(193, 377);
-            this.textBox18.Name = "textBox18";
-            this.textBox18.Size = new System.Drawing.Size(171, 21);
-            this.textBox18.TabIndex = 14;
+            this.service_type.Location = new System.Drawing.Point(193, 152);
+            this.service_type.Name = "service_type";
+            this.service_type.Size = new System.Drawing.Size(171, 21);
+            this.service_type.TabIndex = 13;
+            this.service_type.Text = "Home Delivery";
             // 
-            // label17
+            // delivery_location
             // 
-            this.label17.AutoSize = true;
-            this.label17.Location = new System.Drawing.Point(62, 380);
-            this.label17.Name = "label17";
-            this.label17.Size = new System.Drawing.Size(125, 12);
-            this.label17.TabIndex = 13;
-            this.label17.Text = "系统单号(Order No)：";
+            this.delivery_location.Location = new System.Drawing.Point(193, 127);
+            this.delivery_location.Name = "delivery_location";
+            this.delivery_location.Size = new System.Drawing.Size(171, 21);
+            this.delivery_location.TabIndex = 12;
             // 
-            // label18
+            // signed_fo_by
             // 
-            this.label18.AutoSize = true;
-            this.label18.Location = new System.Drawing.Point(347, 230);
-            this.label18.Name = "label18";
-            this.label18.Size = new System.Drawing.Size(17, 12);
-            this.label18.TabIndex = 21;
-            this.label18.Text = "KG";
+            this.signed_fo_by.Location = new System.Drawing.Point(193, 102);
+            this.signed_fo_by.Name = "signed_fo_by";
+            this.signed_fo_by.Size = new System.Drawing.Size(171, 21);
+            this.signed_fo_by.TabIndex = 11;
+            this.signed_fo_by.Text = "Signature not required";
+            // 
+            // delivered_to
+            // 
+            this.delivered_to.Location = new System.Drawing.Point(193, 77);
+            this.delivered_to.Name = "delivered_to";
+            this.delivered_to.Size = new System.Drawing.Size(171, 21);
+            this.delivered_to.TabIndex = 10;
+            // 
+            // status
+            // 
+            this.status.Location = new System.Drawing.Point(193, 53);
+            this.status.Name = "status";
+            this.status.Size = new System.Drawing.Size(171, 21);
+            this.status.TabIndex = 9;
+            this.status.Text = "Delivered";
+            // 
+            // tracking_number
+            // 
+            this.tracking_number.Location = new System.Drawing.Point(193, 28);
+            this.tracking_number.Name = "tracking_number";
+            this.tracking_number.Size = new System.Drawing.Size(171, 21);
+            this.tracking_number.TabIndex = 8;
+            // 
+            // carrier_code
+            // 
+            this.carrier_code.Location = new System.Drawing.Point(193, 4);
+            this.carrier_code.Name = "carrier_code";
+            this.carrier_code.Size = new System.Drawing.Size(171, 21);
+            this.carrier_code.TabIndex = 7;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(50, 7);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(137, 12);
+            this.label1.TabIndex = 0;
+            this.label1.Text = "承运商(Carrier code)：";
+            this.label1.Click += new System.EventHandler(this.label1_Click);
+            // 
+            // label15
+            // 
+            this.label15.AutoSize = true;
+            this.label15.Location = new System.Drawing.Point(44, 330);
+            this.label15.Name = "label15";
+            this.label15.Size = new System.Drawing.Size(143, 12);
+            this.label15.TabIndex = 6;
+            this.label15.Text = "发货号码(Shipment ID)：";
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(32, 31);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(155, 12);
+            this.label2.TabIndex = 0;
+            this.label2.Text = "运单号(Tracking number)：";
+            this.label2.Click += new System.EventHandler(this.label1_Click);
+            // 
+            // label14
+            // 
+            this.label14.AutoSize = true;
+            this.label14.Location = new System.Drawing.Point(56, 305);
+            this.label14.Name = "label14";
+            this.label14.Size = new System.Drawing.Size(131, 12);
+            this.label14.TabIndex = 5;
+            this.label14.Text = "证明编码(Reference)：";
+            // 
+            // label13
+            // 
+            this.label13.AutoSize = true;
+            this.label13.Location = new System.Drawing.Point(80, 280);
+            this.label13.Name = "label13";
+            this.label13.Size = new System.Drawing.Size(107, 12);
+            this.label13.TabIndex = 4;
+            this.label13.Text = "发货地(Shipper)：";
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(74, 56);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(113, 12);
+            this.label4.TabIndex = 0;
+            this.label4.Text = "包裹状态(Status)：";
+            this.label4.Click += new System.EventHandler(this.label1_Click);
+            // 
+            // label12
+            // 
+            this.label12.AutoSize = true;
+            this.label12.Location = new System.Drawing.Point(68, 255);
+            this.label12.Name = "label12";
+            this.label12.Size = new System.Drawing.Size(119, 12);
+            this.label12.TabIndex = 3;
+            this.label12.Text = "签收地(Recipient)：";
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(26, 80);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(161, 12);
+            this.label5.TabIndex = 0;
+            this.label5.Text = "收件人名称(Delivered To)：";
+            this.label5.Click += new System.EventHandler(this.label1_Click);
+            // 
+            // label11
+            // 
+            this.label11.AutoSize = true;
+            this.label11.Location = new System.Drawing.Point(98, 230);
+            this.label11.Name = "label11";
+            this.label11.Size = new System.Drawing.Size(89, 12);
+            this.label11.TabIndex = 2;
+            this.label11.Text = "重量(Weight)：";
+            this.label11.Click += new System.EventHandler(this.label11_Click);
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(44, 105);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(143, 12);
+            this.label6.TabIndex = 0;
+            this.label6.Text = "签字人(Signed for by)：";
+            this.label6.Click += new System.EventHandler(this.label1_Click);
+            // 
+            // label10
+            // 
+            this.label10.AutoSize = true;
+            this.label10.Location = new System.Drawing.Point(32, 205);
+            this.label10.Name = "label10";
+            this.label10.Size = new System.Drawing.Size(155, 12);
+            this.label10.TabIndex = 1;
+            this.label10.Text = "妥投时间(Delivery date)：";
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(8, 130);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(179, 12);
+            this.label7.TabIndex = 0;
+            this.label7.Text = "收货地址(Delivery Location)：";
+            this.label7.Click += new System.EventHandler(this.label1_Click);
+            // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.Location = new System.Drawing.Point(56, 180);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(131, 12);
+            this.label9.TabIndex = 1;
+            this.label9.Text = "发货时间(Ship date)：";
+            // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Location = new System.Drawing.Point(38, 155);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(149, 12);
+            this.label8.TabIndex = 0;
+            this.label8.Text = "服务类型(Service type)：";
+            this.label8.Click += new System.EventHandler(this.label1_Click);
+            // 
+            // tabPage2
+            // 
+            this.tabPage2.Controls.Add(this.dateTimePicker1);
+            this.tabPage2.Controls.Add(this.dateTimePicker2);
+            this.tabPage2.Controls.Add(this.button1);
+            this.tabPage2.Controls.Add(this.comboBox1);
+            this.tabPage2.Controls.Add(this.textBox2);
+            this.tabPage2.Location = new System.Drawing.Point(4, 22);
+            this.tabPage2.Name = "tabPage2";
+            this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage2.Size = new System.Drawing.Size(859, 573);
+            this.tabPage2.TabIndex = 1;
+            this.tabPage2.Text = "tabPage2";
+            this.tabPage2.UseVisualStyleBackColor = true;
+            // 
+            // textBox1
+            // 
+            this.textBox1.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.textBox1.Location = new System.Drawing.Point(0, 501);
+            this.textBox1.Multiline = true;
+            this.textBox1.Name = "textBox1";
+            this.textBox1.Size = new System.Drawing.Size(867, 98);
+            this.textBox1.TabIndex = 0;
+            this.textBox1.TextChanged += new System.EventHandler(this.textBox1_TextChanged);
+            // 
+            // textBox2
+            // 
+            this.textBox2.Location = new System.Drawing.Point(0, 0);
+            this.textBox2.Multiline = true;
+            this.textBox2.Name = "textBox2";
+            this.textBox2.ReadOnly = true;
+            this.textBox2.Size = new System.Drawing.Size(859, 415);
+            this.textBox2.TabIndex = 0;
+            // 
+            // comboBox1
+            // 
+            this.comboBox1.FormattingEnabled = true;
+            this.comboBox1.Location = new System.Drawing.Point(17, 442);
+            this.comboBox1.Name = "comboBox1";
+            this.comboBox1.Size = new System.Drawing.Size(331, 20);
+            this.comboBox1.TabIndex = 1;
+            // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(582, 441);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(75, 23);
+            this.button1.TabIndex = 2;
+            this.button1.Text = "button1";
+            this.button1.UseVisualStyleBackColor = true;
+            // 
+            // dateTimePicker2
+            // 
+            this.dateTimePicker2.Location = new System.Drawing.Point(468, 442);
+            this.dateTimePicker2.Name = "dateTimePicker2";
+            this.dateTimePicker2.Size = new System.Drawing.Size(108, 21);
+            this.dateTimePicker2.TabIndex = 4;
+            // 
+            // dateTimePicker1
+            // 
+            this.dateTimePicker1.Location = new System.Drawing.Point(354, 442);
+            this.dateTimePicker1.Name = "dateTimePicker1";
+            this.dateTimePicker1.Size = new System.Drawing.Size(108, 21);
+            this.dateTimePicker1.TabIndex = 5;
             // 
             // Form1
             // 
@@ -478,6 +529,8 @@ namespace analyze.win
             this.tabPage1.ResumeLayout(false);
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
+            this.tabPage2.ResumeLayout(false);
+            this.tabPage2.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -526,6 +579,11 @@ namespace analyze.win
         private System.Windows.Forms.Label label17;
         private System.Windows.Forms.TextBox textBox16;
         private System.Windows.Forms.Label label16;
+        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.ComboBox comboBox1;
+        private System.Windows.Forms.TextBox textBox2;
+        private System.Windows.Forms.DateTimePicker dateTimePicker1;
+        private System.Windows.Forms.DateTimePicker dateTimePicker2;
     }
 }
 
