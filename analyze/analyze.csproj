@@ -112,6 +112,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ManageClient.cs" />
+    <Compile Include="Models\Shop.cs" />
     <Compile Include="Models\ShopLend.cs" />
     <Compile Include="Models\ShopOrder.cs" />
     <Compile Include="Models\ShopRefund.cs" />

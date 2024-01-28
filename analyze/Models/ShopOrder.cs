@@ -20,6 +20,5 @@ namespace analyze.Models
         public DateTime ReceiptTime { get; set; }
         public string Country { get; set; }
 
-
     }
 }

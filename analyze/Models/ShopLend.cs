@@ -11,11 +11,11 @@ namespace analyze.Models
         public string OrderId { get; set; }
         public string ProductId { get; set; }
         public double Turnover { get; set; }
-        public double RebateAmount { get; set; }
-        public double TradeAmount { get; set; }
-        public double AffiliateAmount { get; set; }
+        public double Lend { get; set; }
+        public double Fee { get; set; }
+        public double Affiliate { get; set; }
         public double Cashback { get; set; }
         public DateTime SettlementTime { get; set; }
-
+        public string FileName { get; set; }
     }
 }

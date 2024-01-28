@@ -12,7 +12,8 @@ namespace analyze.Models
         public string ProductId { get; set; }
         public int Quantity { get; set; }
         public double Turnover { get; set; }
-        public double RefundAmount { get; set; }
+        public double Refund { get; set; }
         public DateTime RefundTime { get; set; }
+        public string FileName { get; set; }
     }
 }
