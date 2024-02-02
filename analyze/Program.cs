@@ -12,8 +12,8 @@ namespace analyze
 {
     public class Program
     {
-        static readonly string datadir = @"D:\BaiduSyncdisk\Desktop\12月";
-        static readonly string rawdir = @"D:\BaiduSyncdisk\Desktop\12月\原始数据\2024-01-25";
+        static readonly string datadir = @"F:\BaiduSyncdisk\Desktop\12月";
+        static readonly string rawdir = Path.Combine(datadir, "原始数据", "2024-01-25");
         static readonly string 店铺记录 = Path.Combine(rawdir, "店铺记录.xlsx");
         static readonly string 订单记录 = Path.Combine(rawdir, "订单总表.xlsx");
         static readonly string 历史采购单 = Path.Combine(rawdir, "历史采购单.xlsx");
@@ -30,40 +30,69 @@ namespace analyze
         }
         public static void Main(string[] args)
         {
-
-            SheetHelper.Log = Console.WriteLine;
-
-            TotalOrders = SheetHelper.ReadTotalOrder(订单记录).ToList();
-            IList<TotalPurchase> totalPurchases1 = SheetHelper.TotalPurchase(1, 巴西采购单);
-            IList<TotalPurchase> totalPurchases2 = SheetHelper.TotalPurchase(2, 历史采购单);
-            TotalPurchases.AddRange(totalPurchases1);
-            TotalPurchases.AddRange(totalPurchases2);
-            IList<Shop> shops = SheetHelper.ReadShopInfo(店铺记录);
-            foreach (var shop in shops)
+            try 
             {
-                string[] ds = Directory.GetDirectories(datadir);
-                ds = ds.Where(d => Path.GetFileName(d).StartsWith($"{shop.CompanyNumber} {shop.CN}")).ToArray();
-                if(ds.Length ==1)
+                SheetHelper.Log = Console.WriteLine;
+
+                TotalOrders = SheetHelper.ReadTotalOrder(订单记录).ToList();
+                IList<TotalPurchase> totalPurchases1 = SheetHelper.TotalPurchase(1, 巴西采购单);
+                IList<TotalPurchase> totalPurchases2 = SheetHelper.TotalPurchase(2, 历史采购单);
+                TotalPurchases.AddRange(totalPurchases1);
+                TotalPurchases.AddRange(totalPurchases2);
+                IList<Shop> shops = SheetHelper.ReadShopInfo(店铺记录);
+                foreach (var shop in shops)
                 {
-                    IList<ShopOrder> orders = SheetHelper.ReadShopOrder(Path.Combine(ds[0], "订单.xlsx")).OrderBy(o => o.OrderTime).ToList();
-                    IList<ShopLend> lendings = SheetHelper.ReadShopLending(Path.Combine(ds[0], "放款.xlsx")).OrderBy(o => o.SettlementTime).ToList();
-                    IList<ShopRefund> refunds = SheetHelper.ReadShopRefund(Path.Combine(ds[0], "退款.xlsx")).OrderBy(o => o.RefundTime).ToList();
+                    string[] ds = Directory.GetDirectories(datadir);
+                    ds = ds.Where(d => Path.GetFileName(d).StartsWith($"{shop.CompanyNumber} {shop.CN}")).ToArray();
+                    if (ds.Length == 1)
+                    {
+                        IList<ShopOrder> orders = SheetHelper.ReadShopOrder(Path.Combine(ds[0], "订单.xlsx")).OrderBy(o => o.OrderTime).ToList();
+                        IList<ShopLend> lendings = SheetHelper.ReadShopLending(Path.Combine(ds[0], "放款.xlsx")).OrderBy(o => o.SettlementTime).ToList();
+                        IList<ShopRefund> refunds = SheetHelper.ReadShopRefund(Path.Combine(ds[0], "退款.xlsx")).OrderBy(o => o.RefundTime).ToList();
 
-                    ShopRecords.Add(new ShopRecord() { Shop = shop, ShopOrderList = orders, ShopLendList = lendings, ShopRefundList = refunds });
+                        ShopRecords.Add(new ShopRecord() { Shop = shop, ShopOrderList = orders, ShopLendList = lendings, ShopRefundList = refunds });
+                    }
+
                 }
+                CheckData();
+                // ManageClient manageClient = new ManageClient();
+                // manageClient.LoginAdminAsync();
+                // manageClient.LoginUserAsync("5377150");
 
+                while (true)
+                {
+                    Console.Write("> ");
+                    string line = Console.ReadLine();
+                    if (line.EndsWith("quit"))
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        string[] vs = line.Split(' ');
+                        DateTime t1;
+                        DateTime.TryParseExact($"{vs[0]} {vs[1]}", "yyyy-MM-dd HH:mm:ss", new CultureInfo("zh-cn"), DateTimeStyles.None, out t1);
+                        DateTime t2;
+                        DateTime.TryParseExact($"{vs[2]} {vs[3]}", "yyyy-MM-dd HH:mm:ss", new CultureInfo("zh-cn"), DateTimeStyles.None, out t2);
+                        if(vs.Length == 4)
+                        {
+                            Do(t1, t2);
+                        }else if( vs.Length == 5)
+                        {
+                            Do(t1, t2, vs[4]);
+                        }
+                        else if (vs.Length == 6)
+                        {
+                            Do(t1, t2, vs[4], vs[5]);
+                        }
+                    }
+                }
             }
-            CheckData();
-            DateTime t1;
-            DateTime.TryParseExact("2023-11-01 00:00:00", "yyyy-MM-dd HH:mm:ss", new CultureInfo("zh-cn"), DateTimeStyles.None, out t1);
-            DateTime t2;
-            DateTime.TryParseExact("2023-12-31 23:59:59", "yyyy-MM-dd HH:mm:ss", new CultureInfo("zh-cn"), DateTimeStyles.None, out t2);
-            Do(t1, t2, "5376980");
-            // ManageClient manageClient = new ManageClient();
-            // manageClient.LoginAdminAsync();
-            // manageClient.LoginUserAsync("5377150");
-
-            Console.ReadLine();
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            
         }
 
 
@@ -405,13 +434,14 @@ namespace analyze
                     }
 
                 } // 结束订单循环
-                string str = $"pay({pay}:{pay_m}|{pay_p}:{pay_p_m}):{pay_c:0.00}r|{pay_p_c:0.00}r\r\n"
-                    + $"mark({mark}|{mark_p}):{mark_c:0.00}r|{mark_p_c:0.00}r\r\n"
-                    + $"unknow({unknow}|{unknow_p}):{unknow_c:0.00}r|{unknow_p_c:0.00}r\r\n"
-                    + $"allin({allin}|{allin_p}):{allin_c:0.00}r|{allin_p_c:0.00}r\r\n"
-                    + $"in({@in}|{in_p}):{in_c:0.00}r|{in_p_c:0.00}r\r\n" 
-                    + $"out1({out1}|{out1_p}):{out1_c:0.00}r|{out1_p_c:0.00}r\r\n"
-                    + $"out2({out2}|{out2_p}):{out2_c:0.00}r|{out2_p_c:0.00}r\r\n";
+                string str = $"订单总数：{pay} 支付总数：{pay_m} 促销总数：{pay_p} 促销支付总数：{pay_p_m}\r\n"
+                + $"订单总额：{pay_c:0.00} 促销总额：{pay_p_c:0.00}\r\n"
+                + $"标发总数：{mark} 促销标发总数：{mark_p} 标发扣款总额：{mark_c:0.00} 促销扣款总额：{mark_p_c:0.00}\r\n"
+                + $"在途总数：{unknow} 促销在途总数：{unknow_p} 在途总额：{unknow_c:0.00} 促销在途总额：{unknow_p_c:0.00}\r\n"
+                + $"放款总数：{allin} 促销放款总数：{allin_p} 放款总额：{allin_c:0.00} 促销放款总额：{allin_p_c:0.00}\r\n"
+                + $"入账总数：{@in} 促销入账总数：{in_p} 入账总额：{in_c:0.00} 促销入账总额：{in_p_c:0.00}\r\n"
+                + $"退款总数：{out1} 促销退款总数：{out1_p} 退款总额：{out1_c:0.00} 促销退款总额：{out1_p_c:0.00}\r\n"
+                + $"部分退款总数：{out2} 促销部分退款总数：{out2_p} 部分退款总额：{out2_c:0.00} 部分退款总额：{out2_p_c:0.00}\r\n";
                 Console.WriteLine(str);
             }
         }
