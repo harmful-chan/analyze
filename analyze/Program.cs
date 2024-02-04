@@ -1,4 +1,7 @@
 ﻿using analyze.Models;
+using analyze.Models.Manage;
+using analyze.Options;
+using CommandLine;
 using NPOI.SS.UserModel;
 using System;
 using System.Collections.Generic;
@@ -6,12 +9,62 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace analyze
 {
     public class Program
     {
+
+        public static int Main(string[] args)
+        {
+            var exitCode = -1;
+            try 
+            {
+                exitCode = Parser.Default.ParseArguments<ManageOptions, CollectOptions>(args).MapResult(
+                    (ManageOptions o) => ManageRun(o),(CollectOptions o) => CollectRun(o),error => 1);
+
+                Console.ReadKey();
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            return exitCode;
+        }
+
+        private static int ManageRun(ManageOptions o)
+        {
+
+            if (o.IsList)
+            {
+                ManageClient manageClient = new ManageClient();
+                manageClient.LoginAdminAsync();
+                User[] user = manageClient.ListUsers();
+                User[] richUser = user.Where(u => !string.IsNullOrWhiteSpace(u.CompanyName) && Regex.IsMatch($"{u.CompanyName[0]}", @"[\u4e00-\u9fa5]")).ToArray();
+                for (int i = 0; i < richUser.Length; i++)
+                {
+                    Console.WriteLine($"{i:000} {richUser[i].ClientId} {richUser[i].CompanyName}");
+                }
+            }
+
+            if(o.ClientId != null)
+            {
+                ManageClient manageClient = new ManageClient();
+                manageClient.LoginAdminAsync();
+                foreach (var id in o.ClientId)
+                {
+
+                    User[] user = manageClient.ListUsers(id);
+                    manageClient.LoginUserAsync(id);
+                    manageClient.ListOrder();
+                }
+            }
+            return 0;
+        }
+
+        #region 采集数据
         static readonly string datadir = @"F:\BaiduSyncdisk\Desktop\12月";
         static readonly string rawdir = Path.Combine(datadir, "原始数据", "2024-01-25");
         static readonly string 店铺记录 = Path.Combine(rawdir, "店铺记录.xlsx");
@@ -28,72 +81,66 @@ namespace analyze
             public IList<ShopLend> ShopLendList { get; set; }
             public IList<ShopRefund> ShopRefundList { get; set; }
         }
-        public static void Main(string[] args)
+        private static int CollectRun(CollectOptions opt)
         {
-            try 
+            SheetHelper.Log = Console.WriteLine;
+            TotalOrders = SheetHelper.ReadTotalOrder(订单记录).ToList();
+            IList<TotalPurchase> totalPurchases1 = SheetHelper.TotalPurchase(1, 巴西采购单);
+            IList<TotalPurchase> totalPurchases2 = SheetHelper.TotalPurchase(2, 历史采购单);
+            TotalPurchases.AddRange(totalPurchases1);
+            TotalPurchases.AddRange(totalPurchases2);
+            IList<Shop> shops = SheetHelper.ReadShopInfo(店铺记录);
+            foreach (var shop in shops)
             {
-                SheetHelper.Log = Console.WriteLine;
-
-                TotalOrders = SheetHelper.ReadTotalOrder(订单记录).ToList();
-                IList<TotalPurchase> totalPurchases1 = SheetHelper.TotalPurchase(1, 巴西采购单);
-                IList<TotalPurchase> totalPurchases2 = SheetHelper.TotalPurchase(2, 历史采购单);
-                TotalPurchases.AddRange(totalPurchases1);
-                TotalPurchases.AddRange(totalPurchases2);
-                IList<Shop> shops = SheetHelper.ReadShopInfo(店铺记录);
-                foreach (var shop in shops)
+                string[] ds = Directory.GetDirectories(datadir);
+                ds = ds.Where(d => Path.GetFileName(d).StartsWith($"{shop.CompanyNumber} {shop.CN}")).ToArray();
+                if (ds.Length == 1)
                 {
-                    string[] ds = Directory.GetDirectories(datadir);
-                    ds = ds.Where(d => Path.GetFileName(d).StartsWith($"{shop.CompanyNumber} {shop.CN}")).ToArray();
-                    if (ds.Length == 1)
-                    {
-                        IList<ShopOrder> orders = SheetHelper.ReadShopOrder(Path.Combine(ds[0], "订单.xlsx")).OrderBy(o => o.OrderTime).ToList();
-                        IList<ShopLend> lendings = SheetHelper.ReadShopLending(Path.Combine(ds[0], "放款.xlsx")).OrderBy(o => o.SettlementTime).ToList();
-                        IList<ShopRefund> refunds = SheetHelper.ReadShopRefund(Path.Combine(ds[0], "退款.xlsx")).OrderBy(o => o.RefundTime).ToList();
+                    IList<ShopOrder> orders = SheetHelper.ReadShopOrder(Path.Combine(ds[0], "订单.xlsx")).OrderBy(o => o.OrderTime).ToList();
+                    IList<ShopLend> lendings = SheetHelper.ReadShopLending(Path.Combine(ds[0], "放款.xlsx")).OrderBy(o => o.SettlementTime).ToList();
+                    IList<ShopRefund> refunds = SheetHelper.ReadShopRefund(Path.Combine(ds[0], "退款.xlsx")).OrderBy(o => o.RefundTime).ToList();
 
-                        ShopRecords.Add(new ShopRecord() { Shop = shop, ShopOrderList = orders, ShopLendList = lendings, ShopRefundList = refunds });
-                    }
-
+                    ShopRecords.Add(new ShopRecord() { Shop = shop, ShopOrderList = orders, ShopLendList = lendings, ShopRefundList = refunds });
                 }
-                CheckData();
-                // ManageClient manageClient = new ManageClient();
-                // manageClient.LoginAdminAsync();
-                // manageClient.LoginUserAsync("5377150");
 
-                while (true)
+            }
+            CheckData();
+
+
+            while (true)
+            {
+                Console.Write("> ");
+                string line = Console.ReadLine();
+                if (line.EndsWith("quit"))
                 {
-                    Console.Write("> ");
-                    string line = Console.ReadLine();
-                    if (line.EndsWith("quit"))
+                    break;
+                }
+                else
+                {
+                    string[] vs = line.Split(' ');
+                    DateTime t1;
+                    DateTime.TryParseExact($"{vs[0]} {vs[1]}", "yyyy-MM-dd HH:mm:ss", new CultureInfo("zh-cn"), DateTimeStyles.None, out t1);
+                    DateTime t2;
+                    DateTime.TryParseExact($"{vs[2]} {vs[3]}", "yyyy-MM-dd HH:mm:ss", new CultureInfo("zh-cn"), DateTimeStyles.None, out t2);
+                    if (vs.Length == 4)
                     {
-                        break;
+                        Do(t1, t2);
                     }
-                    else
+                    else if (vs.Length == 5)
                     {
-                        string[] vs = line.Split(' ');
-                        DateTime t1;
-                        DateTime.TryParseExact($"{vs[0]} {vs[1]}", "yyyy-MM-dd HH:mm:ss", new CultureInfo("zh-cn"), DateTimeStyles.None, out t1);
-                        DateTime t2;
-                        DateTime.TryParseExact($"{vs[2]} {vs[3]}", "yyyy-MM-dd HH:mm:ss", new CultureInfo("zh-cn"), DateTimeStyles.None, out t2);
-                        if(vs.Length == 4)
-                        {
-                            Do(t1, t2);
-                        }else if( vs.Length == 5)
-                        {
-                            Do(t1, t2, vs[4]);
-                        }
-                        else if (vs.Length == 6)
-                        {
-                            Do(t1, t2, vs[4], vs[5]);
-                        }
+                        Do(t1, t2, vs[4]);
+                    }
+                    else if (vs.Length == 6)
+                    {
+                        Do(t1, t2, vs[4], vs[5]);
                     }
                 }
             }
-            catch(Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
-            
+
+            return 0;
         }
+
+        #endregion
 
 
         /// <summary>
