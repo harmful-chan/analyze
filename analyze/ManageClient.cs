@@ -20,11 +20,15 @@ namespace analyze
         {
             string backMsg;
             
-            System.Net.HttpWebRequest httpRquest = (HttpWebRequest)HttpWebRequest.Create(url); 
+            System.Net.HttpWebRequest httpRquest = (HttpWebRequest)HttpWebRequest.Create(url);
+            httpRquest.Proxy = new WebProxy("http://localhost:8866");
             httpRquest.Method = method;
             httpRquest.KeepAlive = true;
             httpRquest.AllowAutoRedirect = false;
-            httpRquest.Accept = @"text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7";
+            //httpRquest.Accept = @"text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7";
+            //httpRquest.Accept = @"*/*";
+            httpRquest.Accept = @"application/json, text/javascript, */*; q=0.01";
+
             httpRquest.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
             
             // 设置cookies
@@ -48,12 +52,12 @@ namespace analyze
                 stream.Write(b, 0, b.Length);
                 stream.Close();
             }
-            
-            
+
             httpRquest.CookieContainer = new CookieContainer();
-            
-            
-            
+
+
+
+
             HttpWebResponse response = (HttpWebResponse)httpRquest.GetResponse();
             // 记录cookies
             if (response.Cookies.Count > 0)
@@ -193,6 +197,19 @@ namespace analyze
         public void ListOrder(int status = 1, params string[] orders)
         {
             string raw = Request("POST", @"https://gzbf-shop.goodhmy.com/auth/order/manage", EncodeOrder(status, orders));
+        }
+
+        public DebitRecord[] ListDebitRecord(string clientId, string starTime = "", string endTime = "")
+        {
+            string str = $"arn_status=&customer_code=&cu_name=&cu_type=&start_add_time=&end_add_time=&start_finish_time={starTime}&end_finish_time={endTime}&page=1&limit=2000&transaction_no=";
+            //str = WebUtility.UrlEncode(str);
+            string raw = Request("POST", @"https://gzbf-admin.goodhmy.com/payment/present/list", str);
+
+            var jo = (JObject)JsonConvert.DeserializeObject(raw);
+            var rows = jo["data"].ToString();
+            DebitRecord[] debitRecords = JsonConvert.DeserializeObject<DebitRecord[]>(rows);
+
+            return debitRecords;
         }
         private string EncodeOrder(int status, params string[] orders)
         {

@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 
 namespace analyze.Options
 {
-    [Verb("collect", HelpText = "收集数据")]
+    [Verb("collect", HelpText = "退款数据")]
     public class CollectOptions
     {
-        [Option('s', "start-date", Required =true, HelpText = "开始日期")]
+        [Option('l', "list", HelpText = "列出用户列表")]
         public DateTime StartDate { get; set; }
     }
 }

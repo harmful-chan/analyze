@@ -42,6 +42,9 @@
     <Reference Include="CommandLine, Version=2.9.1.0, Culture=neutral, PublicKeyToken=5a870481e358d379, processorArchitecture=MSIL">
       <HintPath>..\packages\CommandLineParser.2.9.1\lib\net461\CommandLine.dll</HintPath>
     </Reference>
+    <Reference Include="ConsoleTables, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\ConsoleTables.2.4.1\lib\net40\ConsoleTables.dll</HintPath>
+    </Reference>
     <Reference Include="Enums.NET, Version=4.0.0.0, Culture=neutral, PublicKeyToken=7ea1c1650d506225, processorArchitecture=MSIL">
       <HintPath>..\packages\Enums.NET.4.0.1\lib\net45\Enums.NET.dll</HintPath>
     </Reference>
@@ -115,13 +118,16 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ManageClient.cs" />
+    <Compile Include="Models\Manage\DebitRecord.cs" />
     <Compile Include="Models\Manage\User.cs" />
     <Compile Include="Models\Shop.cs" />
     <Compile Include="Models\ShopLend.cs" />
     <Compile Include="Models\ShopOrder.cs" />
+    <Compile Include="Models\ShopRecord.cs" />
     <Compile Include="Models\ShopRefund.cs" />
     <Compile Include="Models\TotalOrder.cs" />
     <Compile Include="Models\TotalPurchase.cs" />
+    <Compile Include="Options\RefundOptions.cs" />
     <Compile Include="Options\CollectOptions.cs" />
     <Compile Include="Options\ManageOptions.cs" />
     <Compile Include="Program.cs" />

@@ -56,3 +56,8 @@ profit:unknow(82) + allin(89) - mark(unknow) - mark(allin) - loss
 spend:(unknow(pro)+allin(pro))*(rate+0.3)/rate - unknow(pro) - allin(pro)  + pro*6 + costus + costbr
 
 
+
+analyze refund -l -p "公司23 cn1077984038qwgae百舸群创aa" -m 11
+序号 订单号 成交 退款 分销 扣款 订单状态 国际 退款时间 订单时间 支付时间 发货时间 收货时间
+01 8176769491833347 成交:139.67   退款:139.67   分销:95.99    扣款:95.99 订单异常 United States 退款时间:2023/10/1 18:25:36  订单时间:2023/9/28 1:44:00   支付时间:2023/9/28 1:44:00
+
