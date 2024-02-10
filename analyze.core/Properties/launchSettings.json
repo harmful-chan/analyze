@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "analyze.core": {
+      "commandName": "Project",
+      "commandLineArgs": "refund -r \"C:\\BaiduSyncdisk\\公司\\寰球易贸\\利润分成\\1月\\原始数据\\20240210\" -d \"C:\\BaiduSyncdisk\\公司\\寰球易贸\\利润分成\\1月\" -p \"公司23cn1077984038qwgae百舸群创aa\"  -y 2024 -m 1 -l -o \"C:\\BaiduSyncdisk\\公司\\寰球易贸\\利润分成\\1月\\索赔\"\r\n"
+    }
+  }
+}

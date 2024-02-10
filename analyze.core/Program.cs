@@ -3,12 +3,14 @@ using analyze.Models.Manage;
 using analyze.Options;
 using CommandLine;
 using ConsoleTables;
+using NPOI.SS.Formula.Functions;
 using NPOI.SS.UserModel;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -22,7 +24,10 @@ namespace analyze
         {
             try 
             {
-                SheetHelper.Log = Console.WriteLine;
+                SheetHelper.Log = (str) => {
+                    Console.SetCursorPosition(0, Console.CursorTop);
+                    Console.Write($"{str}");
+                };
                 if (args[0].Equals("collect"))
                 {
 
@@ -46,93 +51,167 @@ namespace analyze
 
         #region 退款数据
 
-        private static void RefundRun(RefundOptions o)
+        private static void Collect(string rawdir, string  datadir, IEnumerable<string> prefixs)
         {
-            string datadir = @"D:\BaiduSyncdisk\公司\寰球易贸\利润分成\1月";
-            string rawdir = @"D:\BaiduSyncdisk\公司\寰球易贸\利润分成\1月\原始数据\2024-01-25";
-
-            if (o.IsList)
+            if (prefixs != null && prefixs.Count() > 0)
             {
-
-
-                if (o.DirPrefix != null && o.DirPrefix.Count() > 0)
+                // 获取文件夹下的子文件夹列表
+                foreach (var p in prefixs)
                 {
-                    // 获取文件夹下的子文件夹列表
-                    foreach (var p in o.DirPrefix)
-                    {
-                        SheetHelper.Collect(rawdir, datadir, p);
-                    }
-                }
-                else
-                {
-                    SheetHelper.Collect(rawdir, datadir);
-                }
-                ManageClient client = new ManageClient();
-                client.LoginAdminAsync();
-                User[] users = client.ListUsers();
-                foreach (var shop in SheetHelper.ShopRecords)
-                {
-                    double t_refund = 0.0;
-                    int index = 1;  // 序号
-                    DebitRecord[] debitRecords = client.ListDebitRecord(shop.Shop.ClientId);
-                    ConsoleTable table = new ConsoleTable("I", "Order", "Turnover", "Refund", "Cost", "Deduction", "Status", "Country", "RefundTime", "OrderTime", "PaymentTime",  "ShippingTime", "ReceiptTime");
-                    foreach (var r in shop.ShopRefundList)
-                    {
-                        bool flag = true;
-
-                        ShopOrder[] shopOrders = shop.ShopOrderList.Where(t => t.OrderId.Equals(r.OrderId)).ToArray();
-                        TotalOrder[] torders = SheetHelper.TotalOrders.Where(t => t.OrderId.Equals(r.OrderId)).ToArray();
-                        if (r.Turnover != r.Refund)
-                        {
-                            flag = false;
-                        }
-                        if(torders.Length > 0 && torders.First().Cost != torders.First().DeductionAmount)
-                        {
-                            flag = false;
-                        }
-
-                        if (torders.Length > 0 && torders.First().Cost != torders.First().DeductionAmount)
-                        {
-                            t_refund += torders.First().DeductionAmount;
-                        }
-
-                        string a = r.RefundTime.ToString("yyyy-MM-dd HH:mm:ss");
-                        string ot = shopOrders.FirstOrDefault()?.OrderTime.ToString("yyyy-MM-dd HH:mm:ss");
-                        string pt = shopOrders.FirstOrDefault()?.PaymentTime.ToString("yyyy-MM-dd HH:mm:ss");
-                        string st = shopOrders.FirstOrDefault()?.ShippingTime.ToString("yyyy-MM-dd HH:mm:ss");
-                        string rt = shopOrders.FirstOrDefault()?.ReceiptTime.ToString("yyyy-MM-dd HH:mm:ss");
-                        if (shopOrders.FirstOrDefault()?.OrderTime == DateTime.MinValue) ot = "";
-                        if (shopOrders.FirstOrDefault()?.PaymentTime == DateTime.MinValue) pt = "";
-                        if (shopOrders.FirstOrDefault()?.ShippingTime == DateTime.MinValue) st = "";
-                        if (shopOrders.FirstOrDefault()?.ReceiptTime == DateTime.MinValue) rt = "";
-                        if (torders.Length > 0)
-                        {
-                            
-                            DebitRecord[] array = debitRecords.Where(d => d.TradeId.Equals(torders.FirstOrDefault().TradeId)).ToArray();
-                            double tcost = 0.0;
-                            foreach (var item in array)
-                            {
-                                double cost = 0.0;
-                                double.TryParse(item.Cost, out cost);
-                                tcost += cost;
-
-                            }
-                            table.AddRow(index++, r.OrderId, r.Turnover, r.Refund, torders.FirstOrDefault()?.Cost, tcost, flag ? "" : "X",shopOrders.FirstOrDefault()?.Country, a, ot, pt,st, rt);
-                        }
-                        else
-                        {
-                            table.AddRow(index++, r.OrderId, r.Turnover, r.Refund, "", "", flag ? "" : "X",shopOrders.FirstOrDefault()?.Country, a, ot, pt, st, rt);
-                        }
-
-                    }
-
-                    table.AddRow(index++, "TOTAL", "", "", "", t_refund, "", "", "", "", "", "", "");
-                    table.Write(Format.MarkDown);
-                    
-
+                    SheetHelper.Collect(rawdir, datadir, p);
                 }
             }
+            else
+            {
+                SheetHelper.Collect(rawdir, datadir);
+            }
         }
+        private static void DateRange(int year, int moon, out DateTime start, out DateTime end)
+        {
+            DateTime t1;
+            DateTime.TryParseExact($"{year}-{moon:D2}-01 00:00:00", "yyyy-MM-dd HH:mm:ss", new CultureInfo("zh-cn"), DateTimeStyles.None, out t1);
+
+            DateTime t2;
+
+            int y, m;
+            if(moon == 12)
+            {
+                y = year + 1;
+                m = (moon / 12) + (moon % 12);
+            }
+            else
+            {
+                y = year;
+                m = (moon / 12) + (moon % 12) + 1;
+            }
+
+            DateTime.TryParseExact($"{y}-{m:D2}-01 00:00:00", "yyyy-MM-dd HH:mm:ss", new CultureInfo("zh-cn"), DateTimeStyles.None, out t2);
+            start = t1;
+            end = t2;
+        }
+        private static void RefundRun(RefundOptions o)
+        {
+            Collect(o.RowDir, o.DataDir, o.DirPrefix);
+
+            foreach (var shop in SheetHelper.ShopRecords)
+            {
+                int index = 1;  // 序号
+
+                ConsoleTable table = new ConsoleTable("I", "Order", "Turnover", "Refund", "Cost", "TradeId", "Deduction", "Status", "Country", "RefundTime", "OrderTime", "PaymentTime", "ShippingTime", "ReceiptTime");
+
+
+                if (o.Year > 0 && o.Moon > 0)
+                {
+                    DateTime t1, t2;
+                    DateRange(o.Year, o.Moon, out t1, out t2);
+                    o.StartDate = t1;
+                    o.EndDate = t2;
+
+                }
+
+                ShopRefund[] sureRefunds = shop.ShopRefundList.Where(f => f.RefundTime <= o.EndDate && f.RefundTime >= o.StartDate).ToArray();
+                foreach (var r in sureRefunds)
+                {
+                    bool flag1 = true;
+                    bool flag2 = true;
+                    bool flag3 = true;
+                    bool flag4 = true;
+
+                    ShopOrder[] shopOrders = shop.ShopOrderList.Where(t => t.OrderId.Equals(r.OrderId)).ToArray();
+                    TotalOrder[] torders = SheetHelper.TotalOrders.Where(t => t.OrderId!=null && t.OrderId.Equals(r.OrderId)).ToArray();
+                    TotalPurchase[] porder = SheetHelper.TotalPurchases.Where(t => t.OrderId != null && t.OrderId.Equals(r.OrderId)).ToArray();
+                    if (r.Turnover != r.Refund)    // 放款退款不同
+                    {
+                        flag1 = false;
+                    }
+                    if (torders.Length > 0 && torders.First().Cost != torders.First().DeductionAmount)  // 分销扣款不同
+                    {
+                        flag2 = (Math.Round(torders.First().Cost, 1) == Math.Round(torders.First().DeductionAmount, 1));
+                    }
+
+                    if (torders.Length > 0)  // 交易号不相同
+                    {
+                        flag3 = !(torders.GroupBy(t => t.TradeId).Count() > 1);
+                    }
+                    if (porder.Length > 0)  // 交易号不相同
+                    {
+                        flag4 = !(porder.Where(p => p.Status!=null && p.Status.Contains("已发货")).Count() > 0);
+                    }
+
+                    string a = r.RefundTime.ToString("yyyy-MM-dd HH:mm:ss");
+                    string ot = shopOrders.FirstOrDefault()?.OrderTime.ToString("yyyy-MM-dd HH:mm:ss");
+                    string pt = shopOrders.FirstOrDefault()?.PaymentTime.ToString("yyyy-MM-dd HH:mm:ss");
+                    string st = shopOrders.FirstOrDefault()?.ShippingTime.ToString("yyyy-MM-dd HH:mm:ss");
+                    string rt = shopOrders.FirstOrDefault()?.ReceiptTime.ToString("yyyy-MM-dd HH:mm:ss");
+                    if (shopOrders.FirstOrDefault()?.OrderTime == DateTime.MinValue) ot = "";
+                    if (shopOrders.FirstOrDefault()?.PaymentTime == DateTime.MinValue) pt = "";
+                    if (shopOrders.FirstOrDefault()?.ShippingTime == DateTime.MinValue) st = "";
+                    if (shopOrders.FirstOrDefault()?.ReceiptTime == DateTime.MinValue) rt = "";
+
+                    string str = (flag1 ? "" : "1") + (flag2 ? "" : "2") + (flag3 ? "" : "3") + (flag4 ? "" : "4");
+                    if (torders.Length > 0)
+                    {
+
+                        table.AddRow(index++, r.OrderId, r.Turnover, r.Refund,
+                            torders.FirstOrDefault()?.Cost, torders.FirstOrDefault().TradeId, torders.FirstOrDefault()?.DeductionAmount, str,
+                            shopOrders.FirstOrDefault()?.Country, a, ot, pt, st, rt);
+                    }
+                    else
+                    {
+                        table.AddRow(index++, r.OrderId, r.Turnover, r.Refund,
+                            "", "", "", str,
+                            shopOrders.FirstOrDefault()?.Country, a, ot, pt, st, rt);
+                    }
+                    r.Trade = str;
+                    // 退款理由：纠纷退款， 未发货退款，纠纷退款。
+                    if (torders.Length > 0)
+                    {
+                        TotalOrder to = torders.FirstOrDefault();
+                        r.RefundReason = "未发货退款";
+                        if (!string.IsNullOrWhiteSpace(to.TradeId))  // 有交易号，有发货之间 ： 纠纷退款
+                        {
+                            ShopOrder so = shopOrders.FirstOrDefault();
+                            if (so.ShippingTime > DateTime.MinValue)    // 有发货
+                            {
+                                r.RefundReason = "纠纷退款";
+                            }
+                        }
+
+                        r.DebitOperation = "已扣款";
+                        r.Deduction = to.DeductionAmount;
+                    }
+                    else
+                    {
+                        r.RefundReason = "取消订单";
+                        r.DebitOperation = "未扣款";
+                    }
+
+
+                }
+                if (o.IsList)
+                {
+                    Console.WriteLine();
+                    table.Write(Format.MarkDown);
+                }
+
+                if (Directory.Exists(o.OutputFile)) // 输入的是一个目录
+                {
+                    if (sureRefunds.Length <= 0)
+                    {
+                        continue;
+                    }
+                    Array.Sort(sureRefunds, (x, y) => { return x.RefundTime.CompareTo(y.RefundTime); });
+
+                    string filename = Path.Combine(o.OutputFile, $"{shop.Shop.CompanyNumber}{shop.Shop.CN}{shop.Shop.CompanyName}{shop.Shop.Nick}.xlsx");
+                    SheetHelper.SaveShopRefund(filename, sureRefunds, true);
+
+                }
+
+            }
+
+
+        }
+        #endregion
 
         private static void ManageRun(ManageOptions o)
         {
@@ -149,7 +228,7 @@ namespace analyze
                 }
             }
 
-            if(o.ClientId != null)
+            if (o.ClientId != null)
             {
                 ManageClient manageClient = new ManageClient();
                 manageClient.LoginAdminAsync();
@@ -162,7 +241,6 @@ namespace analyze
                 }
             }
         }
-
         #region 采集数据
 
 
@@ -189,7 +267,7 @@ namespace analyze
             foreach (var d in ds)
             {
                 IList<ShopOrder> orders = SheetHelper.ReadShopOrder(Path.Combine(d, "订单.xlsx")).OrderBy(o => o.OrderTime).ToList();
-                IList<ShopLend> lendings = SheetHelper.ReadShopLending(Path.Combine(d, "放款.xlsx")).OrderBy(o => o.SettlementTime).ToList();
+                IList<ShopLend> lendings = SheetHelper.ReadShopLend(Path.Combine(d, "放款.xlsx")).OrderBy(o => o.SettlementTime).ToList();
                 IList<ShopRefund> refunds = SheetHelper.ReadShopRefund(Path.Combine(d, "退款.xlsx")).OrderBy(o => o.RefundTime).ToList();
 
                 int index = 1;  // 序号
@@ -504,4 +582,3 @@ namespace analyze
         //}
     }
 }
-#endregion
