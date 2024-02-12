@@ -12,7 +12,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace analyze
+namespace analyze.core.Helper
 {
     public class SheetHelper
     {
@@ -20,13 +20,13 @@ namespace analyze
         private static LogDelegate _log;
         public static LogDelegate Log
         {
-            get 
+            get
             {
-                if(_log == null)
+                if (_log == null)
                 {
                     throw new Exception("LogDelegate NOT SET");
                 }
-                return _log; 
+                return _log;
             }
             set { _log = value; }
         }
@@ -54,10 +54,10 @@ namespace analyze
                     var sheet = workbook.GetSheetAt(0);
                     if (sheet != null)
                     {
-                        for (int j = 0; j < sheet.LastRowNum ; j++)
+                        for (int j = 0; j < sheet.LastRowNum; j++)
                         {
                             var row = sheet.GetRow(j);
-                            if(row == null)
+                            if (row == null)
                             {
                                 continue;
                             }
@@ -66,19 +66,19 @@ namespace analyze
                             string A1 = row.GetCell(0)?.ToString();
                             string B1 = row.GetCell(0)?.ToString();
                             // 去除表格 us A1空 B1=操作人
-                            if(string.IsNullOrWhiteSpace(A1) && "操作人".Equals(B1) || "序号".Equals(A1) && "日期".Equals(B1))
+                            if (string.IsNullOrWhiteSpace(A1) && "操作人".Equals(B1) || "序号".Equals(A1) && "日期".Equals(B1))
                             {
                                 continue;
                             }
 
 
-                            if (row != null && type == 1 )
+                            if (row != null && type == 1)
                             {
                                 to.OrderId = row.GetCell(6)?.ToString();
                                 to.Status = row.GetCell(22)?.ToString();
                                 os.Add(to);
                             }
-                            else if(row != null && type == 2)
+                            else if (row != null && type == 2)
                             {
                                 to.OrderId = row.GetCell(5)?.ToString();
                                 to.Status = row.GetCell(23)?.ToString();
@@ -167,16 +167,15 @@ namespace analyze
             File.Copy(Path.Combine("resources", "refund.xlsx"), fileName, overwrite);
 
             IWorkbook workbook;
-            using (FileStream fs = File.OpenRead(fileName))
-            {
-                workbook =WorkbookFactory.Create(fs);
-                
-            }
+            FileStream fs = File.OpenRead(fileName);
+            workbook = WorkbookFactory.Create(fs);
+            fs.Close();
+            fs.Dispose();
             ISheet sheet = workbook.GetSheetAt(0);
             for (int i = 0; i < shopRefunds.Length; i++)
             {
                 IRow row = sheet.CreateRow(i + 1);
-                
+
 
 
                 ICell cell0 = row.CreateCell(0); cell0.SetCellType(CellType.Numeric); cell0.SetCellValue(i + 1);
@@ -196,30 +195,32 @@ namespace analyze
 
                 ICell cell13 = row.CreateCell(13);
                 ICellStyle style = workbook.CreateCellStyle();
-                style.DataFormat =  workbook.CreateDataFormat().GetFormat("yyyy-MM-dd HH:mm:ss");
+                style.DataFormat = workbook.CreateDataFormat().GetFormat("yyyy-MM-dd HH:mm:ss");
                 cell13.CellStyle = style;
                 cell13.SetCellValue(shopRefunds[i].RefundTime);
 
-                
+
 
                 ICell cell14 = row.CreateCell(14); cell14.SetCellType(CellType.String); cell14.SetCellValue(shopRefunds[i].RefundReason);
-                ICell cell15 = row.CreateCell(15); cell15.SetCellType(CellType.String); cell15.SetCellValue(shopRefunds[i].DebitOperation);
+                ICell cell15 = row.CreateCell(15); cell15.SetCellType(CellType.String); cell15.SetCellValue(shopRefunds[i].DebitOperation ?? "");
                 ICell cell16 = row.CreateCell(16); cell16.SetCellType(CellType.Numeric); cell16.SetCellValue(Math.Round(shopRefunds[i].Deduction, 2));
-                ICell cell17 = row.CreateCell(17); cell17.SetCellType(CellType.String); cell17.SetCellValue(shopRefunds[i].RefundOperation);
-                ICell cell18 = row.CreateCell(18); cell18.SetCellType(CellType.String); cell18.SetCellValue(shopRefunds[i].RefundId);
-                ICell cell19 = row.CreateCell(19); cell19.SetCellType(CellType.String); cell19.SetCellValue(shopRefunds[i].Trade);
+                ICell cell17 = row.CreateCell(17); cell17.SetCellType(CellType.String); cell17.SetCellValue(shopRefunds[i].RefundOperation ?? "");
+                ICell cell18 = row.CreateCell(18); cell18.SetCellType(CellType.String); cell18.SetCellValue(shopRefunds[i].RefundId ?? "");
+                ICell cell19 = row.CreateCell(19); cell19.SetCellType(CellType.String); cell19.SetCellValue(shopRefunds[i].Trade ?? "");
             }
-            IRow totalRow = sheet.CreateRow(shopRefunds.Length+2);
+            IRow totalRow = sheet.CreateRow(shopRefunds.Length + 2);
             ICell c0 = totalRow.CreateCell(15); c0.SetCellType(CellType.String); c0.SetCellValue("总额:");
             ICell c1 = totalRow.CreateCell(16);
             c1.SetCellType(CellType.Numeric);
-            c1.SetCellFormula($"SUBTOTAL(9, Q2:Q{shopRefunds.Length+1})");
+            c1.SetCellFormula($"SUBTOTAL(9, Q2:Q{shopRefunds.Length + 1})");
 
-            using (FileStream fs =new FileStream(fileName, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None))
-            {
-                workbook.Write(fs);
-                Log($"保存 {fileName}");
-            }
+            FileStream newfs = new FileStream(fileName, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+            workbook.Write(newfs);
+            newfs.Close();
+            newfs.Dispose();
+            Log($"保存 {fileName}");
+            workbook.Close();
+
         }
         public static IList<ShopLend> ReadShopLend(string fileName)
         {
@@ -232,7 +233,7 @@ namespace analyze
                     IWorkbook workbook = WorkbookFactory.Create(fs);
                     Log($"读取 {ss[c]}");
                     var sheet = workbook.GetSheetAt(0);
-       
+
                     if (sheet != null && sheet.LastRowNum > 2)
                     {
                         for (int i = 1; i < sheet.LastRowNum + 1; i++)
@@ -362,7 +363,7 @@ namespace analyze
                             TotalOrder to = new TotalOrder();
                             to.StoreName = row.GetCell(0)?.ToString();
                             // 跳过表头
-                            if (to.StoreName!=null && to.StoreName.Contains("店铺"))
+                            if (to.StoreName != null && to.StoreName.Contains("店铺"))
                             {
                                 continue;
                             }
@@ -390,8 +391,8 @@ namespace analyze
                             double.TryParse(row.GetCell(18)?.ToString().Trim().Replace("RMB", "").Replace("R", "").Replace("$", ""), out amount);
                             to.DeductionAmount = amount;
 
-                            if((!string.IsNullOrWhiteSpace(to.TradeId) && amount == -1.1) ||
-                                (string.IsNullOrWhiteSpace(to.TradeId) && amount != -1.1))
+                            if (!string.IsNullOrWhiteSpace(to.TradeId) && amount == -1.1 ||
+                                string.IsNullOrWhiteSpace(to.TradeId) && amount != -1.1)
                             {
                                 Message += $"{to.OrderId} Trade error.\r\n";
                             }
@@ -428,7 +429,7 @@ namespace analyze
                         Shop o = new Shop();
                         o.CompanyNumber = row.GetCell(0)?.ToString();
                         o.ClientId = row.GetCell(1)?.ToString();
-                        o.CompanyName= row.GetCell(2)?.ToString();
+                        o.CompanyName = row.GetCell(2)?.ToString();
                         o.Nick = row.GetCell(3)?.ToString();
                         o.CN = row.GetCell(4)?.ToString();
                         o.Category = row.GetCell(5)?.ToString();
@@ -476,33 +477,33 @@ namespace analyze
             }
             return shops;
         }
-        public static void Collect(string rawDir = "", string dataDir ="", string shopDirPrefix = "")
+        public static void Collect(string rawDir = "", string dataDir = "", string shopDirPrefix = "")
         {
             string shopRecordFileName = Path.Combine(rawDir, "店铺记录.xlsx");
             string orderRecordFileName = Path.Combine(rawDir, "订单总表.xlsx");
             string usPruchasRecordFileName = Path.Combine(rawDir, "美国采购单.xlsx");
             string brPruchasRecordFileName = Path.Combine(rawDir, "巴西采购单.xlsx");
 
-            if(TotalOrders.Count == 0)
+            if (TotalOrders.Count == 0)
             {
                 TotalOrders = ReadTotalOrder(orderRecordFileName).ToList();
             }
-            if(TotalPurchases.Count == 0)
+            if (TotalPurchases.Count == 0)
             {
                 IList<TotalPurchase> totalPurchases1 = TotalPurchase(1, brPruchasRecordFileName);
                 IList<TotalPurchase> totalPurchases2 = TotalPurchase(2, usPruchasRecordFileName);
                 TotalPurchases.AddRange(totalPurchases1);
                 TotalPurchases.AddRange(totalPurchases2);
             }
-            
-            if(AllShops.Count == 0)
+
+            if (AllShops.Count == 0)
             {
                 AllShops = ReadShopInfo(shopRecordFileName).ToList();
             }
 
 
             List<Shop> ss = SelectShop(AllShops, shopDirPrefix);
-            
+
             foreach (var shop in ss)
             {
                 string[] ds = Directory.GetDirectories(dataDir);

@@ -1,4 +1,5 @@
-﻿using analyze.Models;
+﻿using analyze.core.Helper;
+using analyze.Models;
 using analyze.Models.Manage;
 using analyze.Options;
 using CommandLine;
@@ -99,7 +100,7 @@ namespace analyze
 
                 ConsoleTable table = new ConsoleTable("I", "Order", "Turnover", "Refund", "Cost", "TradeId", "Deduction", "Status", "Country", "RefundTime", "OrderTime", "PaymentTime", "ShippingTime", "ReceiptTime");
 
-
+                // 年月获取 开始结束日期
                 if (o.Year > 0 && o.Moon > 0)
                 {
                     DateTime t1, t2;
@@ -188,12 +189,15 @@ namespace analyze
 
 
                 }
+
+                // 列出表格
                 if (o.IsList)
                 {
                     Console.WriteLine();
                     table.Write(Format.MarkDown);
                 }
 
+                // 生成目录
                 if (Directory.Exists(o.OutputFile)) // 输入的是一个目录
                 {
                     if (sureRefunds.Length <= 0)
