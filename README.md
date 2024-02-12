@@ -43,7 +43,7 @@ mark(180|169):59448r|523r
 unknow(82|50):55156.64r|523r
 allin(89|30):485r|523r 
 in(89|30):485r|523r
-out1(86|12):5965r|523r 
+out1(86|12):5965r|523r
 out2(12|5):5965r|523r
 
 shipped(12):299r skip(72):8488r cut(15):4815r do(485):5962r todo(85):8595r
@@ -54,5 +54,8 @@ loss:mark(out1) + mark(out2)
 mloss:mark(out1) + mark((pay-out2)/pay)
 profit:unknow(82) + allin(89) - mark(unknow) - mark(allin) - loss
 spend:(unknow(pro)+allin(pro))*(rate+0.3)/rate - unknow(pro) - allin(pro)  + pro*6 + costus + costbr
+
+### 订单管理
+analyze manage --list-client-orders all    //列出所有用户订单
 
 
