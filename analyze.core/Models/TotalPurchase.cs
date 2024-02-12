@@ -10,6 +10,5 @@ namespace analyze.Models
     {
         public string OrderId { get; set; }
         public string Status { get; set; }
-        public string Pay { get; set; }
     }
 }

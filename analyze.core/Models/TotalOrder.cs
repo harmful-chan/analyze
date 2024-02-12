@@ -10,6 +10,7 @@ namespace analyze.Models
     {
         public string StoreName { get; set; } // A
         public string Operator { get; set; } // B
+        public string ClientId  { get; set; }       
         public string OrderStatus { get; set; }
         public string OrderId { get; set; }  // E
         public DateTime OrderTime { get; set; }
