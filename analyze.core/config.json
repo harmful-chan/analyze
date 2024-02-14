@@ -1,0 +1,8 @@
+{
+  "debug_webhook": "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=8af72f8c-1f27-48b0-832e-dcfb8b7f17d2",
+  "info_webhook": "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=978e8aa3-caee-42ea-a51a-e3da7af88c29",
+  "shop_info": "店铺信息.xlsx",
+  "raw_dir": "F:\\BaiduSyncdisk\\Desktop\\数据采集\\原始数据\\20240210",
+  "data_dir": "F:\\BaiduSyncdisk\\Desktop\\数据采集\\店铺订单数据\\1月",
+  "daily__dir": "F:\\BaiduSyncdisk\\Desktop\\数据采集\\每日数据",
+}

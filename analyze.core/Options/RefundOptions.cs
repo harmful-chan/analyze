@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace analyze.Options
+namespace analyze.core.Options
 {
     [Verb("refund", HelpText = "退款数据")]
     public class RefundOptions

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace analyze.Options
+namespace analyze.core.Options
 {
     [Verb("manage", HelpText = "后台管理")]
     public class ManageOptions

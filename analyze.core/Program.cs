@@ -1,7 +1,7 @@
-﻿using analyze.core.Helper;
-using analyze.Models;
+﻿using analyze.core;
+using analyze.core.Models.Sheet;
 using analyze.Models.Manage;
-using analyze.Options;
+using analyze.core.Options;
 using CommandLine;
 using ConsoleTables;
 using NPOI.SS.Formula.Functions;
@@ -23,12 +23,8 @@ namespace analyze
 
         public static void Main(string[] args)
         {
-            try 
-            {
-                SheetHelper.Log = (str) => {
-                    Console.SetCursorPosition(0, Console.CursorTop);
-                    Console.Write($"{str}");
-                };
+            //try 
+            //{
                 if (args[0].Equals("collect"))
                 {
 
@@ -39,183 +35,22 @@ namespace analyze
                 }
                 else if (args[0].Equals("refund")) 
                 {
-                    Parser.Default.ParseArguments<RefundOptions>(args).WithParsed(RefundRun);
+                    Parser.Default.ParseArguments<RefundOptions>(args).WithParsed(new Analyzer().RefundRun);
+                }
+                else if (args[0].Equals("daily"))
+                {
+                    Parser.Default.ParseArguments<DailyOptions>(args).WithParsed(new Analyzer().DailyRun);
                 }
 
-            }
-            catch(Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
+            //}
+            //catch(Exception ex)
+            //{
+            //    Console.WriteLine(ex.Message);
+            //}
         }
 
 
-        #region 退款数据
 
-        private static void Collect(string rawdir, string  datadir, IEnumerable<string> prefixs)
-        {
-            if (prefixs != null && prefixs.Count() > 0)
-            {
-                // 获取文件夹下的子文件夹列表
-                foreach (var p in prefixs)
-                {
-                    SheetHelper.Collect(rawdir, datadir, p);
-                }
-            }
-            else
-            {
-                SheetHelper.Collect(rawdir, datadir);
-            }
-        }
-        private static void DateRange(int year, int moon, out DateTime start, out DateTime end)
-        {
-            DateTime t1;
-            DateTime.TryParseExact($"{year}-{moon:D2}-01 00:00:00", "yyyy-MM-dd HH:mm:ss", new CultureInfo("zh-cn"), DateTimeStyles.None, out t1);
-
-            DateTime t2;
-
-            int y, m;
-            if(moon == 12)
-            {
-                y = year + 1;
-                m = (moon / 12) + (moon % 12);
-            }
-            else
-            {
-                y = year;
-                m = (moon / 12) + (moon % 12) + 1;
-            }
-
-            DateTime.TryParseExact($"{y}-{m:D2}-01 00:00:00", "yyyy-MM-dd HH:mm:ss", new CultureInfo("zh-cn"), DateTimeStyles.None, out t2);
-            start = t1;
-            end = t2;
-        }
-        private static void RefundRun(RefundOptions o)
-        {
-            Collect(o.RowDir, o.DataDir, o.DirPrefix);
-
-            foreach (var shop in SheetHelper.ShopRecords)
-            {
-                int index = 1;  // 序号
-
-                ConsoleTable table = new ConsoleTable("I", "Order", "Turnover", "Refund", "Cost", "TradeId", "Deduction", "Status", "Country", "RefundTime", "OrderTime", "PaymentTime", "ShippingTime", "ReceiptTime");
-
-                // 年月获取 开始结束日期
-                if (o.Year > 0 && o.Moon > 0)
-                {
-                    DateTime t1, t2;
-                    DateRange(o.Year, o.Moon, out t1, out t2);
-                    o.StartDate = t1;
-                    o.EndDate = t2;
-
-                }
-
-                ShopRefund[] sureRefunds = shop.ShopRefundList.Where(f => f.RefundTime <= o.EndDate && f.RefundTime >= o.StartDate).ToArray();
-                foreach (var r in sureRefunds)
-                {
-                    bool flag1 = true;
-                    bool flag2 = true;
-                    bool flag3 = true;
-                    bool flag4 = true;
-
-                    ShopOrder[] shopOrders = shop.ShopOrderList.Where(t => t.OrderId.Equals(r.OrderId)).ToArray();
-                    TotalOrder[] torders = SheetHelper.TotalOrders.Where(t => t.OrderId!=null && t.OrderId.Equals(r.OrderId)).ToArray();
-                    TotalPurchase[] porder = SheetHelper.TotalPurchases.Where(t => t.OrderId != null && t.OrderId.Equals(r.OrderId)).ToArray();
-                    if (r.Turnover != r.Refund)    // 放款退款不同
-                    {
-                        flag1 = false;
-                    }
-                    if (torders.Length > 0 && torders.First().Cost != torders.First().DeductionAmount)  // 分销扣款不同
-                    {
-                        flag2 = (Math.Round(torders.First().Cost, 1) == Math.Round(torders.First().DeductionAmount, 1));
-                    }
-
-                    if (torders.Length > 0)  // 交易号不相同
-                    {
-                        flag3 = !(torders.GroupBy(t => t.TradeId).Count() > 1);
-                    }
-                    if (porder.Length > 0)  // 交易号不相同
-                    {
-                        flag4 = !(porder.Where(p => p.Status!=null && p.Status.Contains("已发货")).Count() > 0);
-                    }
-
-                    string a = r.RefundTime.ToString("yyyy-MM-dd HH:mm:ss");
-                    string ot = shopOrders.FirstOrDefault()?.OrderTime.ToString("yyyy-MM-dd HH:mm:ss");
-                    string pt = shopOrders.FirstOrDefault()?.PaymentTime.ToString("yyyy-MM-dd HH:mm:ss");
-                    string st = shopOrders.FirstOrDefault()?.ShippingTime.ToString("yyyy-MM-dd HH:mm:ss");
-                    string rt = shopOrders.FirstOrDefault()?.ReceiptTime.ToString("yyyy-MM-dd HH:mm:ss");
-                    if (shopOrders.FirstOrDefault()?.OrderTime == DateTime.MinValue) ot = "";
-                    if (shopOrders.FirstOrDefault()?.PaymentTime == DateTime.MinValue) pt = "";
-                    if (shopOrders.FirstOrDefault()?.ShippingTime == DateTime.MinValue) st = "";
-                    if (shopOrders.FirstOrDefault()?.ReceiptTime == DateTime.MinValue) rt = "";
-
-                    string str = (flag1 ? "" : "1") + (flag2 ? "" : "2") + (flag3 ? "" : "3") + (flag4 ? "" : "4");
-                    if (torders.Length > 0)
-                    {
-
-                        table.AddRow(index++, r.OrderId, r.Turnover, r.Refund,
-                            torders.FirstOrDefault()?.Cost, torders.FirstOrDefault().TradeId, torders.FirstOrDefault()?.DeductionAmount, str,
-                            shopOrders.FirstOrDefault()?.Country, a, ot, pt, st, rt);
-                    }
-                    else
-                    {
-                        table.AddRow(index++, r.OrderId, r.Turnover, r.Refund,
-                            "", "", "", str,
-                            shopOrders.FirstOrDefault()?.Country, a, ot, pt, st, rt);
-                    }
-                    r.Trade = str;
-                    // 退款理由：纠纷退款， 未发货退款，纠纷退款。
-                    if (torders.Length > 0)
-                    {
-                        TotalOrder to = torders.FirstOrDefault();
-                        r.RefundReason = "未发货退款";
-                        if (!string.IsNullOrWhiteSpace(to.TradeId))  // 有交易号，有发货之间 ： 纠纷退款
-                        {
-                            ShopOrder so = shopOrders.FirstOrDefault();
-                            if (so.ShippingTime > DateTime.MinValue)    // 有发货
-                            {
-                                r.RefundReason = "纠纷退款";
-                            }
-                        }
-
-                        r.DebitOperation = "已扣款";
-                        r.Deduction = to.DeductionAmount;
-                    }
-                    else
-                    {
-                        r.RefundReason = "取消订单";
-                        r.DebitOperation = "未扣款";
-                    }
-
-
-                }
-
-                // 列出表格
-                if (o.IsList)
-                {
-                    Console.WriteLine();
-                    table.Write(Format.MarkDown);
-                }
-
-                // 生成目录
-                if (Directory.Exists(o.OutputFile)) // 输入的是一个目录
-                {
-                    if (sureRefunds.Length <= 0)
-                    {
-                        continue;
-                    }
-                    Array.Sort(sureRefunds, (x, y) => { return x.RefundTime.CompareTo(y.RefundTime); });
-
-                    string filename = Path.Combine(o.OutputFile, $"{shop.Shop.CompanyNumber}{shop.Shop.CN}{shop.Shop.CompanyName}{shop.Shop.Nick}.xlsx");
-                    SheetHelper.SaveShopRefund(filename, sureRefunds, true);
-
-                }
-
-            }
-
-
-        }
-        #endregion
 
         private static void ManageRun(ManageOptions o)
         {
@@ -258,8 +93,9 @@ namespace analyze
         /// <param name="args"></param>
         public static void ListRefunds(params string[] args)
         {
+            SheetClient client = new SheetClient();
             // 读订单总表
-            IList<TotalOrder> totalOrders = SheetHelper.ReadTotalOrder(args[0]);
+            IList<TotalOrder> totalOrders = client.ReadTotalOrder(args[0]);
 
             // 获取当前目录下的文件夹
             string[] ds = Directory.GetDirectories(Path.GetDirectoryName(args[0]));
@@ -270,9 +106,9 @@ namespace analyze
             // 获取文件夹下的子文件夹列表
             foreach (var d in ds)
             {
-                IList<ShopOrder> orders = SheetHelper.ReadShopOrder(Path.Combine(d, "订单.xlsx")).OrderBy(o => o.OrderTime).ToList();
-                IList<ShopLend> lendings = SheetHelper.ReadShopLend(Path.Combine(d, "放款.xlsx")).OrderBy(o => o.SettlementTime).ToList();
-                IList<ShopRefund> refunds = SheetHelper.ReadShopRefund(Path.Combine(d, "退款.xlsx")).OrderBy(o => o.RefundTime).ToList();
+                IList<ShopOrder> orders = client.ReadShopOrder(Path.Combine(d, "订单.xlsx")).OrderBy(o => o.OrderTime).ToList();
+                IList<ShopLend> lendings = client.ReadShopLend(Path.Combine(d, "放款.xlsx")).OrderBy(o => o.SettlementTime).ToList();
+                IList<ShopRefund> refunds = client.ReadShopRefund(Path.Combine(d, "退款.xlsx")).OrderBy(o => o.RefundTime).ToList();
 
                 int index = 1;  // 序号
 
