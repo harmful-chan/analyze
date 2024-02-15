@@ -56,7 +56,10 @@ profit:unknow(82) + allin(89) - mark(unknow) - mark(allin) - loss
 spend:(unknow(pro)+allin(pro))*(rate+0.3)/rate - unknow(pro) - allin(pro)  + pro*6 + costus + costbr
 
 ### 订单管理
-analyze manage --list-client-orders all    //列出所有用户订单
+analyze manage -u 5377028 --deduction 8185077759712497 8185077759712492
+
+
+
 
 
 
@@ -82,3 +85,6 @@ analyze manage --list-client-orders all    //列出所有用户订单
 ## tag
 ### analyze.core.202402151726
 analyze.core.202402151726.exe daily -d "D:\BaiduSyncdisk\Desktop\数据 采集\每日数据\2024年02月15日" -l -u
+
+### analyze.core.202402160626
+analyze manage -u 5377028 --deduction 8185077759712497 8185077759712492

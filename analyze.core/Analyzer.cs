@@ -1,23 +1,27 @@
 ﻿using analyze.core.Clients;
 using analyze.core.Models.Daily;
+using analyze.core.Models.Manage;
 using analyze.core.Models.Sheet;
 using analyze.core.Options;
-using analyze.core.Options;
+using analyze.Models.Manage;
 using ConsoleTables;
 using NPOI.HSSF.Record;
 using NPOI.SS.Formula.Functions;
 using NPOI.Util;
+using NPOI.XWPF.UserModel;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
+using static analyze.core.Clients.SheetClient;
 using static NPOI.HSSF.Util.HSSFColor;
 
 namespace analyze.core
 {
-    internal class Analyzer
+    public class Analyzer
     {
         public Analyzer()
         {
@@ -29,7 +33,16 @@ namespace analyze.core
                 };
             }
         }
-        #region 退款数据RefundRun
+
+        public Analyzer(LogDelegate log)
+        {
+            if (SheetClient.Log == null)
+            {
+                SheetClient.Log = log;
+            }
+        }
+
+        #region 退款数据 refund
         public void Collect(string rawdir, string datadir, IEnumerable<string> prefixs)
         {
             if (prefixs != null && prefixs.Count() > 0)
@@ -195,8 +208,8 @@ namespace analyze.core
 
         }
         #endregion
-
-        #region 采集的订单数据
+         
+        #region 采集的订单数据 daily
         public enum OrderTypes
         {
             BeforeOneDay,
@@ -393,6 +406,125 @@ namespace analyze.core
 
             
             
+        }
+        #endregion
+
+        #region mamage
+
+        private void Save(string orderId, string msg)
+        {
+            if (!Directory.Exists("扣款记录"))
+            {
+                Directory.CreateDirectory("扣款记录");
+            }
+            string path = Path.Combine("扣款记录", $"{DateTime.Now.ToString("yyyy年MM月dd日")}");
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
+            string filename = Path.Combine(path, $"{orderId}.txt");
+            File.WriteAllText(filename, msg);
+        }
+
+        public void ManageRun(ManageOptions o)
+        {
+
+            ManageClient client = new ManageClient();
+            string msg = string.Empty;
+            client.LoginAdmin();
+            if (o.IsList)
+            {
+                User[] user = client.ListUsers();
+                User[] richUser = user.Where(u => !string.IsNullOrWhiteSpace(u.CompanyName) && Regex.IsMatch($"{u.CompanyName[0]}", @"[\u4e00-\u9fa5]")).ToArray();
+                for (int i = 0; i < richUser.Length; i++)
+                {
+                    Console.WriteLine($"{i:000} {richUser[i].ClientId} {richUser[i].CompanyName}");
+                }
+                return;
+            }
+
+            if(File.Exists(o.FileName))
+            {
+                string raw = File.ReadAllText(o.FileName);
+                string[] strings = raw.Split("\r\n");
+                o.DeductionId = strings;
+            }
+
+            if (o.ClientId.Count() == 1 && o.DeductionId.Count() > 0)
+            {
+                foreach (var item in o.DeductionId)
+                {
+                    string clientId = o.ClientId.First();
+                    string orderId = item;
+                    string ret = null;
+
+                    try
+                    {
+                        msg += $"登录用户 ";
+                        SheetClient.Log(msg);
+                        string v = client.LoginUser(clientId);
+                        msg += $"{clientId} ";
+                        SheetClient.Log(msg);
+                        Order[] orders = client.ListOrder(orderId);
+                        msg += $"{orders.Length} ";
+                        SheetClient.Log(msg);
+                        if (orders.Length == 1)
+                        {
+                            Order order = orders.First();
+                            msg += $"{order.OrderId} ";
+                            SheetClient.Log(msg);
+                            double cost = order.Cost;
+
+
+                            msg += $"扣除金额：{cost} ";
+                            SheetClient.Log(msg);
+                            ret =  client.Deduction(order);
+                            if ("Success.".Equals(ret))
+                            {
+                                DebitRecord[] debitRecords = client.ListDebitRecord();
+                                DebitRecord debitRecord = debitRecords.First();
+                                msg += $"{debitRecord.RecordId} {debitRecord.TradeId} {debitRecord.Cost}RMB ";
+                                SheetClient.Log(msg);
+                                if ((int)debitRecord.Cost == (int)cost)
+                                {
+                                    ret = client.DeductionYes(debitRecord.RecordId);
+                                    msg += $"{ret} ";
+                                    SheetClient.Log(msg);
+                                    if ("审核成功".Equals(ret))
+                                    {
+                                        ret = client.DeductionPassed(debitRecord.RecordId);
+                                        msg += $"{ret} ";
+                                        SheetClient.Log(msg);
+                                        if ("success".Equals(ret) && order.Status == 1)
+                                        {
+                                            ret = client.Shipments(order);
+                                            msg += $"{ret} ";
+                                            SheetClient.Log(msg);
+                                        }
+
+                                    }
+                                }
+
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        SheetClient.Log(ex.Message);
+                    }
+                    finally
+                    {
+                        Save(orderId, msg);
+                        msg += $"结束";
+                        SheetClient.Log(msg);
+                        SheetClient.Log("\r\n");
+                        msg = "";
+                    }
+
+                }
+                
+
+            }
         }
         #endregion
 

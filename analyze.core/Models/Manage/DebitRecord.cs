@@ -9,14 +9,17 @@ namespace analyze.Models.Manage
 {
     public class DebitRecord
     {
+        [JsonProperty(PropertyName = "arn_id")]
+        public int RecordId { get; set; }
+
         [JsonProperty(PropertyName = "transaction_no")]
         public string TradeId { get; set; }
 
         [JsonProperty(PropertyName = "arn_amount")]
-        public string Cost { get; set; }
+        public double Cost { get; set; }
 
         [JsonProperty(PropertyName = "arn_finish_time")]
-        public DateTime CreateTime { get; set; }
+        public string CreateTime { get; set; }
 
         [JsonProperty(PropertyName = "cc_code")]
         public string ClientId { get; set; }

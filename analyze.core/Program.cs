@@ -32,7 +32,7 @@ namespace analyze
                 }
                 else if (args[0].Equals("manage"))
                 {
-                    Parser.Default.ParseArguments<ManageOptions>(args).WithParsed(ManageRun);
+                    Parser.Default.ParseArguments<ManageOptions>(args).WithParsed(new Analyzer().ManageRun);
                 }
                 else if (args[0].Equals("refund")) 
                 {
@@ -53,34 +53,7 @@ namespace analyze
 
 
 
-        private static void ManageRun(ManageOptions o)
-        {
 
-            if (o.IsList)
-            {
-                ManageClient manageClient = new ManageClient();
-                manageClient.LoginAdminAsync();
-                User[] user = manageClient.ListUsers();
-                User[] richUser = user.Where(u => !string.IsNullOrWhiteSpace(u.CompanyName) && Regex.IsMatch($"{u.CompanyName[0]}", @"[\u4e00-\u9fa5]")).ToArray();
-                for (int i = 0; i < richUser.Length; i++)
-                {
-                    Console.WriteLine($"{i:000} {richUser[i].ClientId} {richUser[i].CompanyName}");
-                }
-            }
-
-            if (o.ClientId != null)
-            {
-                ManageClient manageClient = new ManageClient();
-                manageClient.LoginAdminAsync();
-                foreach (var id in o.ClientId)
-                {
-
-                    User[] user = manageClient.ListUsers(id);
-                    manageClient.LoginUserAsync(id);
-                    manageClient.ListOrder();
-                }
-            }
-        }
         #region 采集数据
 
 

@@ -1,11 +1,14 @@
-﻿using analyze.Models.Manage;
+﻿using analyze.core.Models.Manage;
+using analyze.Models.Manage;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using NPOI.XWPF.UserModel;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -16,20 +19,19 @@ namespace analyze.core.Clients
         public Dictionary<string, Dictionary<string, string>> dicc = new Dictionary<string, Dictionary<string, string>>();
         CookieContainer cookies = new CookieContainer();
 
-        private string Request(string method, string url, string body = "")
+        private string Request(string method, string url,string body = "")
         {
             string backMsg;
 
             HttpWebRequest httpRquest = (HttpWebRequest)WebRequest.Create(url);
-            httpRquest.Proxy = new WebProxy("http://localhost:8866");
+            //httpRquest.Proxy = new WebProxy("http://localhost:8866");
             httpRquest.Method = method;
             httpRquest.KeepAlive = true;
-            httpRquest.AllowAutoRedirect = false;
-            //httpRquest.Accept = @"text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7";
+            httpRquest.AllowAutoRedirect = true;
+            httpRquest.Headers.Add("X-Requested-With", "XMLHttpRequest");
             //httpRquest.Accept = @"*/*";
             httpRquest.Accept = @"application/json, text/javascript, */*; q=0.01";
-
-            httpRquest.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
+            httpRquest.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36";
 
             // 设置cookies
             if (dicc.ContainsKey(httpRquest.RequestUri.Host))
@@ -43,10 +45,9 @@ namespace analyze.core.Clients
             }
 
             // 写body 
-
             if (method.Equals("POST") && !string.IsNullOrWhiteSpace(body))
             {
-                httpRquest.ContentType = "application/x-www-form-urlencoded;charset=UTF-8";
+                httpRquest.ContentType = "application/x-www-form-urlencoded";
                 byte[] b = Encoding.Default.GetBytes(body);
                 Stream stream = httpRquest.GetRequestStream();
                 stream.Write(b, 0, b.Length);
@@ -55,10 +56,8 @@ namespace analyze.core.Clients
 
             httpRquest.CookieContainer = new CookieContainer();
 
+            var response = (HttpWebResponse)httpRquest.GetResponseAsync().Result;
 
-
-
-            HttpWebResponse response = (HttpWebResponse)httpRquest.GetResponse();
             // 记录cookies
             if (response.Cookies.Count > 0)
             {
@@ -69,7 +68,7 @@ namespace analyze.core.Clients
                 foreach (Cookie cook in response.Cookies)
                 {
                     dicc[httpRquest.RequestUri.Host][cook.Name] = cook.Value;
-                    Console.WriteLine("{0}={1};Domain={2};Path={3}", cook.Name, cook.Value, cook.Domain, cook.Path);
+                    //Console.WriteLine("{0}={1};Domain={2};Path={3}", cook.Name, cook.Value, cook.Domain, cook.Path);
                 }
             }
             Stream responsestream = response.GetResponseStream();
@@ -83,76 +82,63 @@ namespace analyze.core.Clients
             return backMsg;
 
         }
-        private string Request1(string method, string url, string body = "")
+        private string Request2(string url, string body = "")
         {
-            string backMsg = "";
-
-            // 创建HttpWebRequest对象
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
-            request.KeepAlive = true;
-            request.AllowAutoRedirect = false;
-            request.Accept = "*/*";
-            request.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
 
 
-            // 设置请求方法为GET或POST等
-            request.Method = method;
 
-            // 创建CookieContainer对象，用于存储和传递Cookies
-            request.CookieContainer = cookies;
+            // 创建HttpClientHandler并启用HTTP/2
+            var handler = new HttpClientHandler();
+            handler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true;
+            handler.DefaultProxyCredentials = CredentialCache.DefaultCredentials;
+            //handler.UseProxy = true;
+            //handler.Proxy = new WebProxy("http://127.0.0.1:8866");
+            handler.CookieContainer = new CookieContainer();
 
-
-            if (method.Equals("POST") && !string.IsNullOrWhiteSpace(body))
+            using (var httpClient = new HttpClient(handler))
             {
-                request.ContentType = "application/x-www-form-urlencoded;charset=UTF-8";
-                byte[] b = Encoding.Default.GetBytes(body);
-                Stream stream = request.GetRequestStream();
-                stream.Write(b, 0, b.Length);
-                stream.Close();
-            }
-
-            try
-            {
-                // 发送请求并获取响应
-                using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+                httpClient.DefaultRequestVersion = HttpVersion.Version20;
+                httpClient.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36");
+                httpClient.DefaultRequestHeaders.Add("Accept", @"application/json, text/javascript, */*; q=0.01");
+                httpClient.DefaultRequestHeaders.Add("Accept-Encoding", "gzip, deflate, br");
+                httpClient.DefaultRequestHeaders.Add("Accept-Language", "zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7");
+                //httpClient.DefaultRequestHeaders.Add("Referer", @"https://gzbf-admin.goodhmy.com/payment/present/list?quick=135&menu_id=27");
+                httpClient.DefaultRequestHeaders.Add("x-requested-with", "XMLHttpRequest");
+                httpClient.DefaultRequestHeaders.Add("dnt", "1");
+                Uri uri = new Uri(url);
+                // 设置cookies
+                if (dicc.ContainsKey(uri.Host))
                 {
-                    // 处理响应数据
-                    using (Stream dataStream = response.GetResponseStream())
+                    string str = "";
+                    foreach (var item in dicc[uri.Host])
                     {
-                        StreamReader reader = new StreamReader(dataStream);
-                        string responseFromServer = reader.ReadToEnd();
-                        backMsg = responseFromServer;
-                        Console.WriteLine(responseFromServer);
-
-                        // 获取并保存响应中的Cookies
-                        SaveCookiesFromResponse(response);
+                        str += $"{item.Key}={item.Value};";
+                        // 添加Cookie
+                        var cookie = new Cookie(item.Key, item.Value, "/", uri.Host);
+                        handler.CookieContainer.Add(uri, cookie);
                     }
                 }
-            }
-            catch (WebException ex)
-            {
-                // 处理Web异常
-                Console.WriteLine($"WebException: {ex.Message}");
-            }
-            catch (Exception ex)
-            {
-                // 处理其他异常
-                Console.WriteLine($"Exception: {ex.Message}");
-            }
-            return backMsg;
-        }
 
+                // 创建HTTP请求
+                var content = new StringContent(body, Encoding.UTF8, "application/x-www-form-urlencoded");
 
-        // 保存响应中的Cookies到全局CookieContainer中
-        private void SaveCookiesFromResponse(HttpWebResponse response)
-        {
-            foreach (Cookie cookie in response.Cookies)
-            {
-                cookies.Add(cookie);
+                // 发送POST请求
+                var response = httpClient.PostAsync(url, content).Result;
+
+                // 处理响应
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseBody = response.Content.ReadAsStringAsync().Result;
+                    return responseBody;
+                }
+                else
+                {
+                    return null;
+                }
             }
         }
 
-        public void LoginAdminAsync()
+        public  void LoginAdmin()
         {
             //登录后台
             Request("POST", "https://gzbf-admin.goodhmy.com/default/index/login", "userName=globaltradeez&userPass=gzbf_aaabbb123456");
@@ -178,7 +164,7 @@ namespace analyze.core.Clients
             return users;
         }
 
-        public void LoginUserAsync(string company_code)
+        public string LoginUser(string company_code)
         {
 
             // 获取登录链接
@@ -189,36 +175,120 @@ namespace analyze.core.Clients
             string url = jo["data"].ToString();
             raw = Request("GET", url);
 
+
             //登录用户
             string code = url.Substring(url.LastIndexOf("=") + 1);
             raw = Request("GET", @"https://gzbf-shop.goodhmy.com/login.html?code=" + code + @"&redirect_url=https://erp.globaltradeez.com");
+            return raw;
         }
 
-        public void ListOrder(int status = 1, params string[] orders)
+        public Order[] ListOrder(params string[] orders)
         {
-            string raw = Request("POST", @"https://gzbf-shop.goodhmy.com/auth/order/manage", EncodeOrder(status, orders));
+            List<Order> list = new List<Order>();
+            string raw = Request("POST", @"https://gzbf-shop.goodhmy.com/auth/order/manage", EncodeOrder(1, orders));
+            var jo = (JObject)JsonConvert.DeserializeObject(raw);
+            var counts = jo["data"]["counts"].ToString();
+            OrderHeader orderHeader = JsonConvert.DeserializeObject<OrderHeader>(counts);
+            if(orderHeader.T1.Count > 0)
+            {
+                var rows = jo["data"]["rows"].ToString();
+                Order[] orderList= JsonConvert.DeserializeObject<Order[]>(rows);
+                foreach (var item in orderList)
+                {
+                    item.Status = 1;
+                    list.Add(item);
+                }
+
+            }
+
+            string raw3 = Request("POST", @"https://gzbf-shop.goodhmy.com/auth/order/manage", EncodeOrder(1, orders));
+            var jo3 = (JObject)JsonConvert.DeserializeObject(raw3);
+            var counts3 = jo["data"]["counts"].ToString();
+            OrderHeader orderHeader3 = JsonConvert.DeserializeObject<OrderHeader>(counts3);
+            if (orderHeader3.T3.Count > 0)
+            {
+                var rows = jo3["data"]["rows"].ToString();
+                Order[] orderList = JsonConvert.DeserializeObject<Order[]>(rows);
+                foreach (var item in orderList)
+                {
+                    item.Status = 3;
+                    list.Add(item);
+                }
+
+            }
+
+            
+            return list.ToArray();
         }
 
-        public DebitRecord[] ListDebitRecord(string clientId, string starTime = "", string endTime = "")
+        public DebitRecord[] ListDebitRecord(string clientId="", string starTime = "", string endTime = "")
         {
             string str = $"arn_status=&customer_code=&cu_name=&cu_type=&start_add_time=&end_add_time=&start_finish_time={starTime}&end_finish_time={endTime}&page=1&limit=2000&transaction_no=";
-            //str = WebUtility.UrlEncode(str);
-            string raw = Request("POST", @"https://gzbf-admin.goodhmy.com/payment/present/list", str);
 
+            string raw = Request2(@"https://gzbf-admin.goodhmy.com/payment/present/list", str);
             var jo = (JObject)JsonConvert.DeserializeObject(raw);
             var rows = jo["data"].ToString();
             DebitRecord[] debitRecords = JsonConvert.DeserializeObject<DebitRecord[]>(rows);
 
             return debitRecords;
         }
+
+        public string Deduction(Order order)
+        {
+            string str = $"payment_method=BANK&payment_date={DateTime.Now.ToString("yyyy-MM-dd+HH:mm:ss")}&payment_amount={order.Cost}&beneficiary_name=Wal-Mart+(China)+Inv&beneficiary_bank=中国建设银行股份有限&beneficiary_sub_bank=Community&beneficiary_account_number=44050110069700001060&payment_currency=RMB";
+            string raw = Request("POST", @"https://gzbf-shop.goodhmy.com/fee/account-refund-note/save", str);
+            var jo = (JObject)JsonConvert.DeserializeObject(raw);
+            var rows = jo["message"].ToString();
+            return rows;
+        }
+
+        public string DeductionYes(int checkId)
+        {
+            string raw = Request("POST", @"https://gzbf-admin.goodhmy.com/payment/present/yes?status=1", $"checkId={checkId}");
+            var jo = (JObject)JsonConvert.DeserializeObject(raw);
+            var rows = jo["message"].ToString();
+            return rows;
+        }
+        public string DeductionPassed(int checkId)
+        {
+            string raw = Request("POST", @"https://gzbf-admin.goodhmy.com/payment/present/passed", $"checkId={checkId}");
+            var jo = (JObject)JsonConvert.DeserializeObject(raw);
+            var rows = jo["message"].ToString();
+            return rows;
+        }
+
+        public string Shipments(Order order)
+        {
+            string raw = Request("POST", @"https://gzbf-shop.goodhmy.com/auth/order/manual-shipped", $"send_data[ids][]={order.Id}");
+            var jo = (JObject)JsonConvert.DeserializeObject(raw);
+            var rows = jo["data"]["success_num"].ToString();
+            return rows;
+        }
+
+
         private string EncodeOrder(int status, params string[] orders)
         {
             string raw = "";
-            Array.ForEach(orders, o => raw += $"{o} ");
-            string para = $"data[0][name]=search_type&data[0][value]=1&data[1][name]=country&data[1][value]=&data[2][name]=search_val&data[2][value]=&data[3][name]=order_code&" +
-                $"data[3][value]={raw}&data[4][name]=time_type&data[4][value]=1&data[5][name]=time_start&data[5][value]=&data[6][name]=time_end&data[6][value]=&data[7][name]=platform_id&data[7][value]=&data[8][name]=platform_account_id&data[8][value]=&data[9][name]=type&data[9][value]=&data[10][name]=ot_id&data[10][value]=&data[11][name]=quantity_type&data[11][value]=&data[12][name]=can_combine&data[12][value]=&data[13][name]=buyer_message&data[13][value]=&data[14][name]=has_tracking_number&data[14][value]=&data[15][name]=is_cancel&data[15][value]=&data[16][name]=purchase_order_status&data[16][value]=&data[17][name]=is_ebay_message&data[17][value]=&data[18][name]=exception_code&data[18][value]=&data[19][name]=platform_site_id&data[19][value]=&data[20][name]=page&data[20][value]=1&data[21][name]=page_size&data[21][value]=2000&data[22][name]=status&" +
-                $"data[22][value]={status}&data[23][name]=tag_id&data[23][value]=&data[24][name]=is_submit&data[24][value]=&data[25][name]=return_1688_order_status&data[25][value]=&data[26][name]=is_sub&data[26][value]=0&data[27][name]=sub_map_ids";
-            return WebUtility.UrlEncode(para);
+            Array.ForEach(orders, o => raw += $" {o}");
+            if (orders.Length > 0)
+            {
+                raw  = raw.Remove(0, 1);
+            }
+            string para = $"data[0][name]=search_type&data[0][value]=1&data[1][name]=country&data[1][value]=&" +
+                $"data[2][name]=search_val&data[2][value]={raw}&data[3][name]=order_code&data[3][value]=&" +
+                $"data[4][name]=time_type&data[4][value]=1&data[5][name]=time_start&data[5][value]=&" +
+                $"data[6][name]=time_end&data[6][value]=&data[7][name]=platform_id&data[7][value]=&" +
+                $"data[8][name]=platform_account_id&data[8][value]=&data[9][name]=type&data[9][value]=&" +
+                $"data[10][name]=ot_id&data[10][value]=&data[11][name]=quantity_type&data[11][value]=&" +
+                $"data[12][name]=can_combine&data[12][value]=&data[13][name]=buyer_message&data[13][value]=&" +
+                $"data[14][name]=has_tracking_number&data[14][value]=&data[15][name]=is_cancel&data[15][value]=&" +
+                $"data[16][name]=purchase_order_status&data[16][value]=&data[17][name]=is_ebay_message&data[17][value]=&" +
+                $"data[18][name]=exception_code&data[18][value]=&data[19][name]=platform_site_id&data[19][value]=&" +
+                $"data[20][name]=page&data[20][value]=1&data[21][name]=page_size&data[21][value]=2000&" +
+                $"data[22][name]=status&data[22][value]={status}&data[23][name]=tag_id&data[23][value]=&" +
+                $"data[24][name]=is_submit&data[24][value]=&data[25][name]=return_1688_order_status&data[25][value]=&" +
+                $"data[26][name]=is_sub&data[26][value]=0&data[27][name]=sub_map_ids";
+            return para;
         }
 
         private string EncodeUser(int page, int pagesize, string clientId = "")

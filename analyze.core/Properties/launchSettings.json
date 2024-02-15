@@ -2,7 +2,7 @@
   "profiles": {
     "analyze.core": {
       "commandName": "Project",
-      "commandLineArgs": "daily -d \"D:\\BaiduSyncdisk\\Desktop\\数据采集\\每日数据\\2024年02月15日\" -l -u"
+      "commandLineArgs": "manage -u 5377028 --deduction 8184223786675146"
     }
   }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using analyze.core.Options;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -8,11 +9,11 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace analyze.win
+namespace analyze.core.win
 {
-    public partial class Form1 : Form
+    public partial class MainForm : System.Windows.Forms.Form
     {
-        public Form1()
+        public MainForm()
         {
             InitializeComponent();
             this.txtOne.Text = "Prezado cliente, lamentamos muito o problema causado a você. Confirmamos seu pedido e temos rastreamento completo.\r\n"
@@ -36,13 +37,35 @@ namespace analyze.win
             if (this.rbOne.Checked)
             {
                 this.txt.Text = this.txtOne.Text.Replace("[número do conhecimento de embarque]", this.tbFirstLeg.Text).Replace("[URL de consulta]", this.tbFirstLegCarrier.Text);
-            }else if (this.rbTwo.Checked)
+            }
+            else if (this.rbTwo.Checked)
             {
-                this.txt.Text = this.txtTwo.Text.Replace("[número do conhecimento de embarque]", this.tbLastLeg.Text).Replace("[URL de consulta]", this.tbInquire.Text).Replace("[Transportadora]", this.tbLastLegCarrier.Text).Replace("[Data estimada de entrega]",this.tbDate.Text);
-            }else if (this.rbThree.Checked)
+                this.txt.Text = this.txtTwo.Text.Replace("[número do conhecimento de embarque]", this.tbLastLeg.Text).Replace("[URL de consulta]", this.tbInquire.Text).Replace("[Transportadora]", this.tbLastLegCarrier.Text).Replace("[Data estimada de entrega]", this.tbDate.Text);
+            }
+            else if (this.rbThree.Checked)
             {
                 this.txt.Text = this.txtThree.Text.Replace("[número do conhecimento de embarque]", this.tbLastLeg.Text).Replace("[URL de consulta]", this.tbInquire.Text);
             }
+        }
+
+        string old = "";
+        delegate void SetTextCallback(string text);
+        private void SetText(string text)
+        {
+            BeginInvoke(new MethodInvoker(delegate 
+            {
+                this.txtOrderLog.AppendText($"{text}");
+                this.txtOrderLog.ScrollToCaret();
+            }));
+        }
+
+        private void btnDeduction_Click(object sender, EventArgs e)
+        {
+        }
+
+        private void Form_Load(object sender, EventArgs e)
+        {
+
         }
     }
 }
