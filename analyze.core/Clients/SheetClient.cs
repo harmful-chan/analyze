@@ -11,7 +11,7 @@ using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace analyze.core
+namespace analyze.core.Clients
 {
     public class SheetClient
     {
@@ -23,7 +23,8 @@ namespace analyze.core
             {
                 return _log;
             }
-            set { 
+            set
+            {
                 _log = value;
             }
         }
@@ -35,7 +36,7 @@ namespace analyze.core
 
         public IList<TotalPurchase> TotalPurchase(int type, string fileName)
         {
-            
+
             List<TotalPurchase> os = new List<TotalPurchase>();
             string[] files = ReadSortFiles(fileName);  // 读取相同文件
             for (int i = 0; i < files.Length; i++)
@@ -436,7 +437,7 @@ namespace analyze.core
 
         public KeyValuePair<string, double> SplitAmount(string raw)
         {
-            
+
             string[] str = new string[2];
             int index = new Regex(@"\d").Match(raw).Index;
             str[0] = raw.Substring(0, index).Replace("(", ""); // 符号
@@ -469,7 +470,7 @@ namespace analyze.core
                 daily.Operator = sheet.GetRow(1).GetCell(0).ToString();
 
                 // 在售数据
-                string u =  sheet.GetRow(1).GetCell(1).ToString();
+                string u = sheet.GetRow(1).GetCell(1).ToString();
                 daily.InSrockNumber = 0;
                 if (u.Contains("("))
                 {
@@ -485,7 +486,7 @@ namespace analyze.core
                 if (m.Contains("("))
                 {
                     int i = m.IndexOf("(");
-                    m = m.Substring(m.IndexOf("(") + 1, m.Length -i - 2);
+                    m = m.Substring(m.IndexOf("(") + 1, m.Length - i - 2);
                     int d1 = 0;
                     int.TryParse(m, out d1);
                     daily.ReviewNumber = d1;
@@ -496,7 +497,7 @@ namespace analyze.core
                 if (d.Contains("("))
                 {
                     int i = d.IndexOf("(");
-                    d = d.Substring(d.IndexOf("(") + 1, d.Length - i  - 2);
+                    d = d.Substring(d.IndexOf("(") + 1, d.Length - i - 2);
                     int d1 = 0;
                     int.TryParse(d, out d1);
                     daily.RemovedNumber = d1;
@@ -504,12 +505,12 @@ namespace analyze.core
 
                 // 店铺数据
                 var r0 = sheet.GetRow(2);
-                daily.IM24 = r0.GetCell(0).CellType == CellType.Numeric ? r0.GetCell(0).NumericCellValue: 0.0;
-                daily.NotSell = r0.GetCell(1).CellType == CellType.Numeric ? r0.GetCell(1).NumericCellValue: 0.0;
-                daily.WrongGoods = r0.GetCell(2).CellType == CellType.Numeric ? r0.GetCell(2).NumericCellValue: 0.0;
-                daily.Dispute = r0.GetCell(3).CellType == CellType.Numeric ? r0.GetCell(3).NumericCellValue: 0.0;
+                daily.IM24 = r0.GetCell(0).CellType == CellType.Numeric ? r0.GetCell(0).NumericCellValue : 0.0;
+                daily.NotSell = r0.GetCell(1).CellType == CellType.Numeric ? r0.GetCell(1).NumericCellValue : 0.0;
+                daily.WrongGoods = r0.GetCell(2).CellType == CellType.Numeric ? r0.GetCell(2).NumericCellValue : 0.0;
+                daily.Dispute = r0.GetCell(3).CellType == CellType.Numeric ? r0.GetCell(3).NumericCellValue : 0.0;
                 daily.GoodReviews = r0.GetCell(4).CellType == CellType.Numeric ? r0.GetCell(4).NumericCellValue : 0.0;
-                daily.Collect72 = r0.GetCell(5).CellType == CellType.Numeric ? r0.GetCell(5).NumericCellValue: 0.0;
+                daily.Collect72 = r0.GetCell(5).CellType == CellType.Numeric ? r0.GetCell(5).NumericCellValue : 0.0;
 
                 // 资金数据
                 var r1 = sheet.GetRow(3);
@@ -547,8 +548,8 @@ namespace analyze.core
                 {
                     rowNumber = j;
                     var row = sheet.GetRow(j);
-                    
-                   
+
+
                     OnWayOrder onWayOrder = new OnWayOrder();
 
                     if (row.GetCell(0).CellType == CellType.String)
@@ -565,9 +566,9 @@ namespace analyze.core
                     }
 
                     onWayOrder.OrderId = row.GetCell(0).NumericCellValue.ToString();
-                    onWayOrder.PaymentTime  = row.GetCell(1).DateCellValue;
-                    onWayOrder.ShippingTime = row.GetCell(2) == null ? default(DateTime) : row.GetCell(2).DateCellValue;
-                    onWayOrder.ReceiptTime = row.GetCell(3) == null ? default(DateTime) : row.GetCell(3).DateCellValue;
+                    onWayOrder.PaymentTime = row.GetCell(1).DateCellValue;
+                    onWayOrder.ShippingTime = row.GetCell(2) == null ? default : row.GetCell(2).DateCellValue;
+                    onWayOrder.ReceiptTime = row.GetCell(3) == null ? default : row.GetCell(3).DateCellValue;
                     onWayOrder.Amount = SplitAmount(row.GetCell(4).ToString()).Value;
                     onWayOrder.Reason = row.GetCell(9).ToString();
                     OnWayOrders.Add(onWayOrder);
@@ -647,7 +648,7 @@ namespace analyze.core
 
                 // 订单详情
                 rowNumber++;
-                for (int j = rowNumber; j <= sheet.LastRowNum ; j++)
+                for (int j = rowNumber; j <= sheet.LastRowNum; j++)
                 {
                     var row = sheet.GetRow(j);
                     OrderDetail od = new OrderDetail();
@@ -684,7 +685,7 @@ namespace analyze.core
                     // 金额
                     var c5 = row.GetCell(5)?.ToString();
                     od.RMB = SplitAmount(c5.Split('\n')[0]).Value;
-                    if(c5.Split('\n').Length > 1)
+                    if (c5.Split('\n').Length > 1)
                     {
                         KeyValuePair<string, double> kv = SplitAmount(c5.Split('\n')[1]);
                         od.Symbol = kv.Key;
@@ -718,13 +719,13 @@ namespace analyze.core
 
         #region Collect
 
-        public  List<Shop> AllShops = new List<Shop>();
-        public  List<ShopRecord> ShopRecords = new List<ShopRecord>();
-        public  List<TotalOrder> TotalOrders = new List<TotalOrder>();
-        public  List<TotalPurchase> TotalPurchases = new List<TotalPurchase>();
+        public List<Shop> AllShops = new List<Shop>();
+        public List<ShopRecord> ShopRecords = new List<ShopRecord>();
+        public List<TotalOrder> TotalOrders = new List<TotalOrder>();
+        public List<TotalPurchase> TotalPurchases = new List<TotalPurchase>();
 
 
-        private  List<Shop> SelectShop(List<Shop> shops, string prefix)
+        private List<Shop> SelectShop(List<Shop> shops, string prefix)
         {
             List<Shop> ss = new List<Shop>();
             if (!string.IsNullOrWhiteSpace(prefix))
@@ -751,7 +752,7 @@ namespace analyze.core
             }
             return shops;
         }
-        public  void Collect(string rawDir = "", string dataDir = "", string shopDirPrefix = "")
+        public void Collect(string rawDir = "", string dataDir = "", string shopDirPrefix = "")
         {
             string shopRecordFileName = Path.Combine(rawDir, "店铺记录.xlsx");
             string orderRecordFileName = Path.Combine(rawDir, "订单总表.xlsx");
@@ -797,7 +798,7 @@ namespace analyze.core
 
         #endregion
 
-        public  bool CheckData()
+        public bool CheckData()
         {
             bool ret = true;
             // 订单总表

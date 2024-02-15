@@ -9,7 +9,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace analyze
+namespace analyze.core.Clients
 {
     public class ManageClient
     {
@@ -19,8 +19,8 @@ namespace analyze
         private string Request(string method, string url, string body = "")
         {
             string backMsg;
-            
-            System.Net.HttpWebRequest httpRquest = (HttpWebRequest)HttpWebRequest.Create(url);
+
+            HttpWebRequest httpRquest = (HttpWebRequest)WebRequest.Create(url);
             httpRquest.Proxy = new WebProxy("http://localhost:8866");
             httpRquest.Method = method;
             httpRquest.KeepAlive = true;
@@ -30,9 +30,9 @@ namespace analyze
             httpRquest.Accept = @"application/json, text/javascript, */*; q=0.01";
 
             httpRquest.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
-            
+
             // 设置cookies
-            if ( dicc.ContainsKey(httpRquest.RequestUri.Host))
+            if (dicc.ContainsKey(httpRquest.RequestUri.Host))
             {
                 string str = "";
                 foreach (var item in dicc[httpRquest.RequestUri.Host])
@@ -41,10 +41,10 @@ namespace analyze
                 }
                 httpRquest.Headers.Add("Cookie", str);
             }
-            
+
             // 写body 
-            
-            if( method.Equals("POST") && !string.IsNullOrWhiteSpace(body))
+
+            if (method.Equals("POST") && !string.IsNullOrWhiteSpace(body))
             {
                 httpRquest.ContentType = "application/x-www-form-urlencoded;charset=UTF-8";
                 byte[] b = Encoding.Default.GetBytes(body);
@@ -62,7 +62,7 @@ namespace analyze
             // 记录cookies
             if (response.Cookies.Count > 0)
             {
-                if (!dicc.ContainsKey(httpRquest.RequestUri.Host)) 
+                if (!dicc.ContainsKey(httpRquest.RequestUri.Host))
                 {
                     dicc[httpRquest.RequestUri.Host] = new Dictionary<string, string>();
                 }
@@ -72,18 +72,18 @@ namespace analyze
                     Console.WriteLine("{0}={1};Domain={2};Path={3}", cook.Name, cook.Value, cook.Domain, cook.Path);
                 }
             }
-            Stream responsestream = response.GetResponseStream(); 
+            Stream responsestream = response.GetResponseStream();
             StreamReader reader = new StreamReader(responsestream, Encoding.UTF8);
             backMsg = reader.ReadToEnd();
-            
+
             reader.Close();
             reader.Dispose();
             responsestream.Close();
             responsestream.Dispose();
-            return  backMsg;
+            return backMsg;
 
         }
-        private string Request1(string method, string url, string body = "") 
+        private string Request1(string method, string url, string body = "")
         {
             string backMsg = "";
 
@@ -152,8 +152,8 @@ namespace analyze
             }
         }
 
-        public  void LoginAdminAsync()
-        { 
+        public void LoginAdminAsync()
+        {
             //登录后台
             Request("POST", "https://gzbf-admin.goodhmy.com/default/index/login", "userName=globaltradeez&userPass=gzbf_aaabbb123456");
         }
@@ -178,11 +178,11 @@ namespace analyze
             return users;
         }
 
-        public  void LoginUserAsync(string company_code)
+        public void LoginUserAsync(string company_code)
         {
 
             // 获取登录链接
-            string raw =  Request("POST", "https://gzbf-admin.goodhmy.com/customer/distributor/get-login-sass-url/", $"company_code={company_code}&site_code=all_platform");
+            string raw = Request("POST", "https://gzbf-admin.goodhmy.com/customer/distributor/get-login-sass-url/", $"company_code={company_code}&site_code=all_platform");
             JObject jo = (JObject)JsonConvert.DeserializeObject(raw);
 
             //登录saas
@@ -190,7 +190,7 @@ namespace analyze
             raw = Request("GET", url);
 
             //登录用户
-            string code = url.Substring(url.LastIndexOf("=")+1);
+            string code = url.Substring(url.LastIndexOf("=") + 1);
             raw = Request("GET", @"https://gzbf-shop.goodhmy.com/login.html?code=" + code + @"&redirect_url=https://erp.globaltradeez.com");
         }
 
@@ -221,9 +221,9 @@ namespace analyze
             return WebUtility.UrlEncode(para);
         }
 
-        private string EncodeUser(int page, int pagesize, string clientId="")
+        private string EncodeUser(int page, int pagesize, string clientId = "")
         {
-            
+
             string para = $"search_type=company_code_arr&search_val={clientId}&cu_type=1&recommended_code=&referrer_code=&company_code=&role_type=&sales_agent_id=&business_person_id=&account_manager_id=&email=&phone=&company_name=&client_grade_id=&company_status=&createStartTime=&createEndTime=&verifyStartTime=&verifyEndTime=&loginStartTime=&loginEndTime=&cb_value_start=&cb_value_end=&erp_balance_value_from=&erp_balance_value_to=&content_desc_like=&page={page}&pageSize={pagesize}";
             //return WebUtility.UrlEncode(para);
             return para;

@@ -1,9 +1,11 @@
-﻿using analyze.core.Models.Daily;
+﻿using analyze.core.Clients;
+using analyze.core.Models.Daily;
 using analyze.core.Models.Sheet;
 using analyze.core.Options;
 using analyze.core.Options;
 using ConsoleTables;
 using NPOI.HSSF.Record;
+using NPOI.SS.Formula.Functions;
 using NPOI.Util;
 using System;
 using System.Collections.Generic;
@@ -11,6 +13,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using static NPOI.HSSF.Util.HSSFColor;
 
 namespace analyze.core
 {
@@ -194,82 +197,198 @@ namespace analyze.core
         #endregion
 
         #region 采集的订单数据
+        public enum OrderTypes
+        {
+            BeforeOneDay,
+            Yesterday,
+            Ready,
+            Wait,
+            NotPay,
+            Cancel,
+            Timeout,
+            Dispute,
+            Finish
+        }
+        public Dictionary<OrderTypes, IEnumerable<OrderDetail>> ClassifiedOrders(IEnumerable<OrderDetail> orderDetails)
+        {
+            var yesterday = orderDetails.Where(o => o.OrderTime.Year == DateTime.Now.Year && o.OrderTime.Month == DateTime.Now.Month && o.OrderTime.Day == DateTime.Now.Day - 1);
+            var before = orderDetails.Where(o => o.OrderTime.Year == DateTime.Now.Year && o.OrderTime.Month == DateTime.Now.Month && o.OrderTime.Day == DateTime.Now.Day - 2);
+            var ready = orderDetails.Where(o => o.Status.Contains("等待您发货"));
+            var wait = orderDetails.Where(o => o.Status.Contains("等待买家收货"));
+            var notpay = orderDetails.Where(o => o.Status.Contains("等待买家付款"));
+            var cancel = orderDetails.Where(o=> o.After == null ? false: o.After.Equals("已取消"));
+            var timeout = orderDetails.Where(o => o.After == null && o.Status.Equals("订单关闭"));
+            var dispute = orderDetails.Where(o => o.After != null && o.After.Contains("纠纷"));
+            var finish = orderDetails.Where(o => o.Status.Contains("交易完成"));
+
+            Dictionary<OrderTypes, IEnumerable<OrderDetail>> dic = new Dictionary<OrderTypes, IEnumerable<OrderDetail>>();
+            dic[OrderTypes.BeforeOneDay] = before;
+            dic[OrderTypes.Yesterday] = yesterday;
+            dic[OrderTypes.Wait] = wait;
+            dic[OrderTypes.Ready] = ready;
+            dic[OrderTypes.NotPay] = notpay;
+            dic[OrderTypes.Cancel] = cancel;
+            dic[OrderTypes.Timeout] = timeout;
+            dic[OrderTypes.Dispute] = dispute;
+            dic[OrderTypes.Finish] = finish;
+
+            return dic;
+        }
+
+        public IEnumerable<KeyValuePair<string, string>> CreateDetail(params IEnumerable<OrderDetail>[] orderDetailss)
+        {
+            List<KeyValuePair<string, string>> dic = new List<KeyValuePair<string, string>>();
+            foreach (var orderDetails in orderDetailss)
+            {
+                foreach (var item in orderDetails)
+                {
+                    var kv = KeyValuePair.Create(item.OrderTime.ToString("yyyy-MM-dd"), $"{item.Symbol} {item.Amount}");
+                    dic.Add(kv);
+                }
+            }
+            return dic;
+        }
+        public KeyValuePair<string, string> CreateOverview(string name, params IEnumerable<OrderDetail>[] orderDetailss)
+        {
+            double total = 0.0;
+            double count = 0;
+            foreach (var orderDetails in orderDetailss)
+            {
+                double t = 0.0;
+                foreach (var item in orderDetails)
+                {
+                    if (item.Symbol.Contains("R"))
+                    {
+                        t += item.Amount;
+                        count++;
+                    }
+                }
+                total += t;
+
+            }
+            return  KeyValuePair.Create(name, $"{count} 单 总R$ {total:0.00}");
+        }
+
+        public KeyValuePair<int, double> CreateNumber(params IEnumerable<OrderDetail>[] orderDetailss)
+        {
+            double total = 0.0;
+            int count = 0;
+            foreach (var orderDetails in orderDetailss)
+            {
+                double t = 0.0;
+                foreach (var item in orderDetails)
+                {
+                    if (item.Symbol.Contains("R"))
+                    {
+                        t += item.Amount;
+                        count++;
+                    }
+                }
+                total += t;
+            }
+            return KeyValuePair.Create(count, total);
+        }
+
+
         public void DailyRun(DailyOptions o)
         {
-            List<Daily> list = new List<Daily>();
+            List<Daily> dailys = new List<Daily>();
             SheetClient client = new SheetClient();
 
+            // 获取目录文件
             if (Directory.Exists(o.FileDir))
             {
                 string[] files = Directory.GetFiles(o.FileDir);
                 o.DailyFiles = files;
             }
 
+            // 循环读取文件
             if(o.DailyFiles.Count() > 0)
             {
                 foreach (string filename in o.DailyFiles)
                 {
                     Daily daily = client.ReadDaily(filename);
-                    list.Add(daily);
+                    dailys.Add(daily);
                 }
             }
 
-            if (o.IsList)
+
+            Console.WriteLine();
+            string[] ss = new string[] { "Company", "Shop", "Opera", "UP", "Check", "Down", "IM24", "Good", "Dispute", "WrongGoods", "Lead", "Freeze", "OnWay", "Arrears", "AllReady", "New", "Ready", "Notpay" };
+            ConsoleTable consoleTable = new ConsoleTable(ss);
+            List<KeyValuePair<string, string>> dic = new List<KeyValuePair<string, string>>();
+            double total1 = 0.0;
+            int count1 = 0;
+            double total2 = 0.0;
+            int count2 = 0;
+
+            foreach (var daily in dailys)
             {
-                Console.WriteLine();
-                string[] ss = new string[]{"Company", "Shop", "Opera", "UP", "Check", "Down", "IM24", "Good", "Dispute", "WrongGoods", "Lead", "Freeze", "OnWay", "Arrears", "AllReady", "New", "Ready", "Notpay"};
-                ConsoleTable consoleTable = new ConsoleTable(ss);
-                List<KeyValuePair<string, string>> dic = new List<KeyValuePair<string, string>>();
-                double total = 0.0;
-                int count = 0;
-                foreach (var d in list)
+                // 公司简称
+                string name = daily.Company.Replace("市", "").Replace("县", "").Substring(2, 4) + daily.Nick;
+
+
+                Dictionary<OrderTypes, IEnumerable<OrderDetail>> orderDic = ClassifiedOrders(daily.OrderDetails);
+
+                // 昨天等待发货及等待收货
+                var r1 = ClassifiedOrders(orderDic[OrderTypes.Yesterday])[OrderTypes.Ready];
+                var w1 = ClassifiedOrders(orderDic[OrderTypes.Yesterday])[OrderTypes.Wait];
+                var kvs1 = CreateDetail(r1, w1);
+
+                object[] os = new object[] { name, daily.Nick, daily.Operator, daily.InSrockNumber, daily.ReviewNumber, daily.RemovedNumber, 
+                    $"{daily.IM24:P2}", $"{daily.GoodReviews:P2}", $"{daily.Dispute:P2}", $"{daily.WrongGoods:P2}", 
+                    daily.Lend, daily.Freeze, daily.OnWay, daily.Arrears,
+                    orderDic[OrderTypes.Ready].Count(), orderDic[OrderTypes.Yesterday].Count(), r1.Count(),w1.Count() };
+                consoleTable.AddRow(os);
+
+
+
+                // 前天等待发货及等待收货
+                var r2 = ClassifiedOrders(orderDic[OrderTypes.BeforeOneDay])[OrderTypes.Ready];
+                var w2 = ClassifiedOrders(orderDic[OrderTypes.BeforeOneDay])[OrderTypes.Wait];
+                var kvs2 = CreateDetail(r2, w2);
+
+
+                var kv = CreateOverview(name, r1, w1, r2, w2);
+                var n1 = CreateNumber(r1, w1);
+                var n2 = CreateNumber(r2, w2);
+
+                if ( n1.Key >0 || n2.Key > 0)
                 {
+                    count1 += n1.Key;
+                    total1 += n1.Value;
 
-                    var dailyOrder = d.OrderDetails.Where(o => o.OrderTime.Year == DateTime.Now.Year && o.OrderTime.Month == DateTime.Now.Month && o.OrderTime.Day == DateTime.Now.Day - 1);
-                    int dailyReady = dailyOrder.Where(o => o.Status.Contains("等待您发货")).Count();
-                    int dailyNotpay = dailyOrder.Where(o => o.Status.Contains("等待买家付款")).Count();
-                    //int cancel = orderDetails.Where(o=> o.After == null ? false: o.After.Equals("已取消")).Count();
-                    //int timeout = orderDetails.Where(o => o.After == null && o.Status.Equals("订单关闭")).Count();
-                    //int dispute = orderDetails.Where(o => o.After != null && o.After.Contains("纠纷")).Count();
-                    //int finish = orderDetails.Where(o => o.Status.Contains("交易完成")).Count();
-
-                    var ready = d.OrderDetails.Where(o => o.Status.Contains("等待您发货"));
-                    object[] os = new object[] { d.Company.Replace("市", "").Replace("县", "").Substring(2, 4), d.Nick, d.Operator, d.InSrockNumber, d.ReviewNumber, d.RemovedNumber, $"{d.IM24:P2}", $"{d.GoodReviews:P2}", $"{d.Dispute:P2}", $"{d.WrongGoods:P2}", d.Lend, d.Freeze, d.OnWay, d.Arrears, ready.Count(), dailyOrder.Count(), dailyReady, dailyNotpay };
+                    count2 += n2.Key;
+                    total2 += n2.Value;
 
 
-                    consoleTable.AddRow(os);
+                    dic.Add(kv);
+                    dic.AddRange(kvs1);
+                    dic.AddRange(kvs2);
 
-                    OrderDetail[] rs = dailyOrder.Where(o => o.Status.Contains("等待您发货")).ToArray();
-                    if(rs.Length > 0)
-                    {
-                        double t = 0.0;
-                        foreach (var item in rs)
-                        {
-                            if (item.Symbol.Contains("R"))
-                            {
-                                t += item.Amount;
-                                count++;
-                            }
-                        }
-                        total += t;
-                        var k = KeyValuePair.Create(d.Company.Replace("市", "").Replace("县", "").Substring(2, 4), $"{rs.Length} 单 总R$ {t:0.00}");
-                        dic.Add(k);
-                        foreach (var item in rs)
-                        {
-                            var kv = KeyValuePair.Create(item.OrderTime.ToString("yyyy-MM-dd"), $"{item.Symbol} {item.Amount}");
-                            dic.Add(kv);
-                        }
-                        var kvvv = KeyValuePair.Create("", "");
-                        dic.Add(kvvv);
-                    }
+                    dic.Add(KeyValuePair.Create("", ""));
 
                 }
-                var kvV = KeyValuePair.Create($"总计 {count}单", $"R$ {total:0.00}");
-                dic.Add(kvV);
+            }
+
+            var kvt = KeyValuePair.Create($"{DateTime.Now.ToString("yyyy-MM-dd")}", $"巴西订单");
+            var kvt1 = KeyValuePair.Create($"昨天总计 {count1}单", $"R$ {total1:0.00}");
+            var kvt2 = KeyValuePair.Create($"前天总计 {count2}单", $"R$ {total2:0.00}");
+            dic.Add(kvt);
+            dic.Add(kvt1);
+            dic.Add(kvt2);
+
+            if (o.IsList)
+            {
+                consoleTable.Write(Format.Minimal);
+            }
+
+            // 显示
+            if (o.IsUpload)
+            {
+
                 string url = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=8af72f8c-1f27-48b0-832e-dcfb8b7f17d2";
                 new WebhookClient().Webhook(url, dic);
-                consoleTable.Write(Format.Minimal);
-
             }
 
             

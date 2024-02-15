@@ -4,15 +4,15 @@ using System.IO;
 using System.Net;
 using System.Text;
 
-namespace analyze.core
+namespace analyze.core.Clients
 {
     public class WebhookClient
     {
-        public string Webhook(string url, List<KeyValuePair<string, string>>  kvs)
+        public string Webhook(string url, List<KeyValuePair<string, string>> kvs)
         {
             string backMsg;
 
-            System.Net.HttpWebRequest httpRquest = (HttpWebRequest)HttpWebRequest.Create(url);
+            HttpWebRequest httpRquest = (HttpWebRequest)WebRequest.Create(url);
             httpRquest.Method = "POST";
             httpRquest.KeepAlive = true;
             httpRquest.AllowAutoRedirect = false;

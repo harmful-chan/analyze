@@ -18,5 +18,8 @@ namespace analyze.core.Options
 
         [Option('l', "list", HelpText = "列出数据")]
         public bool IsList { get; set; }
+
+        [Option('u', "upload", HelpText = "上报数据")]
+        public bool IsUpload { get; set; }
     }
 }
