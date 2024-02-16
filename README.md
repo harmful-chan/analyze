@@ -88,6 +88,12 @@ analyze.core.202402151726.exe daily -d "D:\BaiduSyncdisk\Desktop\数据采集\每日数
 
 ### analyze.core.202402160626
 analyze.core.202402160626.exe manage -u 5377028 --deduction 8185077759712497 8185077759712492
-
-
 analyze.core.exe -f 
+
+
+### analyze.core.202402170154.exe
+analyze.core.202402170154.exe daily  -d "F:\BaiduSyncdisk\Desktop\数据采集\每日数据\2024年02月16日" --list-opear
+analyze.core.202402170154.exe daily  -d "F:\BaiduSyncdisk\Desktop\数据采集\每日数据\2024年02月16日" --list-company
+analyze.core.202402170154.exe daily  -d "F:\BaiduSyncdisk\Desktop\数据采集\每日数据\2024年02月16日" --list-profit
+analyze.core.202402170154.exe daily  -d "F:\BaiduSyncdisk\Desktop\数据采集\每日数据\2024年02月16日" --upload-order
+analyze.core.202402170154.exe daily  -d "F:\BaiduSyncdisk\Desktop\数据采集\每日数据\2024年02月16日" --upload-info
