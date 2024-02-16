@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace analyze.core.Models.Daily
 {
-    public class Daily
+    public class Daily : IComparable<Daily>
     {
+        public string CompanyNumber { get; set; }
         public string Company { get; set; }
         public string Nick { get; set; }
         public string Operator { get; set; }
@@ -31,6 +33,18 @@ namespace analyze.core.Models.Daily
 
         public OnWayOrder[] OnWayOrders { get; set; }
 
-
+        public int CompareTo([AllowNull] Daily other)
+        {
+            int index = CompanyNumber.CompareTo(other.CompanyNumber);  
+            if(index == 0)
+            {
+                index = Company.CompareTo(other.Company);
+                if (index == 0)
+                {
+                    return Nick.CompareTo(other.Nick);
+                }
+            }
+            return index;
+        }
     }
 }

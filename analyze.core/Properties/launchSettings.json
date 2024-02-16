@@ -2,7 +2,7 @@
   "profiles": {
     "analyze.core": {
       "commandName": "Project",
-      "commandLineArgs": "daily  -d \"F:\\BaiduSyncdisk\\Desktop\\数据采集\\每日数据\\2024年02月16日\" --list-company"
+      "commandLineArgs": "daily  -d \"F:\\BaiduSyncdisk\\Desktop\\数据采集\\每日数据\\2024年02月16日\" --list-company --upload-info"
     }
   }
 }

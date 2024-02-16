@@ -8,7 +8,7 @@ namespace analyze.core.Clients
 {
     public class WebhookClient
     {
-        public string Webhook(string url, List<KeyValuePair<string, string>> kvs)
+        public string Webhook(string url, string type,  List<KeyValuePair<string, string>> kvs)
         {
             string backMsg;
 
@@ -26,7 +26,7 @@ namespace analyze.core.Clients
                 message += $"{item.Key} {item.Value}\n";
             }
 
-            string param = "{\"msgtype\":\"text\",\"text\":{\"content\":\"" + message + "\"}}";
+            string param = "{\"msgtype\":\""+ type +"\",\""+ type + "\":{\"content\":\"" + message + "\"}}";
 
             if (!string.IsNullOrWhiteSpace(param))
             {

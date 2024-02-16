@@ -18,18 +18,23 @@ namespace analyze.core.Options
         [Option("br-purchase-filenmae", HelpText = "巴西采购数据路径")]
         public string BrPurchaseFilenmae { get; set; }
 
-
-        [Option('l', "list", HelpText = "列出数据")]
-        public bool IsList { get; set; }
-
         [Option("list-opear", HelpText = "列出运营人员")]
         public bool IsListOpera { get; set; }
 
         [Option("list-company", HelpText = "列出公司人员")]
         public bool IsListCompany { get; set; }
 
+        [Option("list-profit", HelpText = "列出利润")]
+        public bool IsListProfit { get; set; }
 
-        [Option('u', "upload", HelpText = "上报数据")]
-        public bool IsUpload { get; set; }
+
+        [Option("upload-order", HelpText = "上报订单数据")]
+        public bool IsUploadOrder { get; set; }
+
+        [Option("upload-info", HelpText = "上报公司数据")]
+        public bool IsUploadProfit { get; set; }
+
+
+
     }
 }

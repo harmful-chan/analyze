@@ -465,6 +465,7 @@ namespace analyze.core.Clients
                 var sheet = workbook.GetSheetAt(0);
 
                 // 公司数据
+                daily.CompanyNumber = Path.GetFileNameWithoutExtension(filename).Substring(0, 4);
                 daily.Company = sheet.GetRow(0).GetCell(0).ToString();
                 daily.Nick = sheet.GetRow(0).GetCell(1).ToString();
                 daily.Operator = sheet.GetRow(1).GetCell(0).ToString();
