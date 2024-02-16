@@ -16,6 +16,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using static analyze.core.Clients.SheetClient;
 using static NPOI.HSSF.Util.HSSFColor;
 
@@ -31,14 +32,6 @@ namespace analyze.core
                     Console.SetCursorPosition(0, Console.CursorTop);
                     Console.Write($"{str}");
                 };
-            }
-        }
-
-        public Analyzer(LogDelegate log)
-        {
-            if (SheetClient.Log == null)
-            {
-                SheetClient.Log = log;
             }
         }
 
@@ -222,6 +215,28 @@ namespace analyze.core
             Dispute,
             Finish
         }
+
+        public enum DisputeTypes
+        {
+            Talk,
+            Platform,
+            Close,
+        }
+
+        public Dictionary<DisputeTypes, IEnumerable<Dispute>> ClassifiedDispute(IEnumerable<Dispute> disputes)
+        {
+            var talk = disputes.Where(o => o.Status.Contains("方案协商中"));
+            var plat = disputes.Where(o => o.Status.Contains("平台介入处理中"));
+            var close = disputes.Where(o => o.Status.Contains("已结束"));
+
+            var dic = new Dictionary<DisputeTypes, IEnumerable<Dispute>>();
+            dic[DisputeTypes.Talk] = talk;
+            dic[DisputeTypes.Platform] = plat;
+            dic[DisputeTypes.Close] = close;
+
+            return dic;
+        }
+
         public Dictionary<OrderTypes, IEnumerable<OrderDetail>> ClassifiedOrders(IEnumerable<OrderDetail> orderDetails)
         {
             var yesterday = orderDetails.Where(o => o.OrderTime.Year == DateTime.Now.Year && o.OrderTime.Month == DateTime.Now.Month && o.OrderTime.Day == DateTime.Now.Day - 1);
@@ -307,7 +322,8 @@ namespace analyze.core
         {
             List<Daily> dailys = new List<Daily>();
             SheetClient client = new SheetClient();
-
+            ManageClient manageClient = new ManageClient();
+            IList<TotalPurchase> brPurchases = null;
             // 获取目录文件
             if (Directory.Exists(o.FileDir))
             {
@@ -315,8 +331,18 @@ namespace analyze.core
                 o.DailyFiles = files;
             }
 
+            User[] users = null;
+            Recharge[] recharges = null;
+            Task<bool> task = Task.Run(() =>
+            {
+                manageClient.LoginAdmin();
+                users = manageClient.ListUsers();
+                recharges = manageClient.ListAllRecharge();
+                return true;
+            });
+
             // 循环读取文件
-            if(o.DailyFiles.Count() > 0)
+            if (o.DailyFiles.Count() > 0)
             {
                 foreach (string filename in o.DailyFiles)
                 {
@@ -325,36 +351,89 @@ namespace analyze.core
                 }
             }
 
+            if (File.Exists(o.BrPurchaseFilenmae))
+            {
+                brPurchases = client.TotalPurchase(1, o.BrPurchaseFilenmae);
+            }
+
+            task.Wait();
 
             Console.WriteLine();
-            string[] ss = new string[] { "Company", "Shop", "Opera", "UP", "Check", "Down", "IM24", "Good", "Dispute", "WrongGoods", "Lead", "Freeze", "OnWay", "Arrears", "AllReady", "New", "Ready", "Notpay" };
-            ConsoleTable consoleTable = new ConsoleTable(ss);
+
             List<KeyValuePair<string, string>> dic = new List<KeyValuePair<string, string>>();
             double total1 = 0.0;
             int count1 = 0;
             double total2 = 0.0;
             int count2 = 0;
+            Daily old = null;
 
+            ConsoleTable consoleTable = null;
+            Dictionary<string, List<object[]>> objDic = new Dictionary<string, List<object[]>>();
+            string[] listHeader = new string[] { "Company", "CN", "Opera", "UP", "Check", "Down",
+                "IM24", "Good", "Dispute", "Wrong",
+                "Dispute Line", "Exp40", "Exp25", "Exp20", "Fin", "TotD", "Close", "Talk", "Palt",
+                "All", "Ready Line", "New", "Ready", "Wait" ,
+                "Lead", "Freeze", "OnWay", "Arre", "Lose", "Get"
+                };
+            string[] listCompanyHeader = new string[] { "Company", "Lead", "Freeze", "OnWay", "Arre",
+                    "Lose", "Get", "Reality", "Balance"
+                };
+            if (o.IsList)
+            {
+
+                consoleTable = new ConsoleTable(listHeader);
+            }else if (o.IsListOpera) 
+            { 
+            
+            }else if (o.IsListCompany)
+            {
+                
+                consoleTable = new ConsoleTable(listCompanyHeader);
+            }
             foreach (var daily in dailys)
             {
                 // 公司简称
-                string name = daily.Company.Replace("市", "").Replace("县", "").Substring(2, 4) + daily.Nick;
+                string name = daily.Company.Replace("市", "").Replace("县", "").Substring(2, 4);
+
+                bool flag = (old == null || !old.Company.Contains(name.Substring(0, 4)));
 
 
-                Dictionary<OrderTypes, IEnumerable<OrderDetail>> orderDic = ClassifiedOrders(daily.OrderDetails);
+                var orderDic = ClassifiedOrders(daily.OrderDetails);
+                var disputeDic = ClassifiedDispute(daily.DisputeOrders);
+
+                int disCount = daily.DisputeOrders.Length;
+                int finCount = orderDic[OrderTypes.Finish].Count();
+                int exp50 = (5 * disCount /2 ) - finCount;
+                int exp25 = 4 * disCount - finCount;
+                int exp20 = 5* disCount - finCount;
+
+
+                // 在途纠纷及拒付订单
+                var onwayLose = daily.OnWayOrders.Where(o => o.Reason.Contains("纠纷中") || o.Reason.Contains("拒付中"));
+                var loseAmount = onwayLose.Sum(o => o.Amount);
+
+                // 实际充值 不是索赔，不是返点
+                double reality = recharges.Where( r => r.CompanyName.Contains(daily.Company) && !r.Mark.Contains("返点") && !r.Mark.Contains("索赔")).Sum(o => o.Amount);
+
+                // 云仓余额
+                double balance = users.Where(u => u.CompanyName.Contains(daily.Company)).FirstOrDefault().Balance;
+
+                // 实际提现
+                double withdraws = daily.Withdraws.Sum(o => o.Amount);
+
+                // 纠纷最小处理天数
+                var disputeLasts = daily.DisputeOrders.Where(d => d.LastTime != null);
+                var disputeTime = Array.ConvertAll(disputeLasts.ToArray(), d => d.LastTime).Min();
+
+                // 待发货最小处理天数
+                var orderLasts = daily.OrderDetails.Where(d => d.LastTime != null);
+                var orderTime = Array.ConvertAll(orderLasts.ToArray(), d => d.LastTime).Min();
+
 
                 // 昨天等待发货及等待收货
                 var r1 = ClassifiedOrders(orderDic[OrderTypes.Yesterday])[OrderTypes.Ready];
                 var w1 = ClassifiedOrders(orderDic[OrderTypes.Yesterday])[OrderTypes.Wait];
                 var kvs1 = CreateDetail(r1, w1);
-
-                object[] os = new object[] { name, daily.Nick, daily.Operator, daily.InSrockNumber, daily.ReviewNumber, daily.RemovedNumber, 
-                    $"{daily.IM24:P2}", $"{daily.GoodReviews:P2}", $"{daily.Dispute:P2}", $"{daily.WrongGoods:P2}", 
-                    daily.Lend, daily.Freeze, daily.OnWay, daily.Arrears,
-                    orderDic[OrderTypes.Ready].Count(), orderDic[OrderTypes.Yesterday].Count(), r1.Count(),w1.Count() };
-                consoleTable.AddRow(os);
-
-
 
                 // 前天等待发货及等待收货
                 var r2 = ClassifiedOrders(orderDic[OrderTypes.BeforeOneDay])[OrderTypes.Ready];
@@ -362,7 +441,7 @@ namespace analyze.core
                 var kvs2 = CreateDetail(r2, w2);
 
 
-                var kv = CreateOverview(name, r1, w1, r2, w2);
+                var kv = CreateOverview(name + daily.Nick, r1, w1, r2, w2);
                 var n1 = CreateNumber(r1, w1);
                 var n2 = CreateNumber(r2, w2);
 
@@ -382,6 +461,37 @@ namespace analyze.core
                     dic.Add(KeyValuePair.Create("", ""));
 
                 }
+                old = daily;
+
+
+                if (o.IsList)
+                {
+                    object[] os = new object[] { name, daily.Nick, daily.Operator, daily.InSrockNumber, daily.ReviewNumber, daily.RemovedNumber,
+                    $"{daily.IM24:P2}", $"{daily.GoodReviews:P2}", $"{daily.Dispute:P2}", $"{daily.WrongGoods:P2}",
+                    disputeTime, exp50, exp25, exp20, finCount, disCount, disputeDic[DisputeTypes.Close].Count(), disputeDic[DisputeTypes.Talk].Count(), disputeDic[DisputeTypes.Platform].Count(),
+                    orderDic[OrderTypes.Ready].Count(), orderTime, orderDic[OrderTypes.Yesterday].Count(), r1.Count(),w1.Count() ,
+                    daily.Lend, daily.Freeze, daily.OnWay, daily.Arrears, $"{loseAmount:0.00}", $"{Math.Abs(withdraws):0.00}"
+                    };
+                    consoleTable.AddRow(os);
+                }
+                else if (o.IsListOpera)
+                {
+
+                }
+                else if (o.IsListCompany)
+                {
+                    if (!objDic.ContainsKey(name))
+                    {
+                        objDic[name] = new List<object[]> { };
+                    }
+                    // "Company", "Lead", "Freeze", "OnWay", "Arre", 
+                    // "Lose", "Get", "Reality", "Balance"
+                    object[] os = new object[] { name, daily.Lend, daily.Freeze, daily.OnWay, daily.Arrears, 
+                        loseAmount, Math.Abs(withdraws), reality,balance
+                    };
+                    objDic[name].Add(os);
+                }
+
             }
 
             var kvt = KeyValuePair.Create($"{DateTime.Now.ToString("yyyy-MM-dd")}", $"巴西订单");
@@ -395,6 +505,48 @@ namespace analyze.core
             {
                 consoleTable.Write(Format.Minimal);
             }
+            else if (o.IsListOpera)
+            {
+
+            }
+            else if (o.IsListCompany)
+            {
+                
+                foreach (var company in objDic)
+                {
+                    double lend = 0.0;
+                    double freeze = 0.0;
+                    double onWay = 0.0;
+                    double arrears = 0.0;
+                    double lose = 0.0;
+                    double withdraws = 0.0;
+                    double reality = 0.0;
+                    double balance = 0.0;
+
+                    foreach (var item in company.Value)
+                    {
+                        lend += (double)item[1];
+                        freeze += (double)item[2];
+                        onWay += (double)item[3];
+                        arrears += (double)item[4];
+                        lose += (double)item[5];
+                        withdraws += (double)item[6];
+                        reality = (double)item[7];
+                        balance = (double)item[8];
+                    }
+                    object[] os1 = new object[] { company.Key, $"{lend:0.00}", $"{freeze:0.00}", $"{onWay:0.00}", $"{arrears:0.00}",
+                        $"{lose:0.00}", $"{withdraws:0}", $"{reality:0}",$"{balance:0}"
+                    };
+                    ConsoleTable consoleTable1 = new ConsoleTable(listCompanyHeader[0], $"{os1[0]}");
+                    for (int i = 1; i < os1.Length; i++)
+                    {
+                        consoleTable1.AddRow(listCompanyHeader[i], $"{os1[i]}");
+                    }
+                    consoleTable1.AddRow("Profit", $"{lend + onWay + withdraws + balance - (arrears + lose + reality):0.00}");
+                    consoleTable1.Write(Format.Minimal);
+                }
+                
+            }
 
             // 显示
             if (o.IsUpload)
@@ -403,13 +555,14 @@ namespace analyze.core
                 string url = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=8af72f8c-1f27-48b0-832e-dcfb8b7f17d2";
                 new WebhookClient().Webhook(url, dic);
             }
+            
 
-            
-            
+
+
         }
         #endregion
 
-        #region mamage
+        #region 扣款 mamage 
 
         private void Save(string orderId, string msg)
         {
@@ -447,15 +600,25 @@ namespace analyze.core
             {
                 string raw = File.ReadAllText(o.FileName);
                 string[] strings = raw.Split("\r\n");
-                o.DeductionId = strings;
+                List<string>  ClientId = new List<string>();
+                List<string> DeductionId = new List<string>();
+                foreach (string s in strings)
+                {
+                    string[] v = s.Split(" ");
+                    ClientId.Add(v[0]);
+                    DeductionId.Add(v[1]);
+                }
+
+                o.ClientId = ClientId;
+                o.DeductionId = DeductionId;
             }
 
-            if (o.ClientId.Count() == 1 && o.DeductionId.Count() > 0)
+            if (o.ClientId.Count() > 0 && o.DeductionId.Count() > 0)
             {
-                foreach (var item in o.DeductionId)
+                for (int i = 0; i < o.DeductionId.Count(); i++)
                 {
-                    string clientId = o.ClientId.First();
-                    string orderId = item;
+                    string clientId = o.ClientId.ElementAt(i);
+                    string orderId = o.DeductionId.ElementAt(i);
                     string ret = null;
 
                     try
@@ -478,7 +641,7 @@ namespace analyze.core
 
                             msg += $"扣除金额：{cost} ";
                             SheetClient.Log(msg);
-                            ret =  client.Deduction(order);
+                            ret = client.Deduction(order);
                             if ("Success.".Equals(ret))
                             {
                                 DebitRecord[] debitRecords = client.ListDebitRecord();
@@ -520,6 +683,10 @@ namespace analyze.core
                         SheetClient.Log("\r\n");
                         msg = "";
                     }
+                }
+                foreach (var item in o.DeductionId)
+                {
+
 
                 }
                 

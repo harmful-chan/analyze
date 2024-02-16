@@ -266,6 +266,18 @@ namespace analyze.core.Clients
         }
 
 
+        public Recharge[] ListAllRecharge()
+        {
+
+
+            string str = $"cu_type=&cu_id=&reference_no=&pm_code=&pn_fee_type=&pn_status=&customer_code=&cu_code=&cu_type=&pn_add_time=&pn_verify_time=&pending=&page=1&limit=2000";
+            string raw = Request("POST", @"https://gzbf-admin.goodhmy.com/payment/payment/list", str);
+            var jo = (JObject)JsonConvert.DeserializeObject(raw);
+            var rows = jo["data"]["rows"].ToString();
+            var recharge = JsonConvert.DeserializeObject<Recharge[]>(rows);
+            return recharge;
+        }
+
         private string EncodeOrder(int status, params string[] orders)
         {
             string raw = "";

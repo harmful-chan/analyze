@@ -84,7 +84,10 @@ analyze manage -u 5377028 --deduction 8185077759712497 8185077759712492
 
 ## tag
 ### analyze.core.202402151726
-analyze.core.202402151726.exe daily -d "D:\BaiduSyncdisk\Desktop\数据 采集\每日数据\2024年02月15日" -l -u
+analyze.core.202402151726.exe daily -d "D:\BaiduSyncdisk\Desktop\数据采集\每日数据\2024年02月15日" -l -u
 
 ### analyze.core.202402160626
-analyze manage -u 5377028 --deduction 8185077759712497 8185077759712492
+analyze.core.202402160626.exe manage -u 5377028 --deduction 8185077759712497 8185077759712492
+
+
+analyze.core.exe -f 
