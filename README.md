@@ -88,7 +88,7 @@ analyze.core.202402151726.exe daily -d "D:\BaiduSyncdisk\Desktop\Êı¾İ²É¼¯\Ã¿ÈÕÊı
 
 ### analyze.core.202402160626
 analyze.core.202402160626.exe manage -u 5377028 --deduction 8185077759712497 8185077759712492
-analyze.core.exe -f 
+analyze.core.202402160626.exe manage -f ".\¿Û¿î¼ÇÂ¼\temp.txt"
 
 
 ### analyze.core.202402170154.exe
@@ -97,3 +97,11 @@ analyze.core.202402170154.exe daily  -d "F:\BaiduSyncdisk\Desktop\Êı¾İ²É¼¯\Ã¿ÈÕÊ
 analyze.core.202402170154.exe daily  -d "F:\BaiduSyncdisk\Desktop\Êı¾İ²É¼¯\Ã¿ÈÕÊı¾İ\2024Äê02ÔÂ16ÈÕ" --list-profit
 analyze.core.202402170154.exe daily  -d "F:\BaiduSyncdisk\Desktop\Êı¾İ²É¼¯\Ã¿ÈÕÊı¾İ\2024Äê02ÔÂ16ÈÕ" --upload-order
 analyze.core.202402170154.exe daily  -d "F:\BaiduSyncdisk\Desktop\Êı¾İ²É¼¯\Ã¿ÈÕÊı¾İ\2024Äê02ÔÂ16ÈÕ" --upload-info
+
+### analyze.core.202402210011.exe
+analyze.core.202402210011.exe daily -d "Z:\Êı¾İ²É¼¯\Ã¿ÈÕÊı¾İ\2024Äê02ÔÂ20ÈÕ\" --shop-info "Z:\Êı¾İ²É¼¯\µêÆÌĞÅÏ¢.xlsx" 
+--list-profit
+--list-opear
+--list-company
+--upload-order
+--upload-info

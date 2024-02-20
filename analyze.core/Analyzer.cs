@@ -5,6 +5,7 @@ using analyze.core.Models.Sheet;
 using analyze.core.Options;
 using analyze.Models.Manage;
 using ConsoleTables;
+using NPOI.HPSF;
 using NPOI.HSSF.Record;
 using NPOI.SS.Formula.Functions;
 using NPOI.Util;
@@ -18,6 +19,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using static analyze.core.Clients.SheetClient;
+using static ICSharpCode.SharpZipLib.Zip.ExtendedUnixData;
 using static NPOI.HSSF.Util.HSSFColor;
 
 namespace analyze.core
@@ -35,20 +37,151 @@ namespace analyze.core
             }
         }
 
+        #region 订单数据处理 
+        public void OrderRun(OrderOptions o)
+        {
+            if (o.action.Equals("refund"))
+            {
+                RefundRun(o);
+            }else if (o.action.Equals("lend"))
+            {
+                LendRun(o);
+            }
+        }
+
+        #endregion
+
+        #region 放款数据 lend
+        double[] randoms = new double[] { 0.8753,   0.8352,   0.6807,   0.6998,   0.7895,   0.7809,   0.5627,   0.5281,   0.4465,   0.8804,   0.7130,   0.6523,   0.5964,   0.6810,   0.6780,   0.8286,  0.6819,   0.6674,   0.4785,   0.6083 };
+        static int randomCount = 0;
+        public double GetRandom()
+        {
+            return randoms[randomCount++%randoms.Length];
+        }
+        public void ResetRandom()
+        {
+            randomCount = 0;
+        }
+
+        public void LendRun(OrderOptions o)
+        {
+            SheetClient client = new SheetClient();
+            Collect(client, o.RowDir, o.DataDir, o.DirPrefix);
+            Console.WriteLine();
+            foreach (var shop in client.ShopRecords) // 每一个店铺
+            {
+                
+                ResetRandom();
+                // 年月获取 开始结束日期
+                if (o.Year > 0 && o.Moon > 0)
+                {
+                    DateTime t1, t2;
+                    DateRange(o.Year, o.Moon, out t1, out t2);
+                    o.StartDate = t1;
+                    o.EndDate = t2;
+
+                }
+
+                ShopLend[] sureLends = shop.ShopLendList.Where(f => f.SettlementTime <= o.EndDate && f.SettlementTime >= o.StartDate).ToArray();
+                foreach (var r in sureLends)  // 每一个订单
+                {
+                    bool flag1 = true;
+                    bool flag2 = true;
+                    bool flag3 = true;
+                    bool flag4 = true;
+
+                    ShopOrder[] shopOrders = shop.ShopOrderList.Where(t => t.OrderId.Equals(r.OrderId)).ToArray();
+                    TotalOrder[] torders = client.TotalOrders.Where(t => t.OrderId != null && t.OrderId.Equals(r.OrderId)).ToArray();
+                    TotalPurchase[] porder = client.TotalPurchases.Where(t => t.OrderId != null && t.OrderId.Equals(r.OrderId)).ToArray();
+
+                    string ot = shopOrders.FirstOrDefault()?.OrderTime.ToString("yyyy-MM-dd HH:mm:ss");
+                    string pt = shopOrders.FirstOrDefault()?.PaymentTime.ToString("yyyy-MM-dd HH:mm:ss");
+                    string st = shopOrders.FirstOrDefault()?.ShippingTime.ToString("yyyy-MM-dd HH:mm:ss");
+                    string rt = shopOrders.FirstOrDefault()?.ReceiptTime.ToString("yyyy-MM-dd HH:mm:ss");
+                    if (shopOrders.FirstOrDefault()?.OrderTime == DateTime.MinValue) ot = "";
+                    if (shopOrders.FirstOrDefault()?.PaymentTime == DateTime.MinValue) pt = "";
+                    if (shopOrders.FirstOrDefault()?.ShippingTime == DateTime.MinValue) st = "";
+                    if (shopOrders.FirstOrDefault()?.ReceiptTime == DateTime.MinValue) rt = "";
+
+                    string str = (flag1 ? "" : "1") + (flag2 ? "" : "2") + (flag3 ? "" : "3") + (flag4 ? "" : "4");
+                    if (torders.Length > 0)
+                    {
+                        double deductionAmount = torders.FirstOrDefault().DeductionAmount;
+                        if (deductionAmount < 1)
+                        {
+                            double lend = r.Lend;
+                            deductionAmount = lend * GetRandom();
+                        }
+                       r.Cost = Math.Round(deductionAmount, 2);
+
+                    }
+                    else
+                    {
+                        r.Cost = 0.0;
+                    }
+
+                    r.Profit = Math.Round(r.Lend - r.Cost, 2);
+                    r.Rate = Math.Round((r.Profit)/r.Cost, 2);
+
+                }
+
+                // 列出表格
+                if (o.IsList)
+                {
+                    
+                    int index = 1;  // 序号
+                    double lend=0.0, cost = 0.0, profit = 0.0, rate = 0.0;
+                    ConsoleTable table = new ConsoleTable("I", "Order", "Quantity", "Turnover", "Lend", "Cost", "Profit", "Rate", "SettlementTime");
+                    //Array.ForEach(sureLends, a => table.AddRow(index++, a.OrderId, a.Quantity, a.Turnover, a.Lend,  a.Cost, a.Profit, a.Rate, a.SettlementTime.ToString("yyyy-MM-dd HH:mmss")));
+                    System.Array.ForEach(sureLends, a => 
+                    {
+                        lend += a.Lend;
+                        cost += a.Cost;
+                        profit += a.Profit;
+                        rate += a.Rate;
+                    });
+                    int len = sureLends.Length;
+                    Console.WriteLine($"{shop.Shop.CompanyNumber}{shop.Shop.CN}{shop.Shop.CompanyName}{shop.Shop.Nick} " + $" Lend:{Math.Round(lend, 2)} Cost:{Math.Round(cost, 2)} Profit:{Math.Round(profit, 2) }  Rate:{Math.Round(profit / cost, 2)}");
+                    //table.Write(Format.MarkDown);
+                    
+                }
+
+                // 生成目录
+                if (Directory.Exists(o.OutputFile)) // 输入的是一个目录
+                {
+                    if (sureLends.Length <= 0)
+                    {
+                        continue;
+                    }
+                    System.Array.Sort(sureLends, (x, y) => { return x.SettlementTime.CompareTo(y.SettlementTime); });
+
+                    string filename = Path.Combine(o.OutputFile, $"{shop.Shop.CompanyNumber}{shop.Shop.CN}{shop.Shop.CompanyName}{shop.Shop.Nick}.xlsx");
+                    client.SaveShopLend(filename, sureLends, true);
+
+                }
+
+            }
+
+
+        }
+
+
+        #endregion
+
         #region 退款数据 refund
-        public void Collect(string rawdir, string datadir, IEnumerable<string> prefixs)
+        public void Collect(SheetClient clent, string rawdir, string datadir, IEnumerable<string> prefixs)
         {
             if (prefixs != null && prefixs.Count() > 0)
             {
                 // 获取文件夹下的子文件夹列表
                 foreach (var p in prefixs)
                 {
-                    new SheetClient().Collect(rawdir, datadir, p);
+                    clent.Collect(rawdir, datadir, p);
                 }
             }
             else
             {
-                new SheetClient().Collect(rawdir, datadir);
+                clent.Collect(rawdir, datadir);
             }
         }
         public void DateRange(int year, int moon, out DateTime start, out DateTime end)
@@ -74,10 +207,10 @@ namespace analyze.core
             start = t1;
             end = t2;
         }
-        public void RefundRun(RefundOptions o)
+        public void RefundRun(OrderOptions o)
         {
             SheetClient client = new SheetClient();
-            Collect(o.RowDir, o.DataDir, o.DirPrefix);
+            Collect(client, o.RowDir, o.DataDir, o.DirPrefix);
 
             foreach (var shop in client.ShopRecords)
             {
@@ -189,7 +322,7 @@ namespace analyze.core
                     {
                         continue;
                     }
-                    Array.Sort(sureRefunds, (x, y) => { return x.RefundTime.CompareTo(y.RefundTime); });
+                    System.Array.Sort(sureRefunds, (x, y) => { return x.RefundTime.CompareTo(y.RefundTime); });
 
                     string filename = Path.Combine(o.OutputFile, $"{shop.Shop.CompanyNumber}{shop.Shop.CN}{shop.Shop.CompanyName}{shop.Shop.Nick}.xlsx");
                     client.SaveShopRefund(filename, sureRefunds, true);
@@ -320,16 +453,18 @@ namespace analyze.core
 
         public void DailyRun(DailyOptions o)
         {
+            List<Shop> shops = new List<Shop>();
             List<Daily> dailys = new List<Daily>();
             SheetClient client = new SheetClient();
             ManageClient manageClient = new ManageClient();
             IList<TotalPurchase> brPurchases = null;
             // 获取目录文件
-            if (Directory.Exists(o.FileDir))
+            if(Directory.Exists(o.FileDir))
             {
                 string[] files = Directory.GetFiles(o.FileDir);
                 o.DailyFiles = files;
             }
+
 
             User[] users = null;
             Recharge[] recharges = null;
@@ -350,6 +485,43 @@ namespace analyze.core
                     dailys.Add(daily);
                 }
                 dailys.Sort();
+
+                if (File.Exists(o.ShopInfoFileName))
+                {
+                    shops = client.ReadShopInfo(o.ShopInfoFileName).ToList();
+
+                    var runShop = shops.Where(s => s.Status.Equals("运营中")).ToArray();
+                    Console.WriteLine();
+                    Console.WriteLine($"运营中：{runShop.Count()} 读取数量：{o.DailyFiles.Count()}");
+
+                    string[] arr = System.Array.ConvertAll(runShop.ToArray(), r => r.CN);
+
+                    foreach (var shop in runShop)
+                    {
+                        bool flag = false;
+                        foreach (string filename in o.DailyFiles)
+                        {
+                            if (filename.Contains(shop.CN))
+                            {
+                                flag = true;
+                                break;
+                            }
+                        }
+                        if (!flag)
+                        {
+                            Console.WriteLine(shop.CompanyNumber + shop.CN + shop.CompanyName + shop.Nick);
+
+                        }
+                    }
+                }
+                
+            }
+
+            // 判断店铺是否获取完毕
+            if (o.DailyFiles.Count() > 0)
+            {
+
+
             }
 
             if (File.Exists(o.BrPurchaseFilenmae))
@@ -413,11 +585,11 @@ namespace analyze.core
 
                 // 纠纷最小处理天数
                 var disputeLasts = daily.DisputeOrders.Where(d => d.LastTime != null);
-                var disputeTime = Array.ConvertAll(disputeLasts.ToArray(), d => d.LastTime).Min();
+                var disputeTime = System.Array.ConvertAll(disputeLasts.ToArray(), d => d.LastTime).Min();
 
                 // 待发货最小处理天数
                 var orderLasts = daily.OrderDetails.Where(d => d.LastTime != null);
-                var orderTime = Array.ConvertAll(orderLasts.ToArray(), d => d.LastTime).Min();
+                var orderTime = System.Array.ConvertAll(orderLasts.ToArray(), d => d.LastTime).Min();
 
                 
                 // 昨天等待发货及等待收货
@@ -560,6 +732,7 @@ namespace analyze.core
                     object[] o1 = company.Value.First();
                     var upload = new List<KeyValuePair<string, string>>();
 
+                    upload.Add(KeyValuePair.Create($"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}", $""));
                     upload.Add(KeyValuePair.Create("-------------------------------", $""));
                     upload.Add(KeyValuePair.Create($"  公司", $"{o1[0]}"));
                     upload.Add(KeyValuePair.Create($"（加）放款", $"{o1[1]}"));
@@ -605,7 +778,23 @@ namespace analyze.core
                 uploadDic.Add(kvt2);
 
                 string url = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=8af72f8c-1f27-48b0-832e-dcfb8b7f17d2";
-                new WebhookClient().Webhook(url, "text", uploadDic);
+
+                List<KeyValuePair<string, string>> keyValuePairs = new List<KeyValuePair<string, string>>();
+
+                int len = 0;
+                foreach (var item in uploadDic)
+                {
+                    keyValuePairs.Add(KeyValuePair.Create(item.Key, item.Value));
+                    len += (item.Key.Length + item.Value.Length);
+                    if(len >= 2048)
+                    {
+
+                        new WebhookClient().Webhook(url, "text", keyValuePairs);
+                        keyValuePairs = new List<KeyValuePair<string, string>>();
+                        len = 0;
+                    }
+                }
+                new WebhookClient().Webhook(url, "text", keyValuePairs);
             }
             
 

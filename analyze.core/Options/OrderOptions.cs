@@ -7,18 +7,20 @@ using System.Threading.Tasks;
 
 namespace analyze.core.Options
 {
-    [Verb("refund", HelpText = "退款数据")]
-    public class RefundOptions
+    [Verb("order", HelpText = "订单数据数据")]
+    public class OrderOptions
     {
         [Option('l', "list", Required = false, HelpText = "列出用户")]
         public bool IsList { get; set; }
 
+        [Option('a', "action", Required = false, HelpText = "执行行为")]
+        public string action { get; set; }
 
 
-        [Option('s', "start-date", Required = false, HelpText = "开始日期")]
+        //[Option('s', "start-date", Required = false, HelpText = "开始日期")]
         public DateTime StartDate { get; set; }
         
-        [Option('e', "end-date", Required = false, HelpText = "结束日期")]
+        //[Option('e', "end-date", Required = false, HelpText = "结束日期")]
         public DateTime EndDate { get; set; }
 
         [Option('y', "yesr", Required = false, HelpText = "年份")]

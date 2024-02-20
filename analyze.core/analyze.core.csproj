@@ -10,10 +10,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="resources\lend.xlsx" />
     <None Remove="resources\refund.xlsx" />
   </ItemGroup>
 
   <ItemGroup>
+    <Resource Include="resources\lend.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
     <Resource Include="resources\refund.xlsx">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>

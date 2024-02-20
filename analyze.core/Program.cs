@@ -26,22 +26,25 @@ namespace analyze
         {
             //try 
             //{
-                if (args[0].Equals("collect"))
-                {
 
-                }
-                else if (args[0].Equals("manage"))
-                {
-                    Parser.Default.ParseArguments<ManageOptions>(args).WithParsed(new Analyzer().ManageRun);
-                }
-                else if (args[0].Equals("refund")) 
-                {
-                    Parser.Default.ParseArguments<RefundOptions>(args).WithParsed(new Analyzer().RefundRun);
-                }
-                else if (args[0].Equals("daily"))
-                {
-                    Parser.Default.ParseArguments<DailyOptions>(args).WithParsed(new Analyzer().DailyRun);
-                }
+            var exitCode = Parser.Default.ParseArguments<ManageOptions, DailyOptions, OrderOptions>(args)
+                .MapResult(
+                    (ManageOptions o) => 
+                    {
+                        new Analyzer().ManageRun(o);
+                        return 0;
+                    },
+                    (DailyOptions o) =>
+                    {
+                        new Analyzer().DailyRun(o);
+                        return 0;
+                    },
+                    (OrderOptions o) =>
+                    {
+                        new Analyzer().OrderRun(o);
+                        return 0;
+                    },
+                    error => 1);
 
             //}
             //catch(Exception ex)

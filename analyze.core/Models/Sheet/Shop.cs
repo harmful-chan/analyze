@@ -14,6 +14,7 @@ namespace analyze.core.Models.Sheet
         public string Nick { get; set; }
         public string CN { get; set; }
         public string Category { get; set; }
+        public string Status { get; set; }
 
 
     }

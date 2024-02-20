@@ -3,6 +3,7 @@ using analyze.core.Models.Sheet;
 using NPOI.SS.Formula.Functions;
 using NPOI.SS.UserModel;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -156,6 +157,91 @@ namespace analyze.core.Clients
             return os.GroupBy(o => o.OrderId).Select(s => s.First()).ToList();
         }
 
+        public void SaveShopLend(string fileName, ShopLend[] shopLends, bool overwrite)
+        {
+            File.Copy(Path.Combine("resources", "lend.xlsx"), fileName, overwrite);
+
+            IWorkbook workbook;
+            FileStream fs = File.OpenRead(fileName);
+            workbook = WorkbookFactory.Create(fs);
+            fs.Close();
+            fs.Dispose();
+            ICellStyle style = workbook.CreateCellStyle();
+            style.Alignment = HorizontalAlignment.Center;
+            style.VerticalAlignment = VerticalAlignment.Center;
+            ISheet sheet = workbook.GetSheetAt(0);
+            for (int i = 0; i < shopLends.Length; i++)
+            {
+                IRow row = sheet.CreateRow(i + 1);
+
+
+
+                ICell cell0 = row.CreateCell(0); cell0.SetCellType(CellType.Numeric); cell0.CellStyle = style; cell0.SetCellValue(i + 1);
+                ICell cell1 = row.CreateCell(1); cell1.SetCellType(CellType.String); cell1.CellStyle = style; cell1.SetCellValue(shopLends[i].ProductId);
+                ICell cell2 = row.CreateCell(2); cell2.SetCellType(CellType.String); cell2.SetCellValue(shopLends[i].ProdectName);
+                ICell cell3 = row.CreateCell(3); cell3.SetCellType(CellType.String); cell3.SetCellValue(shopLends[i].SUK);
+                ICell cell4 = row.CreateCell(4); cell4.SetCellType(CellType.String); cell4.SetCellValue(shopLends[i].ProductCode);
+                ICell cell5 = row.CreateCell(5); cell5.SetCellType(CellType.Numeric); cell5.CellStyle = style; cell5.SetCellValue(shopLends[i].Quantity);
+                ICell cell6 = row.CreateCell(6); cell6.SetCellType(CellType.String); cell6.SetCellValue(shopLends[i].ProductImage);
+                ICell cell7 = row.CreateCell(7); cell7.SetCellType(CellType.Numeric); cell7.CellStyle = style; cell7.SetCellValue(shopLends[i].Turnover);
+                ICell cell8 = row.CreateCell(8); cell8.SetCellType(CellType.Numeric); cell8.CellStyle = style; cell8.SetCellValue(shopLends[i].Lend);
+                ICell cell9 = row.CreateCell(9); cell9.SetCellType(CellType.Numeric); cell9.CellStyle = style; cell9.SetCellValue(shopLends[i].Cost);
+                ICell cell10 = row.CreateCell(10); cell10.SetCellType(CellType.Numeric); cell10.CellStyle = style; cell10.SetCellValue(shopLends[i].Profit);
+                ICell cell11 = row.CreateCell(11); cell11.SetCellType(CellType.Numeric); cell11.CellStyle = style; cell11.SetCellValue(shopLends[i].Rate);
+
+                ICell cell12 = row.CreateCell(12);
+                ICellStyle style1 = workbook.CreateCellStyle();
+                style1.DataFormat = workbook.CreateDataFormat().GetFormat("yyyy-MM-dd HH:mm:ss");
+                style1.Alignment = HorizontalAlignment.Center;
+                style1.VerticalAlignment = VerticalAlignment.Center;
+                cell12.CellStyle = style1;
+                cell12.SetCellValue(shopLends[i].SettlementTime);
+
+                ICell cell13 = row.CreateCell(13); cell13.SetCellType(CellType.String); cell13.CellStyle = style; cell13.SetCellValue(shopLends[i].OrderId);
+
+            }
+            IRow totalRow = sheet.CreateRow(shopLends.Length + 2);
+            ICell c0 = totalRow.CreateCell(7); 
+            c0.SetCellType(CellType.String);
+            c0.CellStyle = style;
+            c0.SetCellValue("总额:");
+            ICell c1 = totalRow.CreateCell(8);
+            c1.SetCellType(CellType.Numeric);
+            c1.CellStyle = style;
+            c1.SetCellFormula($"SUBTOTAL(9, I2:I{shopLends.Length + 1})");
+            ICell c2 = totalRow.CreateCell(9);
+            c2.SetCellType(CellType.Numeric);
+            c2.CellStyle = style;
+            c2.SetCellFormula($"SUBTOTAL(9, J2:J{shopLends.Length + 1})");
+            ICell c3 = totalRow.CreateCell(10);
+            c3.SetCellType(CellType.Numeric);
+            c3.CellStyle = style;
+            c3.SetCellFormula($"SUBTOTAL(9, K2:K{shopLends.Length + 1})");
+
+            double lend = 0.0;
+            double profix = 0.0;
+            double cost = 0.0;
+            foreach (var item in shopLends)
+            {
+                lend += item.Lend;
+                cost += item.Cost;
+                profix += item.Profit;
+            }
+
+            ICell c4 = totalRow.CreateCell(11);
+            c4.SetCellType(CellType.Numeric);
+            c4.CellStyle = style;
+            c4.SetCellValue(Math.Round(profix/cost, 2));
+
+            FileStream newfs = new FileStream(fileName, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+            workbook.Write(newfs);
+            newfs.Close();
+            newfs.Dispose();
+            Log($"保存 {fileName}");
+            workbook.Close();
+
+        }
+
         public void SaveShopRefund(string fileName, ShopRefund[] shopRefunds, bool overwrite)
         {
             File.Copy(Path.Combine("resources", "refund.xlsx"), fileName, overwrite);
@@ -216,6 +302,7 @@ namespace analyze.core.Clients
             workbook.Close();
 
         }
+
         public IList<ShopLend> ReadShopLend(string fileName)
         {
             List<ShopLend> os = new List<ShopLend>();
@@ -236,35 +323,20 @@ namespace analyze.core.Clients
 
                             ShopLend to = new ShopLend();
 
-
-
                             to.ProductId = row.GetCell(0)?.ToString();
-
-                            double d1;
-                            double.TryParse(row.GetCell(6)?.ToString(), out d1);
-                            to.Turnover = d1;
-
-                            double d2;
-                            double.TryParse(row.GetCell(7)?.ToString(), out d2);
-                            to.Lend = d2;
-
-                            double d3;
-                            double.TryParse(row.GetCell(8)?.ToString(), out d3);
-                            to.Fee = d3;
-
-                            double d4;
-                            double.TryParse(row.GetCell(9)?.ToString(), out d4);
-                            to.Affiliate = d4;
-
-                            double d5;
-                            double.TryParse(row.GetCell(10)?.ToString(), out d5);
-                            to.Cashback = d5;
-
-
+                            to.ProdectName = row.GetCell(1)?.ToString();
+                            to.SUK = row.GetCell(2)?.ToString();
+                            to.ProductCode = row.GetCell(3)?.ToString();
+                            to.Quantity = row.GetCell(4).NumericCellValue;
+                            to.ProductImage = row.GetCell(5)?.ToString();
+                            to.Turnover = row.GetCell(6).NumericCellValue ;
+                            to.Lend = row.GetCell(7).NumericCellValue;
+                            to.Fee = row.GetCell(8).NumericCellValue;
+                            to.Affiliate = row.GetCell(9).NumericCellValue;
+                            to.Cashback = row.GetCell(10).NumericCellValue;
                             DateTime t1;
                             DateTime.TryParseExact(row.GetCell(11)?.ToString(), "yyyy-MM-dd HH:mm:ss", new CultureInfo("zh-cn"), DateTimeStyles.None, out t1);
                             to.SettlementTime = t1;
-
                             to.OrderId = row.GetCell(12)?.ToString();
                             to.FileName = ss[c];
                             os.Add(to);
@@ -427,7 +499,7 @@ namespace analyze.core.Clients
                         o.Nick = row.GetCell(3)?.ToString();
                         o.CN = row.GetCell(4)?.ToString();
                         o.Category = row.GetCell(5)?.ToString();
-
+                        o.Status = row.GetCell(7)?.ToString();
                         os.Add(o);
                     }
                 }
@@ -452,6 +524,51 @@ namespace analyze.core.Clients
 
             return new KeyValuePair<string, double>(str[0], d1);
         }
+
+        private int[] GetHeaderLine(ISheet sheet, string header, string[] headerList)
+        {
+            int start = -1, end = -1;
+            for (int i = 0; i < sheet.LastRowNum; i++)
+            {
+                ICell cell = sheet.GetRow(i).GetCell(0);
+                if(cell!=null &&  cell.CellType == CellType.String)
+                {
+                    if ( header.Equals(cell.StringCellValue) && headerList.Contains(cell.StringCellValue))
+                    {
+                        start = i;
+                        break;
+                    }
+                }
+            }
+            if(start != -1)
+            {
+                ArrayList arrayList = new ArrayList(headerList);
+                arrayList.Remove(header);
+                for (int i = start + 1; i < sheet.LastRowNum; i++)
+                {
+                    ICell cell = sheet.GetRow(i).GetCell(0);
+                    if (cell != null && cell.CellType == CellType.String)
+                    {
+
+                        if (arrayList.Contains(cell.StringCellValue))
+                        {
+                            end = i;
+                            break;
+                        }
+                    }
+                }
+
+                if(end == -1)
+                {
+                    end = sheet.LastRowNum;
+                }
+            }
+
+
+            return start == -1 ? null: new int[] { start, end-1 };
+        } 
+
+        private string[] headerFirst = new string[] { "时间", "订单号", "订单信息", "订单详情" };
         public Daily ReadDaily(string filename)
         {
             Daily daily = new Daily();
@@ -520,201 +637,219 @@ namespace analyze.core.Clients
                 daily.OnWay = SplitAmount(r1.GetCell(2).ToString()).Value;
                 daily.Arrears = SplitAmount(r1.GetCell(3).ToString()).Value;
 
-                int rowNumber = 4;
-                List<Withdraw> withdraws = new List<Withdraw>();
+
                 // 提现数据
-                for (int j = rowNumber; j <= sheet.LastRowNum; j++)
+                var ints = GetHeaderLine(sheet, "时间", headerFirst); 
+                if(ints != null)
                 {
-                    rowNumber = j;
-                    var row = sheet.GetRow(j);
-                    string v = row.GetCell(0).ToString();
-                    if (v.Contains("时间") || v.Contains("暂无数据"))
+                    List<Withdraw> withdraws = new List<Withdraw>();
+                    for (int i = ints[0]; i < ints[1]; i++) 
                     {
-                        continue;
-                    }
-                    if (v.Contains("订单号"))
-                    {
-                        break;
-                    }
-                    Withdraw withdraw = new Withdraw();
-                    withdraw.WithdrawTime = row.GetCell(0).DateCellValue;
-                    withdraw.Amount = double.Parse(row.GetCell(4).ToString().Split(' ')[0]);
-                    withdraws.Add(withdraw);
-                }
-                daily.Withdraws = withdraws.ToArray();
-                rowNumber++;
-                // 在途订单
-                List<OnWayOrder> OnWayOrders = new List<OnWayOrder>();
-                for (int j = rowNumber; j <= sheet.LastRowNum; j++)
-                {
-                    rowNumber = j;
-                    var row = sheet.GetRow(j);
-
-
-                    OnWayOrder onWayOrder = new OnWayOrder();
-
-                    if (row.GetCell(0).CellType == CellType.String)
-                    {
-                        var v = row.GetCell(0).StringCellValue;
-                        if (v.Contains("订单号"))
+                        var row = sheet.GetRow(i);
+                        string v = row.GetCell(0).ToString();
+                        if (v.Contains("时间") || v.Contains("暂无数据"))
                         {
                             continue;
                         }
-                        if (v.Contains("订单信息"))
+                        Withdraw withdraw = new Withdraw();
+                        withdraw.WithdrawTime = row.GetCell(0).DateCellValue;
+                        withdraw.Amount = double.Parse(row.GetCell(4).ToString().Split(' ')[0]);
+                        withdraws.Add(withdraw);
+                    }
+                    daily.Withdraws = withdraws.ToArray();
+                }
+                else
+                {
+                    daily.Withdraws = new Withdraw[0];
+                }
+                ////在途订单
+                ints = GetHeaderLine(sheet, "订单号", headerFirst);
+                if (ints != null)
+                {
+                    List<OnWayOrder> OnWayOrders = new List<OnWayOrder>();
+                    for (int j = ints[0]; j <= ints[1]; j++)
+                    {
+
+                        var row = sheet.GetRow(j);
+                        OnWayOrder onWayOrder = new OnWayOrder();
+                    
+                        if (row.GetCell(0).CellType == CellType.String)
                         {
-                            break;
+                            var v = row.GetCell(0).StringCellValue;
+                            if (v.Contains("订单号"))
+                            {
+                                continue;
+                            }
                         }
+                    
+                        onWayOrder.OrderId = row.GetCell(0).NumericCellValue.ToString();
+                        onWayOrder.PaymentTime = row.GetCell(1).DateCellValue;
+                        onWayOrder.ShippingTime = row.GetCell(2) == null ? default : row.GetCell(2).DateCellValue;
+                        onWayOrder.ReceiptTime = row.GetCell(3) == null ? default : row.GetCell(3).DateCellValue;
+                        onWayOrder.Amount = SplitAmount(row.GetCell(4).ToString()).Value;
+                        onWayOrder.Reason = row.GetCell(9).ToString();
+                        OnWayOrders.Add(onWayOrder);
                     }
-
-                    onWayOrder.OrderId = row.GetCell(0).NumericCellValue.ToString();
-                    onWayOrder.PaymentTime = row.GetCell(1).DateCellValue;
-                    onWayOrder.ShippingTime = row.GetCell(2) == null ? default : row.GetCell(2).DateCellValue;
-                    onWayOrder.ReceiptTime = row.GetCell(3) == null ? default : row.GetCell(3).DateCellValue;
-                    onWayOrder.Amount = SplitAmount(row.GetCell(4).ToString()).Value;
-                    onWayOrder.Reason = row.GetCell(9).ToString();
-                    OnWayOrders.Add(onWayOrder);
+                    daily.OnWayOrders = OnWayOrders.ToArray();
                 }
-                daily.OnWayOrders = OnWayOrders.ToArray();
-                rowNumber++;
-
-                // 纠纷订单
-                List<Dispute> disputes = new List<Dispute>();
-                for (int j = rowNumber; j <= sheet.LastRowNum; j++)
+                else
                 {
-                    rowNumber = j;
-                    var row = sheet.GetRow(j);
-                    string v = row.GetCell(0).ToString();
-                    if (v.Equals("订单信息\r\n") || v.Equals("暂无数据"))
-                    {
-                        continue;
-                    }
-                    if (v.Contains("订单详情"))
-                    {
-                        break;
-                    }
-
-                    Dispute dispute = new Dispute();
-                    string c0 = row.GetCell(0).ToString();
-                    // 订单
-                    /// 订单号
-                    dispute.OrderId = Regex.Match(c0, @"订单信息\s*(\d+)").Groups[1].Value;
-                    /// 下单时间
-                    string time = Regex.Match(c0, @"下单时间\s*([\d-]+\s[\d:]+)").Groups[1].Value;
-                    DateTime dateTime;
-                    DateTime.TryParseExact(time, "yyyy-MM-dd HH:mm", new CultureInfo("en-US"), DateTimeStyles.None, out dateTime);
-                    dispute.OrderTime = dateTime;
-                    dispute.DisputeTime = row.GetCell(4).DateCellValue;
-
-                    var c5 = row.GetCell(5)?.ToString();
-                    dispute.Status = c5.Split('\n')[0];
-                    if (c5.Contains("剩余："))
-                    {
-                        int index = c5.IndexOf("剩余：");
-                        dispute.LastTime = c5.Substring(index + 4);
-                    }
-
-                    disputes.Add(dispute);
+                    daily.OnWayOrders = new OnWayOrder[0];
                 }
-                daily.DisputeOrders = disputes.ToArray();
 
-                // 未发货订单
-                //for (int j = rowNumber; j <= sheet.LastRowNum; j++)
-                //{
-                //    rowNumber = j;
-                //    NotShip notShip = new NotShip();
-                //    var row = sheet.GetRow(j);
-                //    string v = row.GetCell(0).ToString();
-                //    if (row.GetCell(0).ToString().Equals("订单详情"))
-                //    {
-                //        break;
-                //    }
-                //    // 订单时间
-                //    DateTime? dateCellValue = row.GetCell(0)?.DateCellValue;
-                //    notShip.OrderTime = (DateTime)dateCellValue;
-                //
-                //    // 金额
-                //    string amount = row.GetCell(1)?.ToString();
-                //    KeyValuePair<string, double> kv = SplitAmount(amount);
-                //    notShip.Symbol = kv.Key;
-                //    notShip.Amount = kv.Value;
-                //
-                //    // 剩余天数
-                //    string day = row.GetCell(2)?.ToString();
-                //    int d2;
-                //    int.TryParse(day, out d2);
-                //    notShip.LastDay = d2;
-                //
-                //    notShips.Add(notShip);
-                //}
+                //// 纠纷订单
 
-                // 订单详情
-                rowNumber++;
-                for (int j = rowNumber; j <= sheet.LastRowNum; j++)
+                ints = GetHeaderLine(sheet, "订单信息", headerFirst);
+                if (ints != null)
                 {
-                    var row = sheet.GetRow(j);
-                    OrderDetail od = new OrderDetail();
-                    var c0 = row.GetCell(0)?.ToString();
-                    if (c0.Equals("订单详情"))
+                    List<Dispute> disputes = new List<Dispute>();
+                    for (int j = ints[0]; j <= ints[1]; j++)
                     {
-                        continue;
+                        var row = sheet.GetRow(j);
+                        string v = row.GetCell(0).ToString();
+                        if (v.Equals("订单信息") || v.Equals("暂无数据"))
+                        {
+                            continue;
+                        }
+
+                    
+                        Dispute dispute = new Dispute();
+                        string c0 = row.GetCell(0).ToString();
+                        // 订单
+                        /// 订单号
+                        dispute.OrderId = Regex.Match(c0, @"订单信息\s*(\d+)").Groups[1].Value;
+                        /// 下单时间
+                        string time = Regex.Match(c0, @"下单时间\s*([\d-]+\s[\d:]+)").Groups[1].Value;
+                        DateTime dateTime;
+                        DateTime.TryParseExact(time, "yyyy-MM-dd HH:mm", new CultureInfo("en-US"), DateTimeStyles.None, out dateTime);
+                        dispute.OrderTime = dateTime;
+                        dispute.DisputeTime = row.GetCell(4).DateCellValue;
+                    
+                        var c5 = row.GetCell(5)?.ToString();
+                        dispute.Status = c5.Split('\n')[0];
+                        if (c5.Contains("剩余："))
+                        {
+                            int index = c5.IndexOf("剩余：");
+                            dispute.LastTime = c5.Substring(index + 4);
+                        }
+                    
+                        disputes.Add(dispute);
                     }
-
-                    // 订单
-                    /// 订单号
-                    od.OrderId = Regex.Match(c0, @"订单号:\s*(\d+)").Groups[1].Value;
-                    /// 下单时间
-                    string time = Regex.Match(c0, @"下单时间:\s*([\d-]+\s[\d:]+)").Groups[1].Value;
-                    DateTime dateTime;
-                    DateTime.TryParseExact(time, "yyyy-MM-dd HH:mm", new CultureInfo("en-US"), DateTimeStyles.None, out dateTime);
-                    od.OrderTime = dateTime;
-
-                    // 标题
-                    var c2 = row.GetCell(2)?.ToString();
-                    od.Title = c2.Split('\n')[0];
-
-                    // 数量 
-                    var c3 = row.GetCell(3)?.ToString();
-                    string n = c3.Substring(1);
-                    int d1;
-                    int.TryParse(n, out d1);
-                    od.Quantity = d1;
-
-                    //售后
-                    var c4 = row.GetCell(4)?.ToString();
-                    od.After = c4;
-
-                    // 金额
-                    var c5 = row.GetCell(5)?.ToString();
-                    od.RMB = SplitAmount(c5.Split('\n')[0]).Value;
-                    if (c5.Split('\n').Length > 1)
-                    {
-                        KeyValuePair<string, double> kv = SplitAmount(c5.Split('\n')[1]);
-                        od.Symbol = kv.Key;
-                        od.Amount = kv.Value;
-                    }
-                    else
-                    {
-                        od.Amount = 0.0;
-                    }
-
-
-                    // 状态
-                    var c6 = row.GetCell(6)?.ToString();
-                    od.Status = c6.Split('\n')[0];
-                    if (c6.Contains("剩余时间："))
-                    {
-                        int index = c6.IndexOf("剩余时间：");
-                        od.LastTime = c6.Substring(index + 6);
-                    }
-                    orderDetails.Add(od);
+                    daily.DisputeOrders = disputes.ToArray();
+                }
+                else
+                {
+                    daily.DisputeOrders = new Dispute[0];
                 }
 
-                daily.NotShips = notShips.ToArray();
-                daily.OrderDetails = orderDetails.GroupBy(x => x.OrderId).Select(y => y.First()).ToArray();
+                //// 未发货订单
+                ////for (int j = rowNumber; j <= sheet.LastRowNum; j++)
+                ////{
+                ////    rowNumber = j;
+                ////    NotShip notShip = new NotShip();
+                ////    var row = sheet.GetRow(j);
+                ////    string v = row.GetCell(0).ToString();
+                ////    if (row.GetCell(0).ToString().Equals("订单详情"))
+                ////    {
+                ////        break;
+                ////    }
+                ////    // 订单时间
+                ////    DateTime? dateCellValue = row.GetCell(0)?.DateCellValue;
+                ////    notShip.OrderTime = (DateTime)dateCellValue;
+                ////
+                ////    // 金额
+                ////    string amount = row.GetCell(1)?.ToString();
+                ////    KeyValuePair<string, double> kv = SplitAmount(amount);
+                ////    notShip.Symbol = kv.Key;
+                ////    notShip.Amount = kv.Value;
+                ////
+                ////    // 剩余天数
+                ////    string day = row.GetCell(2)?.ToString();
+                ////    int d2;
+                ////    int.TryParse(day, out d2);
+                ////    notShip.LastDay = d2;
+                ////
+                ////    notShips.Add(notShip);
+                ////}
+                //
+                //// 订单详情
+                ///
+                ints = GetHeaderLine(sheet, "订单详情", headerFirst);
+                if (ints != null)
+                {
+                    for (int j = ints[0]; j <= ints[1]; j++)
+                    {
+                        var row = sheet.GetRow(j);
+                        OrderDetail od = new OrderDetail();
+                        var c0 = row.GetCell(0)?.ToString();
+                        if (c0.Equals("订单详情"))
+                        {
+                            continue;
+                        }
+                    
+                        // 订单
+                        /// 订单号
+                        od.OrderId = Regex.Match(c0, @"订单号:\s*(\d+)").Groups[1].Value;
+                        /// 下单时间
+                        string time = Regex.Match(c0, @"下单时间:\s*([\d-]+\s[\d:]+)").Groups[1].Value;
+                        DateTime dateTime;
+                        DateTime.TryParseExact(time, "yyyy-MM-dd HH:mm", new CultureInfo("en-US"), DateTimeStyles.None, out dateTime);
+                        od.OrderTime = dateTime;
+                    
+                        // 标题
+                        var c2 = row.GetCell(2)?.ToString();
+                        od.Title = c2.Split('\n')[0];
+                    
+                        // 数量 
+                        var c3 = row.GetCell(3)?.ToString();
+                        string n = c3.Substring(1);
+                        int d1;
+                        int.TryParse(n, out d1);
+                        od.Quantity = d1;
+                    
+                        //售后
+                        var c4 = row.GetCell(4)?.ToString();
+                        od.After = c4;
+                    
+                        // 金额
+                        var c5 = row.GetCell(5)?.ToString();
+                        od.RMB = SplitAmount(c5.Split('\n')[0]).Value;
+                        if (c5.Split('\n').Length > 1)
+                        {
+                            KeyValuePair<string, double> kv = SplitAmount(c5.Split('\n')[1]);
+                            od.Symbol = kv.Key;
+                            od.Amount = kv.Value;
+                        }
+                        else
+                        {
+                            od.Amount = 0.0;
+                        }
+                    
+                    
+                        // 状态
+                        var c6 = row.GetCell(6)?.ToString();
+                        od.Status = c6.Split('\n')[0];
+                        if (c6.Contains("剩余时间："))
+                        {
+                            int index = c6.IndexOf("剩余时间：");
+                            od.LastTime = c6.Substring(index + 6);
+                        }
+                        orderDetails.Add(od);
+                    }
+                    
+                    daily.NotShips = notShips.ToArray();
+                    daily.OrderDetails = orderDetails.GroupBy(x => x.OrderId).Select(y => y.First()).ToArray();
+                }
+                else
+                {
+                    daily.OrderDetails = new OrderDetail[0];
+                }
             }
 
             return daily;
         }
+
+     
         #endregion
 
 
@@ -755,7 +890,7 @@ namespace analyze.core.Clients
         }
         public void Collect(string rawDir = "", string dataDir = "", string shopDirPrefix = "")
         {
-            string shopRecordFileName = Path.Combine(rawDir, "店铺记录.xlsx");
+            string shopRecordFileName = Path.Combine(rawDir, "店铺记录.csv");
             string orderRecordFileName = Path.Combine(rawDir, "订单总表.xlsx");
             string usPruchasRecordFileName = Path.Combine(rawDir, "美国采购单.xlsx");
             string brPruchasRecordFileName = Path.Combine(rawDir, "巴西采购单.xlsx");
@@ -820,7 +955,8 @@ namespace analyze.core.Clients
         }
         public static string[] ReadSortFiles(string fileName)
         {
-            string[] fs = Directory.GetFiles(Path.GetDirectoryName(fileName));
+            
+            string[] fs = Directory.GetFiles(Path.GetDirectoryName(Path.GetFullPath(fileName)));
             fs = fs.Where(s => s.Contains(fileName.Replace(Path.GetExtension(fileName), ""))).ToArray();
             Array.Sort(fs);
             return fs;

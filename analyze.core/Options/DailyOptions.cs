@@ -11,6 +11,9 @@ namespace analyze.core.Options
         [Option('f', "file-name", HelpText = "读取文件")]
         public IEnumerable<string> DailyFiles { get; set; }
 
+        [Option("shop-info", HelpText = "店铺信息文件")]
+        public string ShopInfoFileName { get; set; }
+
 
         [Option('d', "file-dir", HelpText = "每日数据文件目录")]
         public string FileDir { get; set; }
