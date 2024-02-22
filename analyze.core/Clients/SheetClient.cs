@@ -239,7 +239,6 @@ namespace analyze.core.Clients
             newfs.Dispose();
             Log($"保存 {fileName}");
             workbook.Close();
-
         }
 
         public void SaveShopRefund(string fileName, ShopRefund[] shopRefunds, bool overwrite)
@@ -315,7 +314,7 @@ namespace analyze.core.Clients
                     Log($"读取 {ss[c]}");
                     var sheet = workbook.GetSheetAt(0);
 
-                    if (sheet != null && sheet.LastRowNum > 2)
+                    if (sheet != null && sheet.LastRowNum > 0)
                     {
                         for (int i = 1; i < sheet.LastRowNum + 1; i++)
                         {
@@ -802,7 +801,7 @@ namespace analyze.core.Clients
                     
                         // 数量 
                         var c3 = row.GetCell(3)?.ToString();
-                        string n = c3.Substring(1);
+                        string n = string.IsNullOrWhiteSpace(c3) ? "1" :  c3.Substring(1);
                         int d1;
                         int.TryParse(n, out d1);
                         od.Quantity = d1;
@@ -890,7 +889,7 @@ namespace analyze.core.Clients
         }
         public void Collect(string rawDir = "", string dataDir = "", string shopDirPrefix = "")
         {
-            string shopRecordFileName = Path.Combine(rawDir, "店铺记录.csv");
+            string shopRecordFileName = Path.Combine(rawDir, "店铺记录.xlsx");
             string orderRecordFileName = Path.Combine(rawDir, "订单总表.xlsx");
             string usPruchasRecordFileName = Path.Combine(rawDir, "美国采购单.xlsx");
             string brPruchasRecordFileName = Path.Combine(rawDir, "巴西采购单.xlsx");
@@ -955,9 +954,12 @@ namespace analyze.core.Clients
         }
         public static string[] ReadSortFiles(string fileName)
         {
-            
-            string[] fs = Directory.GetFiles(Path.GetDirectoryName(Path.GetFullPath(fileName)));
-            fs = fs.Where(s => s.Contains(fileName.Replace(Path.GetExtension(fileName), ""))).ToArray();
+            string fullPath = Path.GetFullPath(fileName);
+            string[] fs = Directory.GetFiles(Path.GetDirectoryName(fullPath));
+
+            fs = fs.Where(s => 
+            Path.GetFileName(s).Contains(Path.GetFileNameWithoutExtension(fileName))
+            && !Path.GetFileName(s).StartsWith("~")).ToArray();
             Array.Sort(fs);
             return fs;
         }

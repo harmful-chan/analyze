@@ -91,7 +91,7 @@ namespace analyze.core
                     bool flag4 = true;
 
                     ShopOrder[] shopOrders = shop.ShopOrderList.Where(t => t.OrderId.Equals(r.OrderId)).ToArray();
-                    TotalOrder[] torders = client.TotalOrders.Where(t => t.OrderId != null && t.OrderId.Equals(r.OrderId)).ToArray();
+                    TotalOrder[] torders = client.TotalOrders.Where(t => t.OrderId != null && t.OrderId.Contains(r.OrderId)).ToArray();
                     TotalPurchase[] porder = client.TotalPurchases.Where(t => t.OrderId != null && t.OrderId.Equals(r.OrderId)).ToArray();
 
                     string ot = shopOrders.FirstOrDefault()?.OrderTime.ToString("yyyy-MM-dd HH:mm:ss");
@@ -155,7 +155,7 @@ namespace analyze.core
                     }
                     System.Array.Sort(sureLends, (x, y) => { return x.SettlementTime.CompareTo(y.SettlementTime); });
 
-                    string filename = Path.Combine(o.OutputFile, $"{shop.Shop.CompanyNumber}{shop.Shop.CN}{shop.Shop.CompanyName}{shop.Shop.Nick}.xlsx");
+                    string filename = Path.Combine(o.OutputFile, $"{o.Year}{o.Moon.ToString("D2")}{shop.Shop.CN}{shop.Shop.CompanyName}{shop.Shop.Nick}.xlsx");
                     client.SaveShopLend(filename, sureLends, true);
 
                 }
@@ -481,8 +481,11 @@ namespace analyze.core
             {
                 foreach (string filename in o.DailyFiles)
                 {
-                    Daily daily = client.ReadDaily(filename);
-                    dailys.Add(daily);
+                    if(!Path.GetFileName(filename).StartsWith("~"))
+                    {
+                        Daily daily = client.ReadDaily(filename);
+                        dailys.Add(daily);
+                    }
                 }
                 dailys.Sort();
 
@@ -575,7 +578,7 @@ namespace analyze.core
                 var loseAmount = onwayLose.Sum(o => o.Amount);
 
                 // 实际充值 不是索赔，不是返点
-                double reality = recharges.Where( r => r.CompanyName.Contains(daily.Company) && !r.Mark.Contains("返点") && !r.Mark.Contains("索赔")).Sum(o => o.Amount);
+                double reality = recharges.Where( r => r.CompanyName.Contains(daily.Company) && !r.Mark.Contains("返点") && !r.Mark.Contains("索赔") && !r.Mark.Contains("海外仓")).Sum(o => o.Amount);
 
                 // 云仓余额
                 double balance = users.Where(u => u.CompanyName.Contains(daily.Company)).FirstOrDefault().Balance;

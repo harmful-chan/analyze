@@ -99,7 +99,8 @@ analyze.core.202402170154.exe daily  -d "F:\BaiduSyncdisk\Desktop\Êı¾İ²É¼¯\Ã¿ÈÕÊ
 analyze.core.202402170154.exe daily  -d "F:\BaiduSyncdisk\Desktop\Êı¾İ²É¼¯\Ã¿ÈÕÊı¾İ\2024Äê02ÔÂ16ÈÕ" --upload-info
 
 ### analyze.core.202402210011.exe
-analyze.core.202402210011.exe daily -d "Z:\Êı¾İ²É¼¯\Ã¿ÈÕÊı¾İ\2024Äê02ÔÂ20ÈÕ\" --shop-info "Z:\Êı¾İ²É¼¯\µêÆÌĞÅÏ¢.xlsx" 
+#### analyze.core.202402221333.exe
+analyze.core.202402221333.exe daily -d "Z:\Êı¾İ²É¼¯\Ã¿ÈÕÊı¾İ\2024Äê02ÔÂ20ÈÕ\" --shop-info "Z:\Êı¾İ²É¼¯\µêÆÌĞÅÏ¢.xlsx" 
 --list-profit
 --list-opear
 --list-company
