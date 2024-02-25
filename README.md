@@ -1,4 +1,3 @@
-add
 # Analyze Êı¾İ·ÖÎö
 analyze.core Ê¹ÓÃ .net core 3.1 ¿ò¼Ü¡£°²×°.net8¿ÉÕı³£Ê¹ÓÃ
 analyze.core.win Ê¹ÓÃ.net8¿ò¼Ü¡£°²×°.net8¿ÉÕı³£Ê¹ÓÃ
@@ -50,14 +49,16 @@ bin    ÀúÊ··¢²¼°æ±¾¿ÉÖ´ĞĞ³ÌĞò¡£Í¨³£ÒÔÊ±¼ä½áÎ²
 ```
 ## Example
 ### manage
-- analyze.core manage -u \{client_id\} --deduction \{order_id\} \{order_id\} ...
 ```shell
-\analyze.core.exe manage -u 5377028 --deduction  8185077759712497 8185077759712492 ...
+# ¿Û³ı¶©µ¥¶ÔÓ¦»õ¿î
+.\analyze.core.exe manage -u 5377028 --deduction  8185077759712497 8185077759712492 ...
+.\analyze.core.exe manage -f "¿Û¿î¼ÇÂ¼\temp.txt"
 ```
 
 ### order
-- analyze.core order -a refund -r \{rawdir\} -d \{datadir\} -o \{output_dir\} -p \{folder_prefix\} -y \{year\} -m \{month\} [-l]
 ```
+# ÁĞ³öÖ¸¶¨ÄêÔÂÍË¿î¼ÇÂ¼²¢±£´æxlsx
+#analyze.core order -a refund -r \{rawdir\} -d \{datadir\} -o \{output_dir\} -p \{folder_prefix\} -y \{year\} -m \{month\} [-l]
 .\analyze.exe order -a refund -r "Ô­Ê¼Êı¾İ\2024Äê02ÔÂ21ÈÕ\" -d "¶©µ¥Êı¾İ\1ÔÂ" -o "Ë÷Åâ¼ÇÂ¼\2024Äê1ÔÂ" -p "¹«Ë¾23cn1077984038qwgae°Ùô´Èº´´aa" -y 2024 -m 1 -l
 
 | I  | Order            | Turnover | Refund  | Cost     | TradeId                   | Deduction | Status | Country       | RefundTime          | OrderTime           | PaymentTime         | ShippingTime        | ReceiptTime         |
@@ -70,16 +71,28 @@ bin    ÀúÊ··¢²¼°æ±¾¿ÉÖ´ĞĞ³ÌĞò¡£Í¨³£ÒÔÊ±¼ä½áÎ²
 | 6  | 8181973781689635 | 237.86   | 237.86  | 178.636  | 5377003-115-20231221-6763 | 178.636   |        | Brazil        | 2024-01-10 19:49:02 | 2023-12-20 04:52:00 | 2023-12-20 04:55:00 |                     | 2024-01-04 17:59:00 |
 | 7  | 8184000399607281 | 78.73    | 78.73   |          |                           |           |        | Brazil        | 2024-01-11 10:55:19 | 2024-01-11 10:50:00 | 2024-01-11 10:51:00 |                     |                     |
 | 8  | 8181127093312526 | 1202.16  | 801.51  | 766.587  | 5377003-115-20231128-5653 | 766.587   | 1      | United States | 2024-01-12 03:08:26 | 2023-11-27 06:56:00 | 2023-11-27 06:56:00 | 2023-11-28 02:55:00 | 2023-12-20 02:55:00 |
-
 ...
-```
-- analyze.core order -a lead ...
-```
+
+# ÁĞ³öÀûÈó²¢±£´æ xlsx
 .\analyze.core.exe order -a lend -r "Ô­Ê¼Êı¾İ\2024Äê02ÔÂ21ÈÕ\" -d "¶©µ¥Êı¾İ\1ÔÂ" -o "ÀûÈóÍ³¼Æ\1ÔÂ" -p "¹«Ë¾23cn1077984038qwgae°Ùô´Èº´´aa" -y 2024 -m 1 -l
 ¹«Ë¾23cn1077984038qwgaeÉîÛÚ°Ùô´Èº´´¿Æ¼¼ÓĞÏŞ¹«Ë¾aa  Lend:46104.35 Cost:37231.73 Profit:8872.62  Rate:0.24
 ±£´æ ÀûÈóÍ³¼Æ\1ÔÂ\202401cn1077984038qwgaeÉîÛÚ°Ùô´Èº´´¿Æ¼¼ÓĞÏŞ¹«Ë¾aa.xlsx
 ```
+
 ### daily
+µêÆÌÃ¿ÌìµÄµêÆÌÊı¾İ±£´æµ½Ò»¸öxlsxÎÄ¼şÖĞ¡£±í¸ñÇ°¼¸ĞĞÓĞ¹Ì¶¨¸ñÊ½
+```
+A1:¹«Ë¾Ãû B1:µêÆÌêÇ³Æ
+A2:ÔËÓªĞÕÃû B2:ÔÚÊÛÊı¾İ C2:ÉóºËÊı¾İ D2:ÏÂ¼ÜÊı¾İ
+A3:24Ğ¡Ê±»Ø¸´ÂÊ B3:³É½»²»Âô C3:»õ²»¶Ô°å D3:¾À·×ÂÊ E3:ºÃÆÀÂÊ F3:72Ğ¡Ê±ÉÏÍøÂÊ
+A4:·Å¿î B4:¶³½á C4:ÔÚÍ¾ D4:·Å¿î
+
+ÒÔÏÂ¼ÇÂ¼¿ÉÒÔ²»·ÖÏÈºó£º
+×Ê½ğÌáÏÖ¼ÇÂ¼
+ÔÚÍ¾¶©µ¥¼ÇÂ¼
+¾À·×¶©µ¥¼ÇÂ¼
+¶©µ¥¼ÇÂ¼
+```
 ```
 .\analyze.core.exe daily -d ".\Ã¿ÈÕÊı¾İ\2024Äê02ÔÂ25ÈÕ\" --shop-info ".\µêÆÌĞÅÏ¢.xlsx" --list-company
 | Company  | CN | Opera  | UP   | Check | Down | IM24    | Good    | Dispute | Wrong | Dispute Line | F30 | D30 | Exp30 | Fin | Dis | Close | Talk | Palt | All | Ready Line   | New | Ready | Wait | Lead     | Freeze  | OnWay    | Arre    | Lose | Get   | Reality | Balance  |
@@ -113,6 +126,7 @@ bin    ÀúÊ··¢²¼°æ±¾¿ÉÖ´ĞĞ³ÌĞò¡£Í¨³£ÒÔÊ±¼ä½áÎ²
 
 ## tag
 ### daily
+
 ```shell
 #202402151726
 analyze.core.202402151726.exe daily -d "D:\BaiduSyncdisk\Desktop\Êı¾İ²É¼¯\Ã¿ÈÕÊı¾İ\2024Äê02ÔÂ15ÈÕ" -l -u
@@ -129,6 +143,7 @@ analyze.core.202402170154.exe daily  -d "F:\BaiduSyncdisk\Desktop\Êı¾İ²É¼¯\Ã¿ÈÕÊ
 analyze.core.202402221333.exe daily -d "Z:\Êı¾İ²É¼¯\Ã¿ÈÕÊı¾İ\2024Äê02ÔÂ20ÈÕ\" --shop-info "Z:\Êı¾İ²É¼¯\µêÆÌĞÅÏ¢.xlsx" {--list-profit | --list-opear | --list-company | --upload-order --upload-info}
 ```
 
+
 ### manage
 ```
 #202402160626
@@ -138,7 +153,7 @@ analyze.core.202402160626.exe manage -f ".\¿Û¿î¼ÇÂ¼\temp.txt"
 
 
 
-## ±í¸ñËùĞèÒª×Ö¶Î
+### ±í¸ñËùĞèÒª×Ö¶Î
 ```
 ### ¶©µ¥×Ü±í : ¶©µ¥ºÅ ¶©µ¥×´Ì¬ ¿Û¿î½»Ò×ºÅ ¿Û¿î½ğ¶î
 ### µêÆÌ¶©µ¥ : ¶©µ¥ºÅ ¸¶¿îÊ±¼ä  ¶©µ¥½ğ¶î ÊÕ»õ¹ú¼Ò ·¢»õÊ±¼ä 
