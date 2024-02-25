@@ -2,7 +2,7 @@
   "profiles": {
     "analyze.core": {
       "commandName": "Project",
-      "commandLineArgs": "daily -d \"Z:\\数据采集\\每日数据\\2024年02月22日\" --shop-info \"Z:\\数据采集\\店铺信息.xlsx\" --list-company"
+      "commandLineArgs": "purchase  -l -b Leo"
     }
   }
 }

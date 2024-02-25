@@ -59,9 +59,14 @@ namespace analyze.core.Clients
 
                             Purchase to = new Purchase();
                             string A1 = row.GetCell(0)?.ToString();
-                            string B1 = row.GetCell(0)?.ToString();
+                            string B1 = row.GetCell(1)?.ToString();
                             // 去除表格 us A1空 B1=操作人
                             if (string.IsNullOrWhiteSpace(A1) && "操作人".Equals(B1) || "序号".Equals(A1) && "日期".Equals(B1))
+                            {
+                                continue;
+                            }
+                            // 去除表格 br A1=序号 B1=提单日期
+                            if (string.IsNullOrWhiteSpace(A1) || "序号".Equals(A1) && "提单日期".Equals(B1))
                             {
                                 continue;
                             }
@@ -71,6 +76,22 @@ namespace analyze.core.Clients
                             {
                                 to.OrderId = row.GetCell(6)?.ToString();
                                 to.Status = row.GetCell(22)?.ToString();
+                                string v = row.GetCell(21)?.ToString();
+                                to.IsUpdate = string.IsNullOrWhiteSpace(v) ? false : "已更新".Equals(v);
+                                to.Buyer = row.GetCell(16)?.ToString();
+
+                                ICell cell = row.GetCell(1);
+                                if(cell!=null && cell.CellType == CellType.Numeric)
+                                {
+                                    to.SubmissionDate = (DateTime)row.GetCell(1)?.DateCellValue;
+                                }
+                                else
+                                {
+                                    to.SubmissionDate = DateTime.MinValue;  
+                                }
+
+                                
+                                to.Index = row.GetCell(0)?.ToString();
                                 os.Add(to);
                             }
                             else if (row != null && type == 2)  // 类型2美国单
@@ -858,7 +879,9 @@ namespace analyze.core.Clients
         public List<ShopRecord> ShopRecords = new List<ShopRecord>();
         public List<Order> TotalOrders = new List<Order>();
         public List<Purchase> TotalPurchases = new List<Purchase>();
-
+        public string DefaultBrPurchasesFilename { get; set; }
+            = Path.Combine(Path.GetDirectoryName(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName), 
+                "原始数据", $"{DateTime.Now.ToString("yyyy年MM月dd日")}", "巴西采购单.xlsx");
 
         private List<Shop> SelectShop(List<Shop> shops, string prefix)
         {

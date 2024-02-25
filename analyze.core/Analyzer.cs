@@ -21,17 +21,19 @@ namespace analyze.core
         {
             if(SheetClient.Log == null)
             {
-                SheetClient.Log = (str, online) => {
-                    if (online)
-                    {
-                        Console.SetCursorPosition(0, Console.CursorTop);
-                        Console.Write($"{str}");
-                    }
-                    else
-                    {
-                        Console.WriteLine(str);
-                    }
-                };
+                SheetClient.Log = Log;
+            }
+        }
+        private void Log(string str, bool online = true)
+        {
+            if (online)
+            {
+                Console.SetCursorPosition(0, Console.CursorTop);
+                Console.Write($"{str}");
+            }
+            else
+            {
+                Console.WriteLine(str);
             }
         }
 
@@ -934,6 +936,64 @@ namespace analyze.core
                 
 
             }
+        }
+
+
+        #endregion
+
+        #region 采购 purchase
+        public void PurchaseRun(PurchaseOptions o)
+        {
+            SheetClient client = new SheetClient();
+            IList<Purchase> purchases = null;
+            if (File.Exists(o.BrPurchaseFilename))
+            {
+                purchases = client.ReadPurchase(1, o.BrPurchaseFilename);
+            }
+            else if(File.Exists(client.DefaultBrPurchasesFilename))
+            {
+                o.BrPurchaseFilename = client.DefaultBrPurchasesFilename;
+                
+                purchases = client.ReadPurchase(1, o.BrPurchaseFilename);
+            }
+            else
+            {
+                Log($"读取 {o.BrPurchaseFilename} 失败");
+                return;
+            }
+
+            if(o.IsListPurchaseProgress)
+            {
+                IEnumerable<Purchase> surePurchases = null;
+                if (!string.IsNullOrWhiteSpace(o.Buyer))
+                {
+                    surePurchases = purchases.Where(p => o.Buyer.Equals(p.Buyer));
+                }
+
+                if(surePurchases == null)
+                {
+                    surePurchases = purchases;
+                }
+
+                int i = 1;
+                ConsoleTable consoleTable = new ConsoleTable("I", "date", "Order", "Pending", "Processing", "Solved", "Cancel", "Cut");
+                var enumerable = surePurchases.GroupBy(x => x.SubmissionDate).OrderBy(y => y.Key);
+                foreach (var item in enumerable)
+                {
+                    var processing = item.Where(e => "已下单".Equals(e.Status));
+                    var solved = item.Where(e => "已发货".Equals(e.Status));
+                    var cancel = item.Where(e => "砍单".Equals(e.Status));
+                    var cut = item.Where(e => "截单".Equals(e.Status));
+                    var pending = item.Where(e => string.IsNullOrWhiteSpace(e.Status) || 
+                        !e.Status.Equals("已下单") && !e.Status.Equals("已发货") && !e.Status.Equals("砍单") && !e.Status.Equals("截单"));
+                    consoleTable.AddRow(i++, item.Key.ToString("yyyy-MM-dd"), item.Count(),
+                        pending.Count(), processing.Count(), solved.Count(), cancel.Count(), cut.Count());
+                }
+                Console.WriteLine();
+                consoleTable.Write(Format.Minimal);
+            }
+
+
         }
         #endregion
 

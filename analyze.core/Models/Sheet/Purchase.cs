@@ -10,5 +10,10 @@ namespace analyze.core.Models.Sheet
     {
         public string OrderId { get; set; }
         public string Status { get; set; }
+        public bool  IsUpdate { get; set; }
+        public string Buyer { get; set; }
+        public DateTime SubmissionDate { get; set; }
+        public string Index { get; set; }
+
     }
 }

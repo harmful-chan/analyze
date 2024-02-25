@@ -28,7 +28,7 @@ namespace analyze
             //{
 
             var exitCode = Parser.Default
-                .ParseArguments<ManageOptions, DailyOptions, OrderOptions>(args)
+                .ParseArguments<ManageOptions, DailyOptions, OrderOptions, PurchaseOptions > (args)
                 .MapResult(
                     (ManageOptions o) => 
                     {
@@ -43,6 +43,11 @@ namespace analyze
                     (OrderOptions o) =>
                     {
                         new Analyzer().OrderRun(o);
+                        return 0;
+                    },
+                    (PurchaseOptions o) =>
+                    {
+                        new Analyzer().PurchaseRun(o);
                         return 0;
                     },
                     error => 1);
