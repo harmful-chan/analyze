@@ -1,11 +1,11 @@
 # Analyze 数据分析
-analyze.core 使用 .net core 3.1 框架。安装.net8可正常使用
-analyze.core.win 使用.net8框架。安装.net8可正常使用
+analyze.core: 使用 .net core 3.1 框架。安装.net8可正常使用<br>
+analyze.core.win: 使用.net8框架。安装.net8可正常使用<br>
 
 ## Features
-manage: 后台管理功能可用于获取用户信息以及订单记录。
-order: 处理店铺原始数据，计算放款，退款，利润记录。
-daily: 处理每日店铺数据，上报数据到企业微信群。
+manage: 后台管理功能可用于获取用户信息以及订单记录。<br>
+order: 处理店铺原始数据，计算放款，退款，利润记录。<br>
+daily: 处理每日店铺数据，上报数据到企业微信群。<br>
 
 ## Architecture
 ```shell
