@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace analyze.core.Models.Sheet
 {
-    public class TotalPurchase
+    public class Purchase
     {
         public string OrderId { get; set; }
         public string Status { get; set; }

@@ -27,7 +27,8 @@ namespace analyze
             //try 
             //{
 
-            var exitCode = Parser.Default.ParseArguments<ManageOptions, DailyOptions, OrderOptions>(args)
+            var exitCode = Parser.Default
+                .ParseArguments<ManageOptions, DailyOptions, OrderOptions>(args)
                 .MapResult(
                     (ManageOptions o) => 
                     {
@@ -72,7 +73,7 @@ namespace analyze
         {
             SheetClient client = new SheetClient();
             // 读订单总表
-            IList<TotalOrder> totalOrders = client.ReadTotalOrder(args[0]);
+            IList<Order> totalOrders = client.ReadOrder(args[0]);
 
             // 获取当前目录下的文件夹
             string[] ds = Directory.GetDirectories(Path.GetDirectoryName(args[0]));
@@ -94,7 +95,7 @@ namespace analyze
                 {
                     double cost = 0.0;
                     double deduction = 0.0;
-                    TotalOrder[] torders = totalOrders.Where(t => t.OrderId.Equals(re.OrderId)).ToArray();
+                    Order[] torders = totalOrders.Where(t => t.OrderId.Equals(re.OrderId)).ToArray();
                     ShopOrder[] oorders = orders.Where(o => o.OrderId.Equals(re.OrderId)).ToArray();
 
                     Console.Write("{0:D2} ", index++);

@@ -16,7 +16,7 @@ namespace analyze.core.Clients
 {
     public class SheetClient
     {
-        public delegate void LogDelegate(string arg);
+        public delegate void LogDelegate(string arg, bool isOnline =true);
         private static LogDelegate _log;
         public static LogDelegate Log
         {
@@ -35,10 +35,10 @@ namespace analyze.core.Clients
 
         #region XLSX操作
 
-        public IList<TotalPurchase> TotalPurchase(int type, string fileName)
+        public IList<Purchase> ReadPurchase(int type, string fileName)
         {
 
-            List<TotalPurchase> os = new List<TotalPurchase>();
+            List<Purchase> os = new List<Purchase>();
             string[] files = ReadSortFiles(fileName);  // 读取相同文件
             for (int i = 0; i < files.Length; i++)
             {
@@ -57,7 +57,7 @@ namespace analyze.core.Clients
                                 continue;
                             }
 
-                            TotalPurchase to = new TotalPurchase();
+                            Purchase to = new Purchase();
                             string A1 = row.GetCell(0)?.ToString();
                             string B1 = row.GetCell(0)?.ToString();
                             // 去除表格 us A1空 B1=操作人
@@ -408,9 +408,9 @@ namespace analyze.core.Clients
             return os;
         }
 
-        public IList<TotalOrder> ReadTotalOrder(string fileName)
+        public IList<Order> ReadOrder(string fileName)
         {
-            List<TotalOrder> os = new List<TotalOrder>();
+            List<Order> os = new List<Order>();
             string[] files = ReadSortFiles(fileName);
             for (int i = 0; i < files.Length; i++)
             {
@@ -425,7 +425,7 @@ namespace analyze.core.Clients
                         {
                             var row = sheet.GetRow(j);
 
-                            TotalOrder to = new TotalOrder();
+                            Order to = new Order();
                             to.StoreName = row.GetCell(0)?.ToString();
                             // 跳过表头
                             if (to.StoreName != null && to.StoreName.Contains("店铺"))
@@ -856,8 +856,8 @@ namespace analyze.core.Clients
 
         public List<Shop> AllShops = new List<Shop>();
         public List<ShopRecord> ShopRecords = new List<ShopRecord>();
-        public List<TotalOrder> TotalOrders = new List<TotalOrder>();
-        public List<TotalPurchase> TotalPurchases = new List<TotalPurchase>();
+        public List<Order> TotalOrders = new List<Order>();
+        public List<Purchase> TotalPurchases = new List<Purchase>();
 
 
         private List<Shop> SelectShop(List<Shop> shops, string prefix)
@@ -896,12 +896,12 @@ namespace analyze.core.Clients
 
             if (TotalOrders.Count == 0)
             {
-                TotalOrders = ReadTotalOrder(orderRecordFileName).ToList();
+                TotalOrders = ReadOrder(orderRecordFileName).ToList();
             }
             if (TotalPurchases.Count == 0)
             {
-                IList<TotalPurchase> totalPurchases1 = TotalPurchase(1, brPruchasRecordFileName);
-                IList<TotalPurchase> totalPurchases2 = TotalPurchase(2, usPruchasRecordFileName);
+                IList<Purchase> totalPurchases1 = ReadPurchase(1, brPruchasRecordFileName);
+                IList<Purchase> totalPurchases2 = ReadPurchase(2, usPruchasRecordFileName);
                 TotalPurchases.AddRange(totalPurchases1);
                 TotalPurchases.AddRange(totalPurchases2);
             }

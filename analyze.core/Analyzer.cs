@@ -5,22 +5,13 @@ using analyze.core.Models.Sheet;
 using analyze.core.Options;
 using analyze.Models.Manage;
 using ConsoleTables;
-using NPOI.HPSF;
-using NPOI.HSSF.Record;
-using NPOI.SS.Formula.Functions;
-using NPOI.Util;
-using NPOI.XWPF.UserModel;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using static analyze.core.Clients.SheetClient;
-using static ICSharpCode.SharpZipLib.Zip.ExtendedUnixData;
-using static NPOI.HSSF.Util.HSSFColor;
 
 namespace analyze.core
 {
@@ -30,14 +21,21 @@ namespace analyze.core
         {
             if(SheetClient.Log == null)
             {
-                SheetClient.Log = (str) => {
-                    Console.SetCursorPosition(0, Console.CursorTop);
-                    Console.Write($"{str}");
+                SheetClient.Log = (str, online) => {
+                    if (online)
+                    {
+                        Console.SetCursorPosition(0, Console.CursorTop);
+                        Console.Write($"{str}");
+                    }
+                    else
+                    {
+                        Console.WriteLine(str);
+                    }
                 };
             }
         }
 
-        #region 订单数据处理 
+        #region 根据输入的订单行为匹配不同订单处理动作 
         public void OrderRun(OrderOptions o)
         {
             if (o.action.Equals("refund"))
@@ -91,8 +89,8 @@ namespace analyze.core
                     bool flag4 = true;
 
                     ShopOrder[] shopOrders = shop.ShopOrderList.Where(t => t.OrderId.Equals(r.OrderId)).ToArray();
-                    TotalOrder[] torders = client.TotalOrders.Where(t => t.OrderId != null && t.OrderId.Contains(r.OrderId)).ToArray();
-                    TotalPurchase[] porder = client.TotalPurchases.Where(t => t.OrderId != null && t.OrderId.Equals(r.OrderId)).ToArray();
+                    Models.Sheet.Order[] torders = client.TotalOrders.Where(t => t.OrderId != null && t.OrderId.Contains(r.OrderId)).ToArray();
+                    Purchase[] porder = client.TotalPurchases.Where(t => t.OrderId != null && t.OrderId.Equals(r.OrderId)).ToArray();
 
                     string ot = shopOrders.FirstOrDefault()?.OrderTime.ToString("yyyy-MM-dd HH:mm:ss");
                     string pt = shopOrders.FirstOrDefault()?.PaymentTime.ToString("yyyy-MM-dd HH:mm:ss");
@@ -237,8 +235,8 @@ namespace analyze.core
                     bool flag4 = true;
 
                     ShopOrder[] shopOrders = shop.ShopOrderList.Where(t => t.OrderId.Equals(r.OrderId)).ToArray();
-                    TotalOrder[] torders = client.TotalOrders.Where(t => t.OrderId != null && t.OrderId.Equals(r.OrderId)).ToArray();
-                    TotalPurchase[] porder = client.TotalPurchases.Where(t => t.OrderId != null && t.OrderId.Equals(r.OrderId)).ToArray();
+                    Models.Sheet.Order[] torders = client.TotalOrders.Where(t => t.OrderId != null && t.OrderId.Equals(r.OrderId)).ToArray();
+                    Purchase[] porder = client.TotalPurchases.Where(t => t.OrderId != null && t.OrderId.Equals(r.OrderId)).ToArray();
                     if (r.Turnover != r.Refund)    // 放款退款不同
                     {
                         flag1 = false;
@@ -285,7 +283,7 @@ namespace analyze.core
                     // 退款理由：纠纷退款， 未发货退款，纠纷退款。
                     if (torders.Length > 0)
                     {
-                        TotalOrder to = torders.FirstOrDefault();
+                        Models.Sheet.Order to = torders.FirstOrDefault();
                         r.RefundReason = "未发货退款";
                         if (!string.IsNullOrWhiteSpace(to.TradeId))  // 有交易号，有发货之间 ： 纠纷退款
                         {
@@ -457,7 +455,7 @@ namespace analyze.core
             List<Daily> dailys = new List<Daily>();
             SheetClient client = new SheetClient();
             ManageClient manageClient = new ManageClient();
-            IList<TotalPurchase> brPurchases = null;
+            IList<Purchase> brPurchases = null;
             // 获取目录文件
             if(Directory.Exists(o.FileDir))
             {
@@ -529,7 +527,7 @@ namespace analyze.core
 
             if (File.Exists(o.BrPurchaseFilenmae))
             {
-                brPurchases = client.TotalPurchase(1, o.BrPurchaseFilenmae);
+                brPurchases = client.ReadPurchase(1, o.BrPurchaseFilenmae);
             }
 
             task.Wait();
@@ -872,12 +870,12 @@ namespace analyze.core
                         string v = client.LoginUser(clientId);
                         msg += $"{clientId} ";
                         SheetClient.Log(msg);
-                        Order[] orders = client.ListOrder(orderId);
+                        Models.Manage.Order[] orders = client.ListOrder(orderId);
                         msg += $"{orders.Length} ";
                         SheetClient.Log(msg);
                         if (orders.Length == 1)
                         {
-                            Order order = orders.First();
+                            Models.Manage.Order order = orders.First();
                             msg += $"{order.OrderId} ";
                             SheetClient.Log(msg);
                             double cost = order.Cost;
