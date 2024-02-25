@@ -1,3 +1,4 @@
+add
 # Analyze 数据分析
 analyze.core 使用 .net core 3.1 框架。安装.net8可正常使用
 analyze.core.win 使用.net8框架。安装.net8可正常使用
