@@ -1,5 +1,6 @@
 ﻿using analyze.core.Models.Daily;
 using analyze.core.Models.Sheet;
+using analyze.core.Outputs;
 using NPOI.SS.Formula.Functions;
 using NPOI.SS.UserModel;
 using System;
@@ -8,7 +9,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Reflection;
+using System.Reflection;                
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -16,22 +17,14 @@ namespace analyze.core.Clients
 {
     public class SheetClient
     {
-        public delegate void LogDelegate(string arg, bool isOnline =true);
-        private static LogDelegate _log;
-        public static LogDelegate Log
-        {
-            get
-            {
-                return _log;
-            }
-            set
-            {
-                _log = value;
-            }
-        }
 
         public static string Message { get; set; }
 
+        private IOutput _output = null;
+        public SheetClient(IOutput output)
+        {
+            _output = output;
+        }
 
         #region XLSX操作
 
@@ -45,7 +38,7 @@ namespace analyze.core.Clients
                 using (FileStream fs = new FileStream(files[i], FileMode.Open, FileAccess.Read))
                 {
                     IWorkbook workbook = WorkbookFactory.Create(fs);
-                    Log($"读取 {files[i]}");
+                    _output.Write($"读取 {files[i]}");
                     var sheet = workbook.GetSheetAt(0);
                     if (sheet != null)
                     {
@@ -116,7 +109,7 @@ namespace analyze.core.Clients
                 using (FileStream fs = new FileStream(ss[c], FileMode.Open, FileAccess.Read))
                 {
                     IWorkbook workbook = WorkbookFactory.Create(fs);
-                    Log($"读取 {ss[c]}");
+                    _output.Write($"读取 {ss[c]}");
                     var sheet = workbook.GetSheetAt(0);
                     if (sheet != null && sheet.LastRowNum + 1 >= 2)
                     {
@@ -258,7 +251,7 @@ namespace analyze.core.Clients
             workbook.Write(newfs);
             newfs.Close();
             newfs.Dispose();
-            Log($"保存 {fileName}");
+            _output.Write($"保存 {fileName}");
             workbook.Close();
         }
 
@@ -318,7 +311,7 @@ namespace analyze.core.Clients
             workbook.Write(newfs);
             newfs.Close();
             newfs.Dispose();
-            Log($"保存 {fileName}");
+            _output.Write($"保存 {fileName}");
             workbook.Close();
 
         }
@@ -332,7 +325,7 @@ namespace analyze.core.Clients
                 using (FileStream fs = new FileStream(ss[c], FileMode.Open, FileAccess.Read))
                 {
                     IWorkbook workbook = WorkbookFactory.Create(fs);
-                    Log($"读取 {ss[c]}");
+                    _output.Write($"读取 {ss[c]}");
                     var sheet = workbook.GetSheetAt(0);
 
                     if (sheet != null && sheet.LastRowNum > 0)
@@ -375,7 +368,7 @@ namespace analyze.core.Clients
             {
                 using (FileStream fs = new FileStream(ss[c], FileMode.Open, FileAccess.Read))
                 {
-                    Log($"读取 {ss[c]}");
+                    _output.Write($"读取 {ss[c]}");
                     IWorkbook workbook = WorkbookFactory.Create(fs);
                     var sheet = workbook.GetSheetAt(0);
                     if (sheet != null && sheet.LastRowNum > 2)
@@ -437,7 +430,7 @@ namespace analyze.core.Clients
             {
                 using (FileStream fs = new FileStream(files[i], FileMode.Open, FileAccess.Read))
                 {
-                    Log($"读取 {files[i]}");
+                    _output.Write($"读取 {files[i]}");
                     IWorkbook workbook = WorkbookFactory.Create(fs);
                     var sheet = workbook.GetSheetAt(0);
                     if (sheet != null)
@@ -500,7 +493,7 @@ namespace analyze.core.Clients
             {
                 using (FileStream fs = new FileStream(files[i], FileMode.Open, FileAccess.Read))
                 {
-                    Log($"读取 {files[i]}");
+                    _output.Write($"读取 {files[i]}");
                     IWorkbook workbook = WorkbookFactory.Create(fs);
                     var sheet = workbook.GetSheetAt(0);
                     if (sheet == null)
@@ -597,7 +590,7 @@ namespace analyze.core.Clients
 
             using (FileStream fs = new FileStream(filename, FileMode.Open, FileAccess.Read))
             {
-                Log($"读取 {filename}");
+                _output.Write($"读取 {filename}");
                 IWorkbook workbook = WorkbookFactory.Create(fs);
                 var sheet = workbook.GetSheetAt(0);
 
@@ -883,7 +876,7 @@ namespace analyze.core.Clients
             = Path.Combine(Path.GetDirectoryName(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName), 
                 "原始数据", $"{DateTime.Now.ToString("yyyy年MM月dd日")}", "巴西采购单.xlsx");
 
-        private List<Shop> SelectShop(List<Shop> shops, string prefix)
+        public List<Shop> SelectShop(string prefix)
         {
             List<Shop> ss = new List<Shop>();
             if (!string.IsNullOrWhiteSpace(prefix))
@@ -908,14 +901,11 @@ namespace analyze.core.Clients
                     return ss;
                 }
             }
-            return shops;
+            return ss;
         }
-        public void Collect(string rawDir = "", string dataDir = "", string shopDirPrefix = "")
+        public void Collect(string orderDir, string shopDirPrefix, string shopInfoFilename, string orderRecordFileName, string usPruchasRecordFileName, string brPruchasRecordFileName)
         {
-            string shopRecordFileName = Path.Combine(rawDir, "店铺记录.xlsx");
-            string orderRecordFileName = Path.Combine(rawDir, "订单总表.xlsx");
-            string usPruchasRecordFileName = Path.Combine(rawDir, "美国采购单.xlsx");
-            string brPruchasRecordFileName = Path.Combine(rawDir, "巴西采购单.xlsx");
+
 
             if (TotalOrders.Count == 0)
             {
@@ -931,27 +921,28 @@ namespace analyze.core.Clients
 
             if (AllShops.Count == 0)
             {
-                AllShops = ReadShopInfo(shopRecordFileName).ToList();
+                AllShops = ReadShopInfo(shopInfoFilename).ToList();
             }
 
-
-            List<Shop> ss = SelectShop(AllShops, shopDirPrefix);
-
+            List<Shop> ss = SelectShop(shopDirPrefix);
             foreach (var shop in ss)
             {
-                string[] ds = Directory.GetDirectories(dataDir);
-                ds = ds.Where(d => Path.GetFileName(d).StartsWith($"{shop.CompanyNumber}{shop.CN}")).ToArray();
-                if (ds.Length == 1)
+                int count = ShopRecords.Where(sr => sr.Shop.CN == shop.CN).Count();
+                if (count == 0)
                 {
-                    IList<ShopOrder> orders = ReadShopOrder(Path.Combine(ds[0], "订单.xlsx")).OrderBy(o => o.OrderTime).ToList();
-                    IList<ShopLend> lendings = ReadShopLend(Path.Combine(ds[0], "放款.xlsx")).OrderBy(o => o.SettlementTime).ToList();
-                    IList<ShopRefund> refunds = ReadShopRefund(Path.Combine(ds[0], "退款.xlsx")).OrderBy(o => o.RefundTime).ToList();
+                    string[] ds = Directory.GetDirectories(orderDir);
+                    ds = ds.Where(d => Path.GetFileName(d).StartsWith($"{shop.CompanyNumber}{shop.CN}")).ToArray();
+                    if (ds.Length == 1)
+                    {
+                        IList<ShopOrder> orders = ReadShopOrder(Path.Combine(ds[0], "订单.xlsx")).OrderBy(o => o.OrderTime).ToList();
+                        IList<ShopLend> lendings = ReadShopLend(Path.Combine(ds[0], "放款.xlsx")).OrderBy(o => o.SettlementTime).ToList();
+                        IList<ShopRefund> refunds = ReadShopRefund(Path.Combine(ds[0], "退款.xlsx")).OrderBy(o => o.RefundTime).ToList();
 
-                    ShopRecords.Add(new ShopRecord() { Shop = shop, ShopOrderList = orders, ShopLendList = lendings, ShopRefundList = refunds });
+                        ShopRecords.Add(new ShopRecord() { Shop = shop, ShopOrderList = orders, ShopLendList = lendings, ShopRefundList = refunds });
+                    }
                 }
-
             }
-            // CheckData();
+
         }
 
         #endregion
@@ -968,7 +959,7 @@ namespace analyze.core.Clients
                 {
                     if (!item.OrderStatus.Equals("采购单") && !item.OrderStatus.Equals("促销单"))
                     {
-                        Log($"{item.StoreName} {item.OrderId} {item.TradeId} {item.DeductionAmount}");
+                        _output.WriteLine($"{item.StoreName} {item.OrderId} {item.TradeId} {item.DeductionAmount}");
                         ret = false;
                     }
                 }

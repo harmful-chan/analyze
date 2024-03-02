@@ -30,7 +30,7 @@ namespace analyze.core.win
         private void InitializeComponent()
         {
             tabControl1 = new TabControl();
-            tb1 = new TabPage();
+            tabPage1 = new TabPage();
             panel2 = new Panel();
             panel1 = new Panel();
             label18 = new Label();
@@ -68,7 +68,7 @@ namespace analyze.core.win
             label7 = new Label();
             label9 = new Label();
             label8 = new Label();
-            tb2 = new TabPage();
+            tabPage2 = new TabPage();
             panel3 = new Panel();
             label24 = new Label();
             tbDate = new TextBox();
@@ -91,7 +91,7 @@ namespace analyze.core.win
             label21 = new Label();
             label19 = new Label();
             label20 = new Label();
-            tb3 = new TabPage();
+            tabPage3 = new TabPage();
             panel4 = new Panel();
             txtOrderLog = new TextBox();
             btnDeduction = new Button();
@@ -99,20 +99,20 @@ namespace analyze.core.win
             tabPage4 = new TabPage();
             tabPage5 = new TabPage();
             tabControl1.SuspendLayout();
-            tb1.SuspendLayout();
+            tabPage1.SuspendLayout();
             panel1.SuspendLayout();
-            tb2.SuspendLayout();
+            tabPage2.SuspendLayout();
             panel3.SuspendLayout();
             flowLayoutPanel1.SuspendLayout();
-            tb3.SuspendLayout();
+            tabPage3.SuspendLayout();
             panel4.SuspendLayout();
             SuspendLayout();
             // 
             // tabControl1
             // 
-            tabControl1.Controls.Add(tb1);
-            tabControl1.Controls.Add(tb2);
-            tabControl1.Controls.Add(tb3);
+            tabControl1.Controls.Add(tabPage1);
+            tabControl1.Controls.Add(tabPage2);
+            tabControl1.Controls.Add(tabPage3);
             tabControl1.Controls.Add(tabPage4);
             tabControl1.Controls.Add(tabPage5);
             tabControl1.Dock = DockStyle.Fill;
@@ -123,18 +123,18 @@ namespace analyze.core.win
             tabControl1.Size = new Size(1011, 655);
             tabControl1.TabIndex = 1;
             // 
-            // tb1
+            // tabPage1
             // 
-            tb1.Controls.Add(panel2);
-            tb1.Controls.Add(panel1);
-            tb1.Location = new Point(4, 26);
-            tb1.Margin = new Padding(4);
-            tb1.Name = "tb1";
-            tb1.Padding = new Padding(4);
-            tb1.Size = new Size(1003, 625);
-            tb1.TabIndex = 0;
-            tb1.Text = "生成面单";
-            tb1.UseVisualStyleBackColor = true;
+            tabPage1.Controls.Add(panel2);
+            tabPage1.Controls.Add(panel1);
+            tabPage1.Location = new Point(4, 26);
+            tabPage1.Margin = new Padding(4);
+            tabPage1.Name = "tabPage1";
+            tabPage1.Padding = new Padding(4);
+            tabPage1.Size = new Size(1003, 625);
+            tabPage1.TabIndex = 0;
+            tabPage1.Text = "生成面单";
+            tabPage1.UseVisualStyleBackColor = true;
             // 
             // panel2
             // 
@@ -507,17 +507,17 @@ namespace analyze.core.win
             label8.TabIndex = 0;
             label8.Text = "服务类型(Service type)：";
             // 
-            // tb2
+            // tabPage2
             // 
-            tb2.Controls.Add(panel3);
-            tb2.Location = new Point(4, 26);
-            tb2.Margin = new Padding(4);
-            tb2.Name = "tb2";
-            tb2.Padding = new Padding(4);
-            tb2.Size = new Size(1003, 625);
-            tb2.TabIndex = 1;
-            tb2.Text = "自动回复";
-            tb2.UseVisualStyleBackColor = true;
+            tabPage2.Controls.Add(panel3);
+            tabPage2.Location = new Point(4, 26);
+            tabPage2.Margin = new Padding(4);
+            tabPage2.Name = "tabPage2";
+            tabPage2.Padding = new Padding(4);
+            tabPage2.Size = new Size(1003, 625);
+            tabPage2.TabIndex = 1;
+            tabPage2.Text = "自动回复";
+            tabPage2.UseVisualStyleBackColor = true;
             // 
             // panel3
             // 
@@ -751,16 +751,16 @@ namespace analyze.core.win
             label20.TabIndex = 9;
             label20.Text = "尾  程";
             // 
-            // tb3
+            // tabPage3
             // 
-            tb3.Controls.Add(panel4);
-            tb3.Location = new Point(4, 26);
-            tb3.Margin = new Padding(4);
-            tb3.Name = "tb3";
-            tb3.Size = new Size(1003, 625);
-            tb3.TabIndex = 2;
-            tb3.Text = "扣款";
-            tb3.UseVisualStyleBackColor = true;
+            tabPage3.Controls.Add(panel4);
+            tabPage3.Location = new Point(4, 26);
+            tabPage3.Margin = new Padding(4);
+            tabPage3.Name = "tabPage3";
+            tabPage3.Size = new Size(1003, 625);
+            tabPage3.TabIndex = 2;
+            tabPage3.Text = "扣款";
+            tabPage3.UseVisualStyleBackColor = true;
             // 
             // panel4
             // 
@@ -839,15 +839,15 @@ namespace analyze.core.win
             Text = "Form1";
             Load += Form_Load;
             tabControl1.ResumeLayout(false);
-            tb1.ResumeLayout(false);
+            tabPage1.ResumeLayout(false);
             panel1.ResumeLayout(false);
             panel1.PerformLayout();
-            tb2.ResumeLayout(false);
+            tabPage2.ResumeLayout(false);
             panel3.ResumeLayout(false);
             panel3.PerformLayout();
             flowLayoutPanel1.ResumeLayout(false);
             flowLayoutPanel1.PerformLayout();
-            tb3.ResumeLayout(false);
+            tabPage3.ResumeLayout(false);
             panel4.ResumeLayout(false);
             panel4.PerformLayout();
             ResumeLayout(false);
@@ -856,8 +856,8 @@ namespace analyze.core.win
         #endregion
 
         private System.Windows.Forms.TabControl tabControl1;
-        private System.Windows.Forms.TabPage tb1;
-        private System.Windows.Forms.TabPage tb2;
+        private System.Windows.Forms.TabPage tabPage1;
+        private System.Windows.Forms.TabPage tabPage2;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label5;
@@ -917,7 +917,7 @@ namespace analyze.core.win
         private System.Windows.Forms.RadioButton rbThree;
         private System.Windows.Forms.Label label24;
         private System.Windows.Forms.TextBox tbDate;
-        private System.Windows.Forms.TabPage tb3;
+        private System.Windows.Forms.TabPage tabPage3;
         private System.Windows.Forms.TabPage tabPage4;
         private System.Windows.Forms.TabPage tabPage5;
         private System.Windows.Forms.Panel panel4;

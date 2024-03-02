@@ -29,18 +29,20 @@ namespace analyze.core.Options
         [Option('m', "moon", Required = false, HelpText = "月份")]
         public int Moon { get; set; } = -1;
 
-        [Option('o', "output", Required = false, HelpText = "输出文件名")]
-        public string OutputFile { get; set; }
+        [Option('o', "output-dir", Required = false, HelpText = "输出路径")]
+        public string OutputDir { get; set; }
 
-        [Option('r', "raw", Required = true, HelpText = "数据总表文件夹路径")]
-        public string RowDir { get; set; }
+        [Option('t', "total-dir", Required = false, HelpText = "数据总表文件夹路径")]
+        public string TotalDir { get; set; }
 
-        [Option('d', "raw", Required = true, HelpText = "店铺文件夹路径")]
-        public string DataDir { get; set; }
+        [Option('d', "order-dir", Required = false, HelpText = "店铺文件夹路径")]
+        public string OrderDir { get; set; }
 
         [Option('p', "prefix-dir", Required = false, HelpText = "目录前缀")]
         public IEnumerable<string> DirPrefix { get; set; }
 
 
+        [Option('r', "root-dir", Required = false, HelpText = "根目录")]
+        public string RootDir { get; set; }
     }
 }

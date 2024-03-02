@@ -1,4 +1,5 @@
 ﻿using analyze.core.Options;
+using NPOI.SS.Formula.Functions;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -13,13 +14,20 @@ namespace analyze.core.win
 {
     public partial class MainForm : System.Windows.Forms.Form
     {
+        Analyzer analyzer;
         public MainForm()
         {
             InitializeComponent();
+            InitializeParameter();
+        }
+
+        private void InitializeParameter()
+        {
+            // 自动回复模板
             this.txtOne.Text = "Prezado cliente, lamentamos muito o problema causado a você. Confirmamos seu pedido e temos rastreamento completo.\r\n"
-                + "O primeiro segmento de logística foi enviado com o número de rastreamento [número do conhecimento de embarque]. Acompanhe as informações de envio por meio deste site oficial [URL de consulta].\r\n"
-                + "Atualmente, pode levar de 3 a 7 dias para atualizar o cronograma logístico da segunda etapa da logística. Aguarde pacientemente e garantiremos que seu pedido seja entregue sem problemas.\r\n"
-                + "Obrigado pela sua compreensão e apoio. Se você tiver alguma outra dúvida, não hesite em nos contatar.";
+    + "O primeiro segmento de logística foi enviado com o número de rastreamento [número do conhecimento de embarque]. Acompanhe as informações de envio por meio deste site oficial [URL de consulta].\r\n"
+    + "Atualmente, pode levar de 3 a 7 dias para atualizar o cronograma logístico da segunda etapa da logística. Aguarde pacientemente e garantiremos que seu pedido seja entregue sem problemas.\r\n"
+    + "Obrigado pela sua compreensão e apoio. Se você tiver alguma outra dúvida, não hesite em nos contatar.";
 
             this.txtTwo.Text = "Prezado cliente, lamentamos profundamente o transtorno causado a você. A segunda etapa foi enviada para o endereço que você forneceu e deverá chegar em [Data estimada de entrega].\r\n"
                 + "Transportadora:[Transportadora]\r\n"
@@ -30,8 +38,9 @@ namespace analyze.core.win
             this.txtThree.Text = "Prezado cliente, entendemos suas preocupações sobre o status logístico do seu pedido. Notamos que você afirmou que não recebeu a mercadoria. Para resolver o problema, verifique primeiro a veracidade do endereço de entrega, principalmente o número da casa, andar e outros detalhes. Posteriormente, entre em contato com o correio local para obter detalhes. Às vezes, os pacotes podem ser deixados na casa de um vizinho ou em outro local sem notificação imediata. Por favor, aguarde um certo tempo de espera, pois às vezes há um atraso nas informações de rastreamento logístico. Número de rastreamento logístico: [número do conhecimento de embarque]. Informações de contato do fornecedor de logística: [URL de consulta]\r\n"
                 + "Se você ainda não resolveu o problema após as etapas acima, cooperaremos ativamente com a empresa de logística para ajudá - lo a resolver o problema durante todo o processo. Obrigado pela sua compreensão e apoio.";
 
-
         }
+
+
         private void button1_Click(object sender, EventArgs e)
         {
             if (this.rbOne.Checked)
@@ -48,7 +57,7 @@ namespace analyze.core.win
             }
         }
 
-        string old = "";
+
         delegate void SetTextCallback(string text);
         private void SetText(string text)
         {
