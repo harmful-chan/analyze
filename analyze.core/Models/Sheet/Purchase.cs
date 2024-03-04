@@ -8,6 +8,7 @@ namespace analyze.core.Models.Sheet
 {
     public class Purchase
     {
+        public string Country { get; set; }
         public string OrderId { get; set; }
         public string Status { get; set; }
         public bool  IsUpdate { get; set; }

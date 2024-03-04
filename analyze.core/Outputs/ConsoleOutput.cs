@@ -30,7 +30,7 @@ namespace analyze.core.Outputs
             consoleTables.Write(Format.Minimal);
         }
 
-        public void Write(string str, bool online)
+        public string Write(string str, bool online)
         {
             if (online)
             {
@@ -41,12 +41,18 @@ namespace analyze.core.Outputs
             {
                 Console.Write(str);
             }
-
+            return str;
         }
 
-        public void WriteLine(string str = "")
+        public string WriteLine(string str = "")
         {
             Console.WriteLine(str);
+            return str;
+        }
+
+        void IOutput.WriteLine(string str)
+        {
+            throw new NotImplementedException();
         }
     }
 }

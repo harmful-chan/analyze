@@ -7,16 +7,20 @@ using analyze.core.Outputs;
 using analyze.Models.Manage;
 using ConsoleTables;
 using NPOI.HSSF.Record;
+using NPOI.OpenXmlFormats.Shared;
 using NPOI.SS.Formula.Functions;
 using NPOI.SS.UserModel;
 using System;
 using System.Collections.Generic;
+using System.Drawing.Drawing2D;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using static analyze.core.Clients.SheetClient;
+using static System.Formats.Asn1.AsnWriter;
 
 namespace analyze.core
 {
@@ -43,6 +47,7 @@ namespace analyze.core
 
         #region 属性
 
+        public bool IsRunning { get; private set; } = false;
         public string Root { get; set; }
         public string ShopInfoFileName { get; private set; }
         public string NewestBinFileName { get; private set; }
@@ -58,23 +63,39 @@ namespace analyze.core
         public string NewestDailyDirectory { get; private set; }
         public string NewestReparationDirectory { get; private set; } 
         public string NewestTotalDirectory { get; private set; }
+        public string NewestResourcesDirectory { get; private set; }
         #endregion
 
-        private IOutput _output = null;
+        #region 实例化
         SheetClient _sheetClient = null;
-        public Analyzer(IOutput output)
+
+        private IOutput _output;
+
+        public IOutput Output
         {
-            _output = output;
-            _sheetClient = new SheetClient(_output);
+            get { return _output; }
+            set 
+            {
+                _sheetClient.Output = value;
+                _output = value; 
+            }
         }
-         
+        public Analyzer()
+        {
+            _sheetClient = new SheetClient();
+        }
+
+        #endregion
+
+
+
 
         #region 根据输入的订单行为匹配不同订单处理动作 
         public void OrderRun(OrderOptions o)
         {
             if (o.action.Equals("refund"))
             {
-                RefundRun(o);
+                //RefundRun(o);
             }else if (o.action.Equals("lend"))
             {
                 //LendRun(o);
@@ -83,7 +104,7 @@ namespace analyze.core
 
         #endregion
 
-        #region lend
+        #region 放款
         double[] randoms = [0.8753,   0.8352,   0.6807,   0.6998,   0.7895,   0.7809,   0.5627,   0.5281,   0.4465,   0.8804,   0.7130,   0.6523,   0.5964,   0.6810,   0.6780,   0.8286,  0.6819,   0.6674,   0.4785,   0.6083];
         static int randomCount = 0;
         public double GetRandom()
@@ -95,250 +116,215 @@ namespace analyze.core
             randomCount = 0;
         }
 
-        public ShopLend[] GetShopLendProfitForOneMonth(int year, int month, params string[] prefixs)
+        public void FillProfitForOneMonth(int year, int month, ShopRecord shop)
         {
-            List<ShopLend> shopLendList = new List<ShopLend>();
-            ShopRecord[] shopRecords = CollectShopRecord(prefixs);
-            foreach (var shop in shopRecords) // 每一个店铺
+            ResetRandom();
+            DateTime t1, t2;
+            DateRange(year, month, out t1, out t2);
+            ShopLend[] sureLends = shop.ShopLendList.Where(f => f.SettlementTime <= t2 && f.SettlementTime >= t1).ToArray();
+            foreach (var r in sureLends)  // 每一个订单
             {
-                ResetRandom();
-                DateTime t1, t2;
-                DateRange(year, month, out t1, out t2);
-                ShopLend[] sureLends = shop.ShopLendList.Where(f => f.SettlementTime <= t2 && f.SettlementTime >= t1).ToArray();
-                foreach (var r in sureLends)  // 每一个订单
+                bool flag1 = true;
+                bool flag2 = true;
+                bool flag3 = true;
+                bool flag4 = true;
+
+                ShopOrder[] shopOrders = shop.ShopOrderList.Where(t => t.OrderId.Equals(r.OrderId)).ToArray();
+                Models.Sheet.Order[] torders = _sheetClient.TotalOrders.Where(t => t.OrderId != null && t.OrderId.Contains(r.OrderId)).ToArray();
+                Purchase[] porder = _sheetClient.TotalPurchases.Where(t => t.OrderId != null && t.OrderId.Equals(r.OrderId)).ToArray();
+
+                string ot = shopOrders.FirstOrDefault()?.OrderTime.ToString("yyyy-MM-dd HH:mm:ss");
+                string pt = shopOrders.FirstOrDefault()?.PaymentTime.ToString("yyyy-MM-dd HH:mm:ss");
+                string st = shopOrders.FirstOrDefault()?.ShippingTime.ToString("yyyy-MM-dd HH:mm:ss");
+                string rt = shopOrders.FirstOrDefault()?.ReceiptTime.ToString("yyyy-MM-dd HH:mm:ss");
+                if (shopOrders.FirstOrDefault()?.OrderTime == DateTime.MinValue) ot = "";
+                if (shopOrders.FirstOrDefault()?.PaymentTime == DateTime.MinValue) pt = "";
+                if (shopOrders.FirstOrDefault()?.ShippingTime == DateTime.MinValue) st = "";
+                if (shopOrders.FirstOrDefault()?.ReceiptTime == DateTime.MinValue) rt = "";
+
+                string str = (flag1 ? "" : "1") + (flag2 ? "" : "2") + (flag3 ? "" : "3") + (flag4 ? "" : "4");
+                if (torders.Length > 0)
                 {
-                    bool flag1 = true;
-                    bool flag2 = true;
-                    bool flag3 = true;
-                    bool flag4 = true;
-
-                    ShopOrder[] shopOrders = shop.ShopOrderList.Where(t => t.OrderId.Equals(r.OrderId)).ToArray();
-                    Models.Sheet.Order[] torders = _sheetClient.TotalOrders.Where(t => t.OrderId != null && t.OrderId.Contains(r.OrderId)).ToArray();
-                    Purchase[] porder = _sheetClient.TotalPurchases.Where(t => t.OrderId != null && t.OrderId.Equals(r.OrderId)).ToArray();
-
-                    string ot = shopOrders.FirstOrDefault()?.OrderTime.ToString("yyyy-MM-dd HH:mm:ss");
-                    string pt = shopOrders.FirstOrDefault()?.PaymentTime.ToString("yyyy-MM-dd HH:mm:ss");
-                    string st = shopOrders.FirstOrDefault()?.ShippingTime.ToString("yyyy-MM-dd HH:mm:ss");
-                    string rt = shopOrders.FirstOrDefault()?.ReceiptTime.ToString("yyyy-MM-dd HH:mm:ss");
-                    if (shopOrders.FirstOrDefault()?.OrderTime == DateTime.MinValue) ot = "";
-                    if (shopOrders.FirstOrDefault()?.PaymentTime == DateTime.MinValue) pt = "";
-                    if (shopOrders.FirstOrDefault()?.ShippingTime == DateTime.MinValue) st = "";
-                    if (shopOrders.FirstOrDefault()?.ReceiptTime == DateTime.MinValue) rt = "";
-
-                    string str = (flag1 ? "" : "1") + (flag2 ? "" : "2") + (flag3 ? "" : "3") + (flag4 ? "" : "4");
-                    if (torders.Length > 0)
+                    double deductionAmount = torders.FirstOrDefault().DeductionAmount;
+                    if (deductionAmount < 1)
                     {
-                        double deductionAmount = torders.FirstOrDefault().DeductionAmount;
-                        if (deductionAmount < 1)
-                        {
-                            double lend = r.Lend;
-                            deductionAmount = lend * GetRandom();
-                        }
-                       r.Cost = Math.Round(deductionAmount, 2);
-
+                        double lend = r.Lend;
+                        deductionAmount = lend * GetRandom();
                     }
-                    else
-                    {
-                        r.Cost = 0.0;
-                    }
-
-                    r.Profit = Math.Round(r.Lend - r.Cost, 2);
-                    r.Rate = Math.Round((r.Profit)/r.Cost, 2);
+                    r.Cost = Math.Round(deductionAmount, 2);
 
                 }
-                shopLendList.AddRange(sureLends);
+                else
+                {
+                    r.Cost = 0.0;
+                }
+
+                r.Profit = Math.Round(r.Lend - r.Cost, 2);
+                r.Rate = Math.Round((r.Profit) / r.Cost, 2);
 
             }
-            return shopLendList.ToArray();
-
         }
-
-        public Profit StatisticalProfit(ShopLend[] lends)
+        public Profit StatisticalProfit(int year, int month, ShopRecord shop)
         {
+            DateTime t1, t2;
+            DateRange(year, month, out t1, out t2);
+            ShopLend[] sureLends = shop.ShopLendList.Where(f => f.SettlementTime <= t2 && f.SettlementTime >= t1).ToArray();
             double lend = 0.0, cost = 0.0, profit = 0.0, rate = 0.0;
-            System.Array.ForEach(lends, a =>
+            System.Array.ForEach(sureLends, a =>
             {
                 lend += a.Lend;
                 cost += a.Cost;
                 profit += a.Profit;
                 rate += a.Rate;
             });
-            int len = lends.Length;
+            int len = sureLends.Length;
             return new Profit()
             {
                 Lend = lend,
                 Cost = cost,
                 Value = profit,
-                Rate = rate
-                
+                Rate = profit / cost
+
             };
         }
-        public void SaveProfit(string outputDir, string filename, ShopLend[] shopLends)
+        public ShopLend[] GetOneMonthLend(int year, int month, ShopRecord shop)
         {
-            if (Directory.Exists(outputDir)) // 输入的是一个目录
+            DateTime t1, t2;
+            DateRange(year, month, out t1, out t2);
+            ShopLend[] sureLends = shop.ShopLendList.Where(f => f.SettlementTime <= t2 && f.SettlementTime >= t1).ToArray();
+            return sureLends;
+        }
+
+        public void ShowOneMonthLend(int year, int month, ShopRecord shop, Profit profit)
+        {
+
+            _output.WriteLine($"---------------------{year}-{month:D2}-{Math.Round(profit.Lend, 2)}-{Math.Round(profit.Cost, 2)}-{Math.Round(profit.Value, 2)}-{Math.Round(profit.Rate, 2)}-----------------");
+            DateTime t1, t2;
+            DateRange(year, month, out t1, out t2);
+            ShopLend[] sureLends = shop.ShopLendList.Where(f => f.SettlementTime <= t2 && f.SettlementTime >= t1).ToArray();
+            int i = 1;
+            foreach (var lend in sureLends)
             {
-                System.Array.Sort(shopLends, (x, y) => { return x.SettlementTime.CompareTo(y.SettlementTime); });
-
-                //string filename = Path.Combine(outputDir, $"{year}{month.ToString("D2")}{shop.Shop.CN}{shop.Shop.CompanyName}{shop.Shop.Nick}.xlsx");
-                _sheetClient.SaveShopLend(filename, shopLends, true);
-
+                _output.Write(i++.ToString("D2"), false);
+                _output.Write(" "+lend.OrderId, false);
+                _output.Write($" {Math.Round(lend.Lend, 2)}", false);
+                _output.Write(" " + Math.Round(lend.Cost, 2), false);
+                _output.Write(" " + Math.Round(lend.Profit, 2), false);
+                _output.Write(" " + Math.Round(lend.Rate, 2), false);
+                _output.Write("\r\n", false);
             }
+        }
+        public void SaveProfit(string filename, ShopLend[] shopLends)
+        {
+            System.Array.Sort(shopLends, (x, y) => { return x.SettlementTime.CompareTo(y.SettlementTime); });
+            _sheetClient.SaveShopLend(filename, shopLends, Path.Combine(NewestResourcesDirectory, "lend.xlsx"),  true);
         }
 
         #endregion
 
-        #region refund
+        #region 退款
 
-        public void DateRange(int year, int moon, out DateTime start, out DateTime end)
+
+        public void FillRefundForOneMonth(int year, int month, ShopRecord shop)
         {
-            DateTime t1;
-            DateTime.TryParseExact($"{year}-{moon:D2}-01 00:00:00", "yyyy-MM-dd HH:mm:ss", new CultureInfo("zh-cn"), DateTimeStyles.None, out t1);
-
-            DateTime t2;
-
-            int y, m;
-            if (moon == 12)
+            DateTime t1, t2;
+            int index = 1;
+            DateRange(year, month, out t1, out t2);
+            ShopRefund[] sureRefunds = shop.ShopRefundList.Where(f => f.RefundTime <= t2 && f.RefundTime >= t1).ToArray();
+            foreach (var r in sureRefunds)
             {
-                y = year + 1;
-                m = (moon / 12) + (moon % 12);
-            }
-            else
-            {
-                y = year;
-                m = (moon / 12) + (moon % 12) + 1;
-            }
+                bool flag1 = true;
+                bool flag2 = true;
+                bool flag3 = true;
+                bool flag4 = true;
 
-            DateTime.TryParseExact($"{y}-{m:D2}-01 00:00:00", "yyyy-MM-dd HH:mm:ss", new CultureInfo("zh-cn"), DateTimeStyles.None, out t2);
-            start = t1;
-            end = t2;
-        }
-
-        public void RefundRun(OrderOptions o)
-        {
-            SheetClient client = new SheetClient(_output);
-            CollectShopRecord(o.DirPrefix);
-
-            string[] objs = ["I", "Order", "Turnover", "Refund", "Cost", "TradeId", "Deduction", "Status", "Country", "RefundTime", "OrderTime", "PaymentTime", "ShippingTime", "ReceiptTime"];
-            foreach (var shop in client.ShopRecords)
-            {
-                int index = 1;  // 序号
-
-
-                // 年月获取 开始结束日期
-                if (o.Year > 0 && o.Moon > 0)
+                ShopOrder[] shopOrders = shop.ShopOrderList.Where(t => t.OrderId.Equals(r.OrderId)).ToArray();
+                Models.Sheet.Order[] torders = _sheetClient.TotalOrders.Where(t => t.OrderId != null && t.OrderId.Equals(r.OrderId)).ToArray();
+                Purchase[] porder = _sheetClient.TotalPurchases.Where(t => t.OrderId != null && t.OrderId.Equals(r.OrderId)).ToArray();
+                if (r.Turnover != r.Refund)    // 放款退款不同
                 {
-                    DateTime t1, t2;
-                    DateRange(o.Year, o.Moon, out t1, out t2);
-                    o.StartDate = t1;
-                    o.EndDate = t2;
-
+                    flag1 = false;
+                }
+                if (torders.Length > 0 && torders.First().Cost != torders.First().DeductionAmount)  // 分销扣款不同
+                {
+                    flag2 = (Math.Round(torders.First().Cost, 1) == Math.Round(torders.First().DeductionAmount, 1));
                 }
 
-                ShopRefund[] sureRefunds = shop.ShopRefundList.Where(f => f.RefundTime <= o.EndDate && f.RefundTime >= o.StartDate).ToArray();
-                foreach (var r in sureRefunds)
+                if (torders.Length > 0)  // 交易号不相同
                 {
-                    bool flag1 = true;
-                    bool flag2 = true;
-                    bool flag3 = true;
-                    bool flag4 = true;
+                    flag3 = !(torders.GroupBy(t => t.TradeId).Count() > 1);
+                }
+                if (porder.Length > 0)  // 交易号不相同
+                {
+                    flag4 = !(porder.Where(p => p.Status != null && p.Status.Contains("已发货")).Count() > 0);
+                }
 
-                    ShopOrder[] shopOrders = shop.ShopOrderList.Where(t => t.OrderId.Equals(r.OrderId)).ToArray();
-                    Models.Sheet.Order[] torders = client.TotalOrders.Where(t => t.OrderId != null && t.OrderId.Equals(r.OrderId)).ToArray();
-                    Purchase[] porder = client.TotalPurchases.Where(t => t.OrderId != null && t.OrderId.Equals(r.OrderId)).ToArray();
-                    if (r.Turnover != r.Refund)    // 放款退款不同
-                    {
-                        flag1 = false;
-                    }
-                    if (torders.Length > 0 && torders.First().Cost != torders.First().DeductionAmount)  // 分销扣款不同
-                    {
-                        flag2 = (Math.Round(torders.First().Cost, 1) == Math.Round(torders.First().DeductionAmount, 1));
-                    }
+                string a = r.RefundTime.ToString("yyyy-MM-dd HH:mm:ss");
+                string ot = shopOrders.FirstOrDefault()?.OrderTime.ToString("yyyy-MM-dd HH:mm:ss");
+                string pt = shopOrders.FirstOrDefault()?.PaymentTime.ToString("yyyy-MM-dd HH:mm:ss");
+                string st = shopOrders.FirstOrDefault()?.ShippingTime.ToString("yyyy-MM-dd HH:mm:ss");
+                string rt = shopOrders.FirstOrDefault()?.ReceiptTime.ToString("yyyy-MM-dd HH:mm:ss");
+                if (shopOrders.FirstOrDefault()?.OrderTime == DateTime.MinValue) ot = "";
+                if (shopOrders.FirstOrDefault()?.PaymentTime == DateTime.MinValue) pt = "";
+                if (shopOrders.FirstOrDefault()?.ShippingTime == DateTime.MinValue) st = "";
+                if (shopOrders.FirstOrDefault()?.ReceiptTime == DateTime.MinValue) rt = "";
 
-                    if (torders.Length > 0)  // 交易号不相同
-                    {
-                        flag3 = !(torders.GroupBy(t => t.TradeId).Count() > 1);
-                    }
-                    if (porder.Length > 0)  // 交易号不相同
-                    {
-                        flag4 = !(porder.Where(p => p.Status != null && p.Status.Contains("已发货")).Count() > 0);
-                    }
+                string str = (flag1 ? "" : "1") + (flag2 ? "" : "2") + (flag3 ? "" : "3") + (flag4 ? "" : "4");
+                if (torders.Length > 0)
+                {
 
-                    string a = r.RefundTime.ToString("yyyy-MM-dd HH:mm:ss");
-                    string ot = shopOrders.FirstOrDefault()?.OrderTime.ToString("yyyy-MM-dd HH:mm:ss");
-                    string pt = shopOrders.FirstOrDefault()?.PaymentTime.ToString("yyyy-MM-dd HH:mm:ss");
-                    string st = shopOrders.FirstOrDefault()?.ShippingTime.ToString("yyyy-MM-dd HH:mm:ss");
-                    string rt = shopOrders.FirstOrDefault()?.ReceiptTime.ToString("yyyy-MM-dd HH:mm:ss");
-                    if (shopOrders.FirstOrDefault()?.OrderTime == DateTime.MinValue) ot = "";
-                    if (shopOrders.FirstOrDefault()?.PaymentTime == DateTime.MinValue) pt = "";
-                    if (shopOrders.FirstOrDefault()?.ShippingTime == DateTime.MinValue) st = "";
-                    if (shopOrders.FirstOrDefault()?.ReceiptTime == DateTime.MinValue) rt = "";
-
-                    string str = (flag1 ? "" : "1") + (flag2 ? "" : "2") + (flag3 ? "" : "3") + (flag4 ? "" : "4");
-                    if (torders.Length > 0)
+                    _output.AddRow(index++, r.OrderId, a, r.Turnover, r.Refund, torders.FirstOrDefault()?.Cost, torders.FirstOrDefault()?.DeductionAmount, torders.FirstOrDefault().TradeId, str);
+                }
+                else
+                {
+                    _output.AddRow(index++, r.OrderId, a, r.Turnover, r.Refund,
+                        "", "", "", str);
+                }
+                r.Trade = str;
+                // 退款理由：纠纷退款， 未发货退款，纠纷退款。
+                if (torders.Length > 0)
+                {
+                    Models.Sheet.Order to = torders.FirstOrDefault();
+                    r.RefundReason = "未发货退款";
+                    if (!string.IsNullOrWhiteSpace(to.TradeId))  // 有交易号，有发货之间 ： 纠纷退款
                     {
-
-                        _output.AddRow(index++, r.OrderId, r.Turnover, r.Refund,
-                            torders.FirstOrDefault()?.Cost, torders.FirstOrDefault().TradeId, torders.FirstOrDefault()?.DeductionAmount, str,
-                            shopOrders.FirstOrDefault()?.Country, a, ot, pt, st, rt);
-                    }
-                    else
-                    {
-                        _output.AddRow(index++, r.OrderId, r.Turnover, r.Refund,
-                            "", "", "", str,
-                            shopOrders.FirstOrDefault()?.Country, a, ot, pt, st, rt);
-                    }
-                    r.Trade = str;
-                    // 退款理由：纠纷退款， 未发货退款，纠纷退款。
-                    if (torders.Length > 0)
-                    {
-                        Models.Sheet.Order to = torders.FirstOrDefault();
-                        r.RefundReason = "未发货退款";
-                        if (!string.IsNullOrWhiteSpace(to.TradeId))  // 有交易号，有发货之间 ： 纠纷退款
+                        ShopOrder so = shopOrders.FirstOrDefault();
+                        if (so.ShippingTime > DateTime.MinValue)    // 有发货
                         {
-                            ShopOrder so = shopOrders.FirstOrDefault();
-                            if (so.ShippingTime > DateTime.MinValue)    // 有发货
-                            {
-                                r.RefundReason = "纠纷退款";
-                            }
+                            r.RefundReason = "纠纷退款";
                         }
-
-                        r.DebitOperation = "已扣款";
-                        r.Deduction = to.DeductionAmount;
-                    }
-                    else
-                    {
-                        r.RefundReason = "取消订单";
-                        r.DebitOperation = "未扣款";
                     }
 
-
+                    r.DebitOperation = "已扣款";
+                    r.Deduction = to.DeductionAmount;
                 }
-
-                // 列出表格
-                if (o.IsList)
+                else
                 {
-                    Console.WriteLine();
-                    _output.Show(objs);
+                    r.RefundReason = "取消订单";
+                    r.DebitOperation = "未扣款";
                 }
-
-                // 生成目录
-                if (Directory.Exists(o.OutputDir)) // 输入的是一个目录
-                {
-                    if (sureRefunds.Length <= 0)
-                    {
-                        continue;
-                    }
-                    System.Array.Sort(sureRefunds, (x, y) => { return x.RefundTime.CompareTo(y.RefundTime); });
-
-                    string filename = Path.Combine(o.OutputDir, $"{shop.Shop.CompanyNumber}{shop.Shop.CN}{shop.Shop.CompanyName}{shop.Shop.Nick}.xlsx");
-                    client.SaveShopRefund(filename, sureRefunds, true);
-
-                }
-
             }
-
-
         }
+        public ShopRefund[] GetOneMonthRefund(int year, int month, ShopRecord shop)
+        {
+            DateTime t1, t2;
+            DateRange(year, month, out t1, out t2);
+            ShopRefund[] sureRefunds = shop.ShopRefundList.Where(f => f.RefundTime <= t2 && f.RefundTime >= t1).ToArray();
+            return sureRefunds;
+        }
+        public void ShowOneMonthRefund()
+        {
+            string[] objs = ["I", "Order", "RefundTime", "Turnover", "Refund", "Cost", "Deduction", "TradeId", "Status"];
+
+            _output.Show(objs);
+        }
+        public void SaveRefund(string filename, ShopRefund[] sureRefunds)
+        {
+
+            System.Array.Sort(sureRefunds, (x, y) => { return x.RefundTime.CompareTo(y.RefundTime); });
+            _sheetClient.SaveShopRefund(filename, sureRefunds, Path.Combine(NewestResourcesDirectory, "refund.xlsx"), true);
+        }
+
         #endregion
          
         #region daily
@@ -461,7 +447,8 @@ namespace analyze.core
         {
             List<Shop> shops = new List<Shop>();
             List<Daily> dailys = new List<Daily>();
-            SheetClient client = new SheetClient(_output);
+            SheetClient client = new SheetClient();
+            client.Output = _output;
             ManageClient manageClient = new ManageClient();
             IList<Purchase> brPurchases = null;
             // 获取目录文件
@@ -813,18 +800,90 @@ namespace analyze.core
 
         #region mamage 
 
+        public List<KeyValuePair<string, string>> ReadNeedDeduction(string raw)
+        {
+            string[] strings = raw.Split("\r\n");
+            var list = new List<KeyValuePair<string, string>>();
+            foreach (string s in strings)
+            {
+                string[] v = s.Split(" ");
+                if(v.Length == 2)
+                {
+                    list.Add(KeyValuePair.Create(v[0], v[1]));
+                }
+            }
+            return list;
+        }
+
+        public void Deduction(IEnumerable<KeyValuePair<string, string>> list)
+        {
+            ManageClient client = new ManageClient();
+            string msg = string.Empty;
+            client.LoginAdmin();
+            this.IsRunning = true;
+            foreach (var item in list)
+            {
+                string clientId = item.Key;
+                string orderId = item.Value;
+
+                string ret = null;
+
+                try
+                {
+                    msg += _output.Write("登录用户 ", false);
+                    string v = client.LoginUser(clientId);
+                    msg += _output.Write($"{clientId} ", false);
+                    Models.Manage.Order[] orders = client.ListOrder(orderId);
+                    msg += _output.Write($"{orders.Length} ", false);
+                    if (orders.Length == 1)
+                    {
+                        Models.Manage.Order order = orders.First();
+                        msg += _output.Write($"{order.OrderId} ", false);
+                        double cost = order.Cost;
+                        msg += _output.Write($"扣除金额：{cost} ", false);
+                        ret = client.Deduction(order);
+                        if ("Success.".Equals(ret))
+                        {
+                            DebitRecord[] debitRecords = client.ListDebitRecord();
+                            DebitRecord debitRecord = debitRecords.First();
+                            msg += _output.Write($"{debitRecord.RecordId} {debitRecord.TradeId}\t{debitRecord.Cost}RMB ", false);
+                            if ((int)debitRecord.Cost == (int)cost)
+                            {
+                                ret = client.DeductionYes(debitRecord.RecordId);
+                                msg += _output.Write($"{ret} ", false);
+                                if ("审核成功".Equals(ret))
+                                {
+                                    ret = client.DeductionPassed(debitRecord.RecordId);
+                                    msg += _output.Write($"{ret} ", false);
+                                    if ("success".Equals(ret) && order.Status == 1)
+                                    {
+                                        ret = client.Shipments(order);
+                                        msg += _output.Write($"{ret} ", false);
+                                    }
+
+                                }
+                            }
+
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _output.WriteLine(ex.Message);
+                }
+                finally
+                {
+                    Save(orderId, msg);
+                    _output.Write($"结束", false);
+                    _output.WriteLine();
+                }
+            }
+            this.IsRunning = false;
+        }
+
         private void Save(string orderId, string msg)
         {
-            if (!Directory.Exists("扣款记录"))
-            {
-                Directory.CreateDirectory("扣款记录");
-            }
-            string path = Path.Combine("扣款记录", $"{DateTime.Now.ToString("yyyy年MM月dd日")}");
-            if (!Directory.Exists(path))
-            {
-                Directory.CreateDirectory(path);
-            }
-            string filename = Path.Combine(path, $"{orderId}.txt");
+            string filename = Path.Combine(NewestDeductionDirectory, $"{orderId}.txt");
             File.WriteAllText(filename, msg);
         }
 
@@ -927,64 +986,74 @@ namespace analyze.core
         #endregion
 
         #region purchase
-        public void PurchaseRun(PurchaseOptions o)
+        public void ShowPurchase()
         {
-            SheetClient client = new SheetClient(_output);
-            IList<Purchase> purchases = null;
-            if (File.Exists(o.BrPurchaseFilename))
-            {
-                purchases = client.ReadPurchase(1, o.BrPurchaseFilename);
-            }
-            else if(File.Exists(client.DefaultBrPurchasesFilename))
-            {
-                o.BrPurchaseFilename = client.DefaultBrPurchasesFilename;
-                
-                purchases = client.ReadPurchase(1, o.BrPurchaseFilename);
-            }
-            else
-            {
-                _output.Write($"读取 {o.BrPurchaseFilename} 失败");
-                return;
-            }
+            var surePurchases = _sheetClient.TotalPurchases.Where(p => p.SubmissionDate != DateTime.MinValue && p.Country.Equals("BR")).ToArray();
 
-            if(o.IsListPurchaseProgress)
+
+            int i = 1;
+ 
+            var enumerable = surePurchases.GroupBy(x => x.SubmissionDate).OrderBy(y => y.Key).ToArray();
+            foreach (var item in enumerable)
             {
-                IEnumerable<Purchase> surePurchases = null;
-                if (!string.IsNullOrWhiteSpace(o.Buyer))
-                {
-                    surePurchases = purchases.Where(p => o.Buyer.Equals(p.Buyer));
-                }
+                var processing = item.Where(e => "已下单".Equals(e.Status));
+                var solved = item.Where(e => "已发货".Equals(e.Status));
+                var cancel = item.Where(e => "砍单".Equals(e.Status));
+                var cut = item.Where(e => "截单".Equals(e.Status));
+                var pending = item.Where(e => string.IsNullOrWhiteSpace(e.Status) ||
+                    !e.Status.Equals("已下单") && !e.Status.Equals("已发货") && !e.Status.Equals("砍单") && !e.Status.Equals("截单"));
+                _output.AddRow( (DateTime.Now - item.Key).Days, item.Key.ToString("yyyy-MM-dd"), item.Count(),
+                    pending.Count(), processing.Count(), solved.Count(), cancel.Count(), cut.Count());
 
-                if(surePurchases == null)
-                {
-                    surePurchases = purchases;
-                }
-
-                int i = 1;
-                ConsoleTable consoleTable = new ConsoleTable("I", "date", "Order", "Pending", "Processing", "Solved", "Cancel", "Cut");
-                var enumerable = surePurchases.GroupBy(x => x.SubmissionDate).OrderBy(y => y.Key);
-                foreach (var item in enumerable)
-                {
-                    var processing = item.Where(e => "已下单".Equals(e.Status));
-                    var solved = item.Where(e => "已发货".Equals(e.Status));
-                    var cancel = item.Where(e => "砍单".Equals(e.Status));
-                    var cut = item.Where(e => "截单".Equals(e.Status));
-                    var pending = item.Where(e => string.IsNullOrWhiteSpace(e.Status) || 
-                        !e.Status.Equals("已下单") && !e.Status.Equals("已发货") && !e.Status.Equals("砍单") && !e.Status.Equals("截单"));
-                    _output.AddRow(i++, item.Key.ToString("yyyy-MM-dd"), item.Count(),
-                        pending.Count(), processing.Count(), solved.Count(), cancel.Count(), cut.Count());
-
-                }
-                _output.WriteLine();
-                _output.Show("I", "date", "Order", "Pending", "Processing", "Solved", "Cancel", "Cut");
             }
+            _output.Show("I",  "date", "Order", "Pending", "Processing", "Solved", "Cancel", "Cut");
 
 
         }
         #endregion
 
+        public void DateRange(int year, int moon, out DateTime start, out DateTime end)
+        {
+            DateTime t1;
+            DateTime.TryParseExact($"{year}-{moon:D2}-01 00:00:00", "yyyy-MM-dd HH:mm:ss", new CultureInfo("zh-cn"), DateTimeStyles.None, out t1);
+
+            DateTime t2;
+
+            int y, m;
+            if (moon == 12)
+            {
+                y = year + 1;
+                m = (moon / 12) + (moon % 12);
+            }
+            else
+            {
+                y = year;
+                m = (moon / 12) + (moon % 12) + 1;
+            }
+
+            DateTime.TryParseExact($"{y}-{m:D2}-01 00:00:00", "yyyy-MM-dd HH:mm:ss", new CultureInfo("zh-cn"), DateTimeStyles.None, out t2);
+            start = t1;
+            end = t2;
+        }
+
+        public KeyValuePair<DateTime, DateTime> DateRange(int year, int moon)
+        {
+            DateTime t1, t2;
+            DateRange(year, moon, out t1, out t2);
+
+            return KeyValuePair.Create(t1, t2);
+        }
+
+
+        string _oldRoot = "";
         public bool SetRootDirectorie(string root="")
         {
+            this.IsRunning = true;
+            if(!string.IsNullOrWhiteSpace(root) && root.Equals(_oldRoot))
+            {
+                IsRunning = false;
+                return true;
+            }
             if (!Directory.Exists(root))
             {
                 root = Path.GetDirectoryName(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName);
@@ -1001,7 +1070,7 @@ namespace analyze.core
             {
                 return false;
             }
-            _output.WriteLine($"店铺信息 {Path.GetFileName(ShopInfoFileName)}");
+            _output.WriteLine($"店铺信息 {ShopInfoFileName}");
 
             // 总表数据
             string[] dirs = Directory.GetDirectories(Path.Combine(root, "总表数据"));
@@ -1010,67 +1079,90 @@ namespace analyze.core
             OrderRecordFileName = Path.Combine(NewestTotalDirectory, "订单总表.xlsx");
             UsPruchasRecordFileName = Path.Combine(NewestTotalDirectory, "美国采购单.xlsx");
             BrPruchasRecordFileName = Path.Combine(NewestTotalDirectory, "巴西采购单.xlsx");
-            _output.WriteLine($"总表数据 {Path.GetFileName(NewestTotalDirectory)}");
+            _output.WriteLine($"总表数据 {NewestTotalDirectory}");
             
 
             // 订单数据
             string[] dirs1 = Directory.GetDirectories(Path.Combine(root, "订单数据"));
             Array.Sort(dirs1);
             NewestOrderDirectory = dirs1.LastOrDefault();
-            _output.WriteLine($"订单数据 {Path.GetFileName(NewestOrderDirectory)}");
+            _output.WriteLine($"订单数据 {NewestOrderDirectory}");
 
             // 利润统计
-            
             string[] dirs2 =  Directory.GetDirectories(Path.Combine(root, "利润统计"));
             Array.Sort(dirs2);
             NewestProfitDirectory = dirs2.LastOrDefault();
-            _output.WriteLine($"利润统计 {Path.GetFileName(NewestProfitDirectory)}");
+            _output.WriteLine($"利润统计 {NewestProfitDirectory}");
 
             // 每日数据
             string[] dirs3 = Directory.GetDirectories(Path.Combine(root, "每日数据"));
             Array.Sort(dirs3);
             NewestDailyDirectory = dirs3.LastOrDefault();
-            _output.WriteLine($"每日数据 {Path.GetFileName(NewestDailyDirectory)}");
+            _output.WriteLine($"每日数据 {NewestDailyDirectory}");
 
             // 索赔记录
             string[] dirs4 = Directory.GetDirectories(Path.Combine(root, "索赔记录"));
             Array.Sort(dirs4);
             NewestReparationDirectory = dirs4.LastOrDefault();
-            _output.WriteLine($"索赔记录 {Path.GetFileName(NewestReparationDirectory)}");
+            _output.WriteLine($"索赔记录 {NewestReparationDirectory}");
+
+
+            // 索赔记录
+            string[] dirs6 = Directory.GetDirectories(Path.Combine(root, "扣款记录"));
+            Array.Sort(dirs6);
+            NewestDeductionDirectory = dirs6.LastOrDefault();
+            _output.WriteLine($"索赔记录 {NewestDeductionDirectory}");
 
             // bin
             string[] dirs5 = Directory.GetFiles(Path.Combine(root, "bin"));
             Array.Sort(dirs5);
             NewestBinFileName = dirs5.LastOrDefault();
-            _output.WriteLine($"bin {Path.GetFileName(NewestBinFileName)}");
+            _output.WriteLine($"bin {NewestBinFileName}");
 
+            // resources
+            NewestResourcesDirectory = Path.Combine(root, "resources");
+            _output.WriteLine($"resources {NewestResourcesDirectory}");
+
+            _oldRoot = root;
+            this.IsRunning = false;
             return true;
         }
 
-
-        public ShopRecord[] CollectShopRecord(IEnumerable<string> prefixs)
+        public void CollectShopRecords(params string[] prefixs)
         {
-            List<ShopRecord> shops = new List<ShopRecord>();
 
+            // 没有指定文件夹。获取所有文件夹
             if (prefixs == null || prefixs.Count() == 0)
             {
                 prefixs = Directory.GetDirectories(NewestOrderDirectory).Select(o => Path.GetFileName(o)).ToArray();
             }
 
-            foreach (var dir in prefixs)
-            {
-                _sheetClient.Collect(NewestOrderDirectory, dir, ShopInfoFileName, OrderRecordFileName, UsPruchasRecordFileName, BrPruchasRecordFileName);
-            }
-
-            foreach (var dir in prefixs)
-            {
-
-                List<Shop> shops1 = _sheetClient.SelectShop(dir);
-                IEnumerable<ShopRecord> enumerable = _sheetClient.ShopRecords.Where(r => shops1.Where(s1 => s1.CN.Equals(r.Shop.CN)).Count() > 0);
-                shops.AddRange(enumerable);
-            }
-
-            return shops.ToArray();
+            _sheetClient.CollectTotalInfo(ShopInfoFileName, OrderRecordFileName, UsPruchasRecordFileName, BrPruchasRecordFileName);
+            _sheetClient.CollectOrderRecords(NewestOrderDirectory, prefixs);
         }
+
+        public ShopRecord[] GetShopRecords(params string[] prefixs)
+        {
+            if (prefixs.Length != 0)
+            {
+                List<ShopRecord> shops = new List<ShopRecord>();
+                // 返回指定的商店订单记录
+                foreach (var dir in prefixs)
+                {
+                    List<Shop> shops1 = _sheetClient.SelectShop(dir);
+                    IEnumerable<ShopRecord> enumerable = _sheetClient.ShopRecords.Where(r => shops1.Where(s1 => s1.CN.Equals(r.Shop.CN)).Count() > 0);
+                    shops.AddRange(enumerable);
+                }
+
+                return shops.ToArray();
+            }
+            else
+            {
+                return _sheetClient.ShopRecords.ToArray();
+            }
+
+        }
+
+
     }
 }

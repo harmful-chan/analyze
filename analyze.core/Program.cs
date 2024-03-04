@@ -27,28 +27,29 @@ namespace analyze
         {
             //try 
             //{
-
+            Analyzer analyzer = new Analyzer();
+            analyzer.Output = new ConsoleOutput();
             var exitCode = Parser.Default
                 .ParseArguments<ManageOptions, DailyOptions, OrderOptions, PurchaseOptions > (args)
                 .MapResult(
                     (ManageOptions o) => 
                     {
-                        new Analyzer(new ConsoleOutput()).ManageRun(o);
+                        analyzer.ManageRun(o);
                         return 0;
                     },
                     (DailyOptions o) =>
                     {
-                        new Analyzer(new ConsoleOutput()).DailyRun(o);
+                        analyzer.DailyRun(o);
                         return 0;
                     },
                     (OrderOptions o) =>
                     {
-                        new Analyzer(new ConsoleOutput()).OrderRun(o);
+                        analyzer.OrderRun(o);
                         return 0;
                     },
                     (PurchaseOptions o) =>
                     {
-                        new Analyzer(new ConsoleOutput()).PurchaseRun(o);
+                        //analyzer.PurchaseRun(o);
                         return 0;
                     },
                     error => 1);

@@ -20,10 +20,18 @@ namespace analyze.core.Clients
 
         public static string Message { get; set; }
 
-        private IOutput _output = null;
-        public SheetClient(IOutput output)
+        private IOutput _output;
+
+        public IOutput Output
         {
-            _output = output;
+            get { return _output; }
+            set { _output = value; }
+        }
+
+
+        public SheetClient()
+        {
+            
         }
 
         #region XLSX操作
@@ -67,6 +75,7 @@ namespace analyze.core.Clients
 
                             if (row != null && type == 1)  // 类型1巴西单
                             {
+                                to.Country = "BR";
                                 to.OrderId = row.GetCell(6)?.ToString();
                                 to.Status = row.GetCell(22)?.ToString();
                                 string v = row.GetCell(21)?.ToString();
@@ -74,9 +83,14 @@ namespace analyze.core.Clients
                                 to.Buyer = row.GetCell(16)?.ToString();
 
                                 ICell cell = row.GetCell(1);
-                                if(cell!=null && cell.CellType == CellType.Numeric)
+
+                                if(cell!=null)
                                 {
-                                    to.SubmissionDate = (DateTime)row.GetCell(1)?.DateCellValue;
+                                  
+                                    DateTime t1;
+                                    //DateTime.TryParseExact(row.GetCell(1).ToString()?.ToString(), "yyyy/MM/dd", new CultureInfo("zh-cn"), DateTimeStyles.None, out t1);
+                                    DateTime.TryParse(row.GetCell(1).ToString(),  out t1);
+                                    to.SubmissionDate = t1;
                                 }
                                 else
                                 {
@@ -89,6 +103,7 @@ namespace analyze.core.Clients
                             }
                             else if (row != null && type == 2)  // 类型2美国单
                             {
+                                to.Country = "US";
                                 to.OrderId = row.GetCell(5)?.ToString();
                                 to.Status = row.GetCell(23)?.ToString();
                                 os.Add(to);
@@ -171,99 +186,103 @@ namespace analyze.core.Clients
             return os.GroupBy(o => o.OrderId).Select(s => s.First()).ToList();
         }
 
-        public void SaveShopLend(string fileName, ShopLend[] shopLends, bool overwrite)
+        public void SaveShopLend(string fileName, ShopLend[] shopLends, string demoFileName, bool overwrite)
         {
-            File.Copy(Path.Combine("resources", "lend.xlsx"), fileName, overwrite);
+            File.Copy(demoFileName, fileName, overwrite);
 
             IWorkbook workbook;
-            FileStream fs = File.OpenRead(fileName);
-            workbook = WorkbookFactory.Create(fs);
-            fs.Close();
-            fs.Dispose();
-            ICellStyle style = workbook.CreateCellStyle();
-            style.Alignment = HorizontalAlignment.Center;
-            style.VerticalAlignment = VerticalAlignment.Center;
-            ISheet sheet = workbook.GetSheetAt(0);
-            for (int i = 0; i < shopLends.Length; i++)
+            using (FileStream fs = new FileStream(fileName, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None))
             {
-                IRow row = sheet.CreateRow(i + 1);
-
-
-
-                ICell cell0 = row.CreateCell(0); cell0.SetCellType(CellType.Numeric); cell0.CellStyle = style; cell0.SetCellValue(i + 1);
-                ICell cell1 = row.CreateCell(1); cell1.SetCellType(CellType.String); cell1.CellStyle = style; cell1.SetCellValue(shopLends[i].ProductId);
-                ICell cell2 = row.CreateCell(2); cell2.SetCellType(CellType.String); cell2.SetCellValue(shopLends[i].ProdectName);
-                ICell cell3 = row.CreateCell(3); cell3.SetCellType(CellType.String); cell3.SetCellValue(shopLends[i].SUK);
-                ICell cell4 = row.CreateCell(4); cell4.SetCellType(CellType.String); cell4.SetCellValue(shopLends[i].ProductCode);
-                ICell cell5 = row.CreateCell(5); cell5.SetCellType(CellType.Numeric); cell5.CellStyle = style; cell5.SetCellValue(shopLends[i].Quantity);
-                ICell cell6 = row.CreateCell(6); cell6.SetCellType(CellType.String); cell6.SetCellValue(shopLends[i].ProductImage);
-                ICell cell7 = row.CreateCell(7); cell7.SetCellType(CellType.Numeric); cell7.CellStyle = style; cell7.SetCellValue(shopLends[i].Turnover);
-                ICell cell8 = row.CreateCell(8); cell8.SetCellType(CellType.Numeric); cell8.CellStyle = style; cell8.SetCellValue(shopLends[i].Lend);
-                ICell cell9 = row.CreateCell(9); cell9.SetCellType(CellType.Numeric); cell9.CellStyle = style; cell9.SetCellValue(shopLends[i].Cost);
-                ICell cell10 = row.CreateCell(10); cell10.SetCellType(CellType.Numeric); cell10.CellStyle = style; cell10.SetCellValue(shopLends[i].Profit);
-                ICell cell11 = row.CreateCell(11); cell11.SetCellType(CellType.Numeric); cell11.CellStyle = style; cell11.SetCellValue(shopLends[i].Rate);
-
-                ICell cell12 = row.CreateCell(12);
-                ICellStyle style1 = workbook.CreateCellStyle();
-                style1.DataFormat = workbook.CreateDataFormat().GetFormat("yyyy-MM-dd HH:mm:ss");
-                style1.Alignment = HorizontalAlignment.Center;
-                style1.VerticalAlignment = VerticalAlignment.Center;
-                cell12.CellStyle = style1;
-                cell12.SetCellValue(shopLends[i].SettlementTime);
-
-                ICell cell13 = row.CreateCell(13); cell13.SetCellType(CellType.String); cell13.CellStyle = style; cell13.SetCellValue(shopLends[i].OrderId);
-
+                workbook = WorkbookFactory.Create(fs);
             }
-            IRow totalRow = sheet.CreateRow(shopLends.Length + 2);
-            ICell c0 = totalRow.CreateCell(7); 
-            c0.SetCellType(CellType.String);
-            c0.CellStyle = style;
-            c0.SetCellValue("总额:");
-            ICell c1 = totalRow.CreateCell(8);
-            c1.SetCellType(CellType.Numeric);
-            c1.CellStyle = style;
-            c1.SetCellFormula($"SUBTOTAL(9, I2:I{shopLends.Length + 1})");
-            ICell c2 = totalRow.CreateCell(9);
-            c2.SetCellType(CellType.Numeric);
-            c2.CellStyle = style;
-            c2.SetCellFormula($"SUBTOTAL(9, J2:J{shopLends.Length + 1})");
-            ICell c3 = totalRow.CreateCell(10);
-            c3.SetCellType(CellType.Numeric);
-            c3.CellStyle = style;
-            c3.SetCellFormula($"SUBTOTAL(9, K2:K{shopLends.Length + 1})");
+            #region 设置数据
+                ICellStyle style = workbook.CreateCellStyle();
+                style.Alignment = HorizontalAlignment.Center;
+                style.VerticalAlignment = VerticalAlignment.Center;
+                ISheet sheet = workbook.GetSheetAt(0);
+                for (int i = 0; i < shopLends.Length; i++)
+                {
+                    IRow row = sheet.CreateRow(i + 1);
 
-            double lend = 0.0;
-            double profix = 0.0;
-            double cost = 0.0;
-            foreach (var item in shopLends)
-            {
-                lend += item.Lend;
-                cost += item.Cost;
-                profix += item.Profit;
-            }
 
-            ICell c4 = totalRow.CreateCell(11);
-            c4.SetCellType(CellType.Numeric);
-            c4.CellStyle = style;
-            c4.SetCellValue(Math.Round(profix/cost, 2));
 
-            FileStream newfs = new FileStream(fileName, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
-            workbook.Write(newfs);
-            newfs.Close();
-            newfs.Dispose();
-            _output.Write($"保存 {fileName}");
+                    ICell cell0 = row.CreateCell(0); cell0.SetCellType(CellType.Numeric); cell0.CellStyle = style; cell0.SetCellValue(i + 1);
+                    ICell cell1 = row.CreateCell(1); cell1.SetCellType(CellType.String); cell1.CellStyle = style; cell1.SetCellValue(shopLends[i].ProductId);
+                    ICell cell2 = row.CreateCell(2); cell2.SetCellType(CellType.String); cell2.SetCellValue(shopLends[i].ProdectName);
+                    ICell cell3 = row.CreateCell(3); cell3.SetCellType(CellType.String); cell3.SetCellValue(shopLends[i].SUK);
+                    ICell cell4 = row.CreateCell(4); cell4.SetCellType(CellType.String); cell4.SetCellValue(shopLends[i].ProductCode);
+                    ICell cell5 = row.CreateCell(5); cell5.SetCellType(CellType.Numeric); cell5.CellStyle = style; cell5.SetCellValue(shopLends[i].Quantity);
+                    ICell cell6 = row.CreateCell(6); cell6.SetCellType(CellType.String); cell6.SetCellValue(shopLends[i].ProductImage);
+                    ICell cell7 = row.CreateCell(7); cell7.SetCellType(CellType.Numeric); cell7.CellStyle = style; cell7.SetCellValue(shopLends[i].Turnover);
+                    ICell cell8 = row.CreateCell(8); cell8.SetCellType(CellType.Numeric); cell8.CellStyle = style; cell8.SetCellValue(shopLends[i].Lend);
+                    ICell cell9 = row.CreateCell(9); cell9.SetCellType(CellType.Numeric); cell9.CellStyle = style; cell9.SetCellValue(shopLends[i].Cost);
+                    ICell cell10 = row.CreateCell(10); cell10.SetCellType(CellType.Numeric); cell10.CellStyle = style; cell10.SetCellValue(shopLends[i].Profit);
+                    ICell cell11 = row.CreateCell(11); cell11.SetCellType(CellType.Numeric); cell11.CellStyle = style; cell11.SetCellValue(shopLends[i].Rate);
+
+                    ICell cell12 = row.CreateCell(12);
+                    ICellStyle style1 = workbook.CreateCellStyle();
+                    style1.DataFormat = workbook.CreateDataFormat().GetFormat("yyyy-MM-dd HH:mm:ss");
+                    style1.Alignment = HorizontalAlignment.Center;
+                    style1.VerticalAlignment = VerticalAlignment.Center;
+                    cell12.CellStyle = style1;
+                    cell12.SetCellValue(shopLends[i].SettlementTime);
+
+                    ICell cell13 = row.CreateCell(13); cell13.SetCellType(CellType.String); cell13.CellStyle = style; cell13.SetCellValue(shopLends[i].OrderId);
+
+                }
+                IRow totalRow = sheet.CreateRow(shopLends.Length + 2);
+                ICell c0 = totalRow.CreateCell(7);
+                c0.SetCellType(CellType.String);
+                c0.CellStyle = style;
+                c0.SetCellValue("总额:");
+                ICell c1 = totalRow.CreateCell(8);
+                c1.SetCellType(CellType.Numeric);
+                c1.CellStyle = style;
+                c1.SetCellFormula($"SUBTOTAL(9, I2:I{shopLends.Length + 1})");
+                ICell c2 = totalRow.CreateCell(9);
+                c2.SetCellType(CellType.Numeric);
+                c2.CellStyle = style;
+                c2.SetCellFormula($"SUBTOTAL(9, J2:J{shopLends.Length + 1})");
+                ICell c3 = totalRow.CreateCell(10);
+                c3.SetCellType(CellType.Numeric);
+                c3.CellStyle = style;
+                c3.SetCellFormula($"SUBTOTAL(9, K2:K{shopLends.Length + 1})");
+
+                double lend = 0.0;
+                double profix = 0.0;
+                double cost = 0.0;
+                foreach (var item in shopLends)
+                {
+                    lend += item.Lend;
+                    cost += item.Cost;
+                    profix += item.Profit;
+                }
+
+                ICell c4 = totalRow.CreateCell(11);
+                c4.SetCellType(CellType.Numeric);
+                c4.CellStyle = style;
+                c4.SetCellValue(Math.Round(profix / cost, 2));
+            #endregion
+            FileStream fileStream = File.Create(fileName);
+            workbook.Write(fileStream);
+            _output.WriteLine($"保存 {fileName}");
             workbook.Close();
+            fileStream.Close();
+
         }
 
-        public void SaveShopRefund(string fileName, ShopRefund[] shopRefunds, bool overwrite)
+        public void SaveShopRefund(string fileName, ShopRefund[] shopRefunds, string demoFileName, bool overwrite)
         {
-            File.Copy(Path.Combine("resources", "refund.xlsx"), fileName, overwrite);
+            File.Copy(demoFileName, fileName, overwrite);
 
             IWorkbook workbook;
-            FileStream fs = File.OpenRead(fileName);
-            workbook = WorkbookFactory.Create(fs);
-            fs.Close();
-            fs.Dispose();
+
+            using (FileStream fs = new FileStream(fileName, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None))
+            {
+                workbook = WorkbookFactory.Create(fs);
+            }
+
+            #region 处理数据
             ISheet sheet = workbook.GetSheetAt(0);
             for (int i = 0; i < shopRefunds.Length; i++)
             {
@@ -306,13 +325,13 @@ namespace analyze.core.Clients
             ICell c1 = totalRow.CreateCell(16);
             c1.SetCellType(CellType.Numeric);
             c1.SetCellFormula($"SUBTOTAL(9, Q2:Q{shopRefunds.Length + 1})");
+            #endregion
 
-            FileStream newfs = new FileStream(fileName, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
-            workbook.Write(newfs);
-            newfs.Close();
-            newfs.Dispose();
-            _output.Write($"保存 {fileName}");
+            FileStream fileStream = File.Create(fileName);
+            workbook.Write(fileStream);
+            _output.WriteLine($"保存 {fileName}");
             workbook.Close();
+            fileStream.Close();
 
         }
 
@@ -903,10 +922,9 @@ namespace analyze.core.Clients
             }
             return ss;
         }
-        public void Collect(string orderDir, string shopDirPrefix, string shopInfoFilename, string orderRecordFileName, string usPruchasRecordFileName, string brPruchasRecordFileName)
+
+        public void CollectTotalInfo(string shopInfoFilename, string orderRecordFileName, string usPruchasRecordFileName, string brPruchasRecordFileName)
         {
-
-
             if (TotalOrders.Count == 0)
             {
                 TotalOrders = ReadOrder(orderRecordFileName).ToList();
@@ -924,25 +942,36 @@ namespace analyze.core.Clients
                 AllShops = ReadShopInfo(shopInfoFilename).ToList();
             }
 
-            List<Shop> ss = SelectShop(shopDirPrefix);
-            foreach (var shop in ss)
-            {
-                int count = ShopRecords.Where(sr => sr.Shop.CN == shop.CN).Count();
-                if (count == 0)
-                {
-                    string[] ds = Directory.GetDirectories(orderDir);
-                    ds = ds.Where(d => Path.GetFileName(d).StartsWith($"{shop.CompanyNumber}{shop.CN}")).ToArray();
-                    if (ds.Length == 1)
-                    {
-                        IList<ShopOrder> orders = ReadShopOrder(Path.Combine(ds[0], "订单.xlsx")).OrderBy(o => o.OrderTime).ToList();
-                        IList<ShopLend> lendings = ReadShopLend(Path.Combine(ds[0], "放款.xlsx")).OrderBy(o => o.SettlementTime).ToList();
-                        IList<ShopRefund> refunds = ReadShopRefund(Path.Combine(ds[0], "退款.xlsx")).OrderBy(o => o.RefundTime).ToList();
+        }
 
-                        ShopRecords.Add(new ShopRecord() { Shop = shop, ShopOrderList = orders, ShopLendList = lendings, ShopRefundList = refunds });
-                    }
+        public void CollectOrderRecords(string orderDir, params string[] shopDirPrefixs)
+        {
+            foreach (var item in shopDirPrefixs)
+            {
+                List<Shop> ss = SelectShop(item);    // 搜索店铺
+                foreach (var shop in ss)
+                {
+                    CollectOrderRecord(orderDir, shop.CompanyNumber, shop.CN);
                 }
             }
+        }
 
+        public void CollectOrderRecord(string orderDir, string companyNumber, string cn)
+        {
+            int count = ShopRecords.Where(sr => sr.Shop.CN.Equals(cn)).Count();
+            if (count == 0)    // 未采集过再采集
+            {
+                string[] ds = Directory.GetDirectories(orderDir);
+                ds = ds.Where(d => Path.GetFileName(d).StartsWith($"{companyNumber}{cn}")).ToArray();
+                if (ds.Length == 1)
+                {
+                    IList<ShopOrder> orders = ReadShopOrder(Path.Combine(ds[0], "订单.xlsx")).OrderBy(o => o.OrderTime).ToList();
+                    IList<ShopLend> lendings = ReadShopLend(Path.Combine(ds[0], "放款.xlsx")).OrderBy(o => o.SettlementTime).ToList();
+                    IList<ShopRefund> refunds = ReadShopRefund(Path.Combine(ds[0], "退款.xlsx")).OrderBy(o => o.RefundTime).ToList();
+                    Shop shop = SelectShop($"{companyNumber}{cn}").FirstOrDefault();
+                    ShopRecords.Add(new ShopRecord() { Shop = shop, ShopOrderList = orders, ShopLendList = lendings, ShopRefundList = refunds });
+                }
+            }
         }
 
         #endregion

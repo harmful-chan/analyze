@@ -1,9 +1,11 @@
-﻿using analyze.core.Options;
+﻿using analyze.core.Models.Sheet;
+using analyze.core.Options;
 using NPOI.SS.Formula.Functions;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -14,13 +16,22 @@ namespace analyze.core.win
 {
     public partial class MainForm : System.Windows.Forms.Form
     {
-        Analyzer analyzer;
+
+        public bool AllowSelect { get; set; } = true;
         public MainForm()
         {
             InitializeComponent();
-            InitializeParameter();
         }
 
+        Analyzer _analyzer = new Analyzer();
+        private void Form_Load(object sender, EventArgs e)
+        {
+            InitializeParameter();
+
+            tabControl1.Selecting += (sender, e) => { e.Cancel = !AllowSelect; };
+            InitializePage1();
+
+        }
         private void InitializeParameter()
         {
             // 自动回复模板
@@ -40,7 +51,6 @@ namespace analyze.core.win
 
         }
 
-
         private void button1_Click(object sender, EventArgs e)
         {
             if (this.rbOne.Checked)
@@ -57,24 +67,204 @@ namespace analyze.core.win
             }
         }
 
-
-        delegate void SetTextCallback(string text);
-        private void SetText(string text)
+        #region page2
+        private void InitializePage2()
         {
-            BeginInvoke(new MethodInvoker(delegate 
-            {
-                this.txtOrderLog.AppendText($"{text}");
-                this.txtOrderLog.ScrollToCaret();
-            }));
+            _analyzer.Output = new FormOutput(this, this.txtOrderLog);
         }
 
         private void btnDeduction_Click(object sender, EventArgs e)
         {
+
+            if (!_analyzer.IsRunning)
+            {
+                BackgroundWorker bk = new BackgroundWorker();
+                bk.DoWork += Deduction;
+                bk.RunWorkerAsync();
+            }
         }
 
-        private void Form_Load(object sender, EventArgs e)
+        private void Deduction(object? sender, DoWorkEventArgs e)
+        {
+            string raw = this.txtOrder.Text;
+            List<KeyValuePair<string, string>> list = _analyzer.ReadNeedDeduction(raw);
+            _analyzer.Deduction(list);
+        }
+        #endregion
+
+
+        #region page1
+
+        private void InitializePage1()
+        {
+            _analyzer.Output = new FormOutput(this, this.txtProfit);
+            if (!_analyzer.IsRunning)
+            {
+                BackgroundWorker bk = new BackgroundWorker();
+                bk.DoWork += ReadRecord;
+                bk.RunWorkerAsync();
+            }
+
+        }
+
+        private Dictionary<string, ShopRecord> SureShopRecordDic()
+        {
+            var dic = new Dictionary<string, ShopRecord>();
+            DateTime start = DateTime.Parse(dateProfitStart.Value.ToString("yyyy-MM"));
+            DateTime end = DateTime.Parse(dateProfitEnd.Value.ToString("yyyy-MM"));
+            string company = this.txtCompanyNumber.Text + this.cbCN.Text + this.cbCompany.Text;
+            for (DateTime i = start; i < end; i = i.AddMonths(1))
+            {
+                ShopRecord shopRecord = _analyzer.GetShopRecords(company).FirstOrDefault();
+                dic[i.ToString("yyyy-MM")] = shopRecord;
+            }
+            return dic;
+        }
+        private void btnShowProfit_Click(object sender, EventArgs e)
+        {
+            foreach (var item in SureShopRecordDic())
+            {
+                DateTime i = DateTime.Parse(item.Key);
+                Shop s = item.Value.Shop;
+                _analyzer.FillProfitForOneMonth(i.Year, i.Month, item.Value);
+                var p = _analyzer.StatisticalProfit(i.Year, i.Month, item.Value);
+                _analyzer.Output.WriteLine($"{s.CompanyName + s.Nick} {i.Year} {i.Month.ToString("D2")} Lend:{Math.Round(p.Lend, 2)} Cost:{Math.Round(p.Cost, 2)} Profit:{Math.Round(p.Value, 2)} Rate:{Math.Round(p.Rate, 2)}");
+
+            }
+        }
+        private void ReadRecord(object? sender, DoWorkEventArgs e)
+        {
+            this.AllowSelect = false;
+            _analyzer.SetRootDirectorie(this.txtRoot.Text);
+            _analyzer.CollectShopRecords();
+            _analyzer.Output.WriteLine();
+            ShopRecord[] shopRecords = _analyzer.GetShopRecords();
+            var sGroup = shopRecords.GroupBy(x => x.Shop.CompanyName);
+
+
+            this.BeginInvoke(new Action(() =>
+            {
+                this.cbCompany.Items.Clear();
+                string[] companys = sGroup.Select(y => y.Key).ToArray();
+                Array.Sort(companys);
+                this.cbCompany.Items.AddRange(companys);
+                this.cbCompany.SelectedIndex = 0;
+                this.txtNewestTotalDirectory.Text = _analyzer.NewestTotalDirectory;
+                this.txtNewestDailyDirectory.Text = _analyzer.NewestDailyDirectory;
+                this.txtNewestDeductionDirectory.Text = _analyzer.NewestDeductionDirectory;
+                this.txtNewestOrderDirectory.Text = _analyzer.NewestOrderDirectory;
+                this.txtNewestProfitDirectory.Text = _analyzer.NewestProfitDirectory;
+                this.txtNewestReparationDirectory.Text = _analyzer.NewestReparationDirectory;
+                this.txtNewestResourcesFileName.Text = _analyzer.NewestResourcesDirectory;
+            }));
+            this.AllowSelect = true;
+        }
+
+        private void cbCompany_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            this.cbCN.Items.Clear();
+            ShopRecord[] shopRecords = _analyzer.GetShopRecords();
+            // 设置公司序号
+            string text = (sender as ComboBox).Text;
+            this.txtCompanyNumber.Text = shopRecords.Where(s => s.Shop.CompanyName.Equals(text)).First().Shop.CompanyNumber;
+
+            // 设置cn号下拉框
+            var sGroup = shopRecords.GroupBy(x => x.Shop.CompanyName).Where(y => y.Key.Equals(this.cbCompany.Text));
+            foreach (var group in sGroup)
+            {
+                foreach (var item in group)
+                {
+                    this.cbCN.Items.Add(item.Shop.CN);
+                }
+            }
+            this.cbCN.SelectedIndex = 0;
+        }
+
+        private void cbCN_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            // 设置昵称
+            ShopRecord[] shopRecords = _analyzer.GetShopRecords();
+            string text = ((ComboBox)sender).Text;
+            this.txtNick.Text = shopRecords.Where(s => s.Shop.CN.Equals(text)).First().Shop.Nick;
+        }
+
+        private void btnListLend_Click(object sender, EventArgs e)
         {
 
+            foreach (var item in SureShopRecordDic())
+            {
+                DateTime i = DateTime.Parse(item.Key);
+                var p = _analyzer.StatisticalProfit(i.Year, i.Month, item.Value);
+                _analyzer.ShowOneMonthLend(i.Year, i.Month, item.Value, p);
+            }
+        }
+        private void btnProfitClear_Click(object sender, EventArgs e)
+        {
+            this.txtProfit.Clear();
+        }
+
+        private void btnCreateProfitXLSX_Click(object sender, EventArgs e)
+        {
+            foreach (var item in SureShopRecordDic())   // 多个月
+            {
+                DateTime i = DateTime.Parse(item.Key);
+                _analyzer.FillProfitForOneMonth(i.Year, i.Month, item.Value);
+                ShopLend[] shopLends = _analyzer.GetOneMonthLend(i.Year, i.Month, item.Value);
+
+                string dir = Path.Combine(_analyzer.NewestProfitDirectory, $"{item.Value.Shop.CompanyNumber}{item.Value.Shop.CompanyName}");
+                if (!Directory.Exists(dir))
+                {
+                    Directory.CreateDirectory(dir);
+                }
+                string filename = Path.Combine(dir, $"{item.Value.Shop.CompanyName}{item.Value.Shop.Nick}{i.Year}{i.Month.ToString("D2")}.xlsx");
+                _analyzer.SaveProfit(filename, shopLends);
+            }
+        }
+        #endregion
+
+        private void tabControl1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (tabControl1.SelectedIndex == 1)
+            {
+                InitializePage2();
+            }
+            else if (tabControl1.SelectedIndex == 0)
+            {
+                InitializePage1();
+            }
+        }
+
+        private void brnShowRefund_Click(object sender, EventArgs e)
+        {
+            foreach (var item in SureShopRecordDic())
+            {
+                DateTime i = DateTime.Parse(item.Key);
+                _analyzer.FillRefundForOneMonth(i.Year, i.Month, item.Value);
+                _analyzer.ShowOneMonthRefund();
+            }
+        }
+        private void btnCreateRefund_Click(object sender, EventArgs e)
+        {
+            foreach (var item in SureShopRecordDic())   // 多个月
+            {
+                DateTime i = DateTime.Parse(item.Key);
+                _analyzer.FillRefundForOneMonth(i.Year, i.Month, item.Value);
+                ShopRefund[] shopRefunds = _analyzer.GetOneMonthRefund(i.Year, i.Month, item.Value);
+
+                string dir = Path.Combine(_analyzer.NewestReparationDirectory, $"{item.Value.Shop.CompanyNumber}{item.Value.Shop.CompanyName}");
+                if (!Directory.Exists(dir))
+                {
+                    Directory.CreateDirectory(dir);
+                }
+
+                string filename = Path.Combine(dir, $"{item.Value.Shop.CompanyName}{item.Value.Shop.Nick}{i.Year}{i.Month.ToString("D2")}.xlsx");
+                _analyzer.SaveRefund(filename, shopRefunds);
+            }
+        }
+
+        private void btnShowPurchase_Click(object sender, EventArgs e)
+        {
+            _analyzer.ShowPurchase();
         }
     }
 }

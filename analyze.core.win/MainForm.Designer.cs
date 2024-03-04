@@ -31,6 +31,54 @@ namespace analyze.core.win
         {
             tabControl1 = new TabControl();
             tabPage1 = new TabPage();
+            panelPage4 = new Panel();
+            btnShowRefundDetail = new Button();
+            brnShowRefund = new Button();
+            btnCreateRefund = new Button();
+            button9 = new Button();
+            txtNewestResourcesFileName = new TextBox();
+            label32 = new Label();
+            btnProfitClear = new Button();
+            btnShowLendDetail = new Button();
+            txtNick = new TextBox();
+            txtCompanyNumber = new TextBox();
+            cbCN = new ComboBox();
+            button8 = new Button();
+            button7 = new Button();
+            button6 = new Button();
+            button5 = new Button();
+            button4 = new Button();
+            button3 = new Button();
+            button2 = new Button();
+            cbCompany = new ComboBox();
+            btnShowProfit = new Button();
+            dateProfitEnd = new DateTimePicker();
+            dateProfitStart = new DateTimePicker();
+            btnCreateProfitXLSX = new Button();
+            txtProfit = new TextBox();
+            txtNewestOrderDirectory = new TextBox();
+            txtNewestReparationDirectory = new TextBox();
+            txtNewestDailyDirectory = new TextBox();
+            txtNewestDeductionDirectory = new TextBox();
+            txtNewestTotalDirectory = new TextBox();
+            txtNewestProfitDirectory = new TextBox();
+            label31 = new Label();
+            label30 = new Label();
+            label29 = new Label();
+            label28 = new Label();
+            label27 = new Label();
+            label26 = new Label();
+            txtRoot = new TextBox();
+            label25 = new Label();
+            tabPage2 = new TabPage();
+            panel4 = new Panel();
+            txtOrderLog = new TextBox();
+            btnDeduction = new Button();
+            txtOrder = new TextBox();
+            tabPage3 = new TabPage();
+            panel5 = new Panel();
+            progressBar1 = new ProgressBar();
+            tabPage12 = new TabPage();
             panel2 = new Panel();
             panel1 = new Panel();
             label18 = new Label();
@@ -68,7 +116,7 @@ namespace analyze.core.win
             label7 = new Label();
             label9 = new Label();
             label8 = new Label();
-            tabPage2 = new TabPage();
+            tabPage22 = new TabPage();
             panel3 = new Panel();
             label24 = new Label();
             tbDate = new TextBox();
@@ -91,21 +139,23 @@ namespace analyze.core.win
             label21 = new Label();
             label19 = new Label();
             label20 = new Label();
-            tabPage3 = new TabPage();
-            panel4 = new Panel();
-            txtOrderLog = new TextBox();
-            btnDeduction = new Button();
-            txtOrder = new TextBox();
-            tabPage4 = new TabPage();
-            tabPage5 = new TabPage();
+            tabPage53 = new TabPage();
+            openFileDialog = new OpenFileDialog();
+            backgroundWorker = new System.ComponentModel.BackgroundWorker();
+            btnShowPurchase = new Button();
+            label33 = new Label();
             tabControl1.SuspendLayout();
             tabPage1.SuspendLayout();
-            panel1.SuspendLayout();
+            panelPage4.SuspendLayout();
             tabPage2.SuspendLayout();
+            panel4.SuspendLayout();
+            tabPage3.SuspendLayout();
+            panel5.SuspendLayout();
+            tabPage12.SuspendLayout();
+            panel1.SuspendLayout();
+            tabPage22.SuspendLayout();
             panel3.SuspendLayout();
             flowLayoutPanel1.SuspendLayout();
-            tabPage3.SuspendLayout();
-            panel4.SuspendLayout();
             SuspendLayout();
             // 
             // tabControl1
@@ -113,28 +163,503 @@ namespace analyze.core.win
             tabControl1.Controls.Add(tabPage1);
             tabControl1.Controls.Add(tabPage2);
             tabControl1.Controls.Add(tabPage3);
-            tabControl1.Controls.Add(tabPage4);
-            tabControl1.Controls.Add(tabPage5);
+            tabControl1.Controls.Add(tabPage12);
+            tabControl1.Controls.Add(tabPage22);
+            tabControl1.Controls.Add(tabPage53);
             tabControl1.Dock = DockStyle.Fill;
             tabControl1.Location = new Point(0, 0);
             tabControl1.Margin = new Padding(4);
             tabControl1.Name = "tabControl1";
             tabControl1.SelectedIndex = 0;
-            tabControl1.Size = new Size(1011, 655);
+            tabControl1.Size = new Size(1119, 532);
             tabControl1.TabIndex = 1;
+            tabControl1.SelectedIndexChanged += tabControl1_SelectedIndexChanged;
             // 
             // tabPage1
             // 
-            tabPage1.Controls.Add(panel2);
-            tabPage1.Controls.Add(panel1);
+            tabPage1.Controls.Add(panelPage4);
             tabPage1.Location = new Point(4, 26);
             tabPage1.Margin = new Padding(4);
             tabPage1.Name = "tabPage1";
-            tabPage1.Padding = new Padding(4);
-            tabPage1.Size = new Size(1003, 625);
-            tabPage1.TabIndex = 0;
-            tabPage1.Text = "生成面单";
+            tabPage1.Size = new Size(1111, 502);
+            tabPage1.TabIndex = 3;
+            tabPage1.Text = "利润统计";
             tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // panelPage4
+            // 
+            panelPage4.Controls.Add(label33);
+            panelPage4.Controls.Add(btnShowPurchase);
+            panelPage4.Controls.Add(btnShowRefundDetail);
+            panelPage4.Controls.Add(brnShowRefund);
+            panelPage4.Controls.Add(btnCreateRefund);
+            panelPage4.Controls.Add(button9);
+            panelPage4.Controls.Add(txtNewestResourcesFileName);
+            panelPage4.Controls.Add(label32);
+            panelPage4.Controls.Add(btnProfitClear);
+            panelPage4.Controls.Add(btnShowLendDetail);
+            panelPage4.Controls.Add(txtNick);
+            panelPage4.Controls.Add(txtCompanyNumber);
+            panelPage4.Controls.Add(cbCN);
+            panelPage4.Controls.Add(button8);
+            panelPage4.Controls.Add(button7);
+            panelPage4.Controls.Add(button6);
+            panelPage4.Controls.Add(button5);
+            panelPage4.Controls.Add(button4);
+            panelPage4.Controls.Add(button3);
+            panelPage4.Controls.Add(button2);
+            panelPage4.Controls.Add(cbCompany);
+            panelPage4.Controls.Add(btnShowProfit);
+            panelPage4.Controls.Add(dateProfitEnd);
+            panelPage4.Controls.Add(dateProfitStart);
+            panelPage4.Controls.Add(btnCreateProfitXLSX);
+            panelPage4.Controls.Add(txtProfit);
+            panelPage4.Controls.Add(txtNewestOrderDirectory);
+            panelPage4.Controls.Add(txtNewestReparationDirectory);
+            panelPage4.Controls.Add(txtNewestDailyDirectory);
+            panelPage4.Controls.Add(txtNewestDeductionDirectory);
+            panelPage4.Controls.Add(txtNewestTotalDirectory);
+            panelPage4.Controls.Add(txtNewestProfitDirectory);
+            panelPage4.Controls.Add(label31);
+            panelPage4.Controls.Add(label30);
+            panelPage4.Controls.Add(label29);
+            panelPage4.Controls.Add(label28);
+            panelPage4.Controls.Add(label27);
+            panelPage4.Controls.Add(label26);
+            panelPage4.Controls.Add(txtRoot);
+            panelPage4.Controls.Add(label25);
+            panelPage4.Dock = DockStyle.Fill;
+            panelPage4.Location = new Point(0, 0);
+            panelPage4.Name = "panelPage4";
+            panelPage4.Size = new Size(1111, 502);
+            panelPage4.TabIndex = 0;
+            // 
+            // btnShowRefundDetail
+            // 
+            btnShowRefundDetail.Location = new Point(852, 308);
+            btnShowRefundDetail.Name = "btnShowRefundDetail";
+            btnShowRefundDetail.Size = new Size(90, 23);
+            btnShowRefundDetail.TabIndex = 39;
+            btnShowRefundDetail.Text = "显示退款详情";
+            btnShowRefundDetail.UseVisualStyleBackColor = true;
+            // 
+            // brnShowRefund
+            // 
+            brnShowRefund.Location = new Point(759, 308);
+            brnShowRefund.Name = "brnShowRefund";
+            brnShowRefund.Size = new Size(90, 23);
+            brnShowRefund.TabIndex = 38;
+            brnShowRefund.Text = "显示退款";
+            brnShowRefund.UseVisualStyleBackColor = true;
+            brnShowRefund.Click += brnShowRefund_Click;
+            // 
+            // btnCreateRefund
+            // 
+            btnCreateRefund.Location = new Point(948, 308);
+            btnCreateRefund.Name = "btnCreateRefund";
+            btnCreateRefund.Size = new Size(154, 23);
+            btnCreateRefund.TabIndex = 37;
+            btnCreateRefund.Text = "生成退款报表";
+            btnCreateRefund.UseVisualStyleBackColor = true;
+            btnCreateRefund.Click += btnCreateRefund_Click;
+            // 
+            // button9
+            // 
+            button9.Location = new Point(1078, 172);
+            button9.Name = "button9";
+            button9.Size = new Size(25, 23);
+            button9.TabIndex = 36;
+            button9.Text = "...";
+            button9.UseVisualStyleBackColor = true;
+            // 
+            // txtNewestResourcesFileName
+            // 
+            txtNewestResourcesFileName.Location = new Point(821, 173);
+            txtNewestResourcesFileName.Name = "txtNewestResourcesFileName";
+            txtNewestResourcesFileName.Size = new Size(251, 23);
+            txtNewestResourcesFileName.TabIndex = 35;
+            // 
+            // label32
+            // 
+            label32.AutoSize = true;
+            label32.Location = new Point(759, 178);
+            label32.Name = "label32";
+            label32.Size = new Size(56, 17);
+            label32.TabIndex = 34;
+            label32.Text = "资源路径";
+            // 
+            // btnProfitClear
+            // 
+            btnProfitClear.Location = new Point(948, 255);
+            btnProfitClear.Name = "btnProfitClear";
+            btnProfitClear.Size = new Size(154, 23);
+            btnProfitClear.TabIndex = 33;
+            btnProfitClear.Text = "清空";
+            btnProfitClear.UseVisualStyleBackColor = true;
+            btnProfitClear.Click += btnProfitClear_Click;
+            // 
+            // btnShowLendDetail
+            // 
+            btnShowLendDetail.Location = new Point(852, 282);
+            btnShowLendDetail.Name = "btnShowLendDetail";
+            btnShowLendDetail.Size = new Size(90, 23);
+            btnShowLendDetail.TabIndex = 32;
+            btnShowLendDetail.Text = "显示利润详情";
+            btnShowLendDetail.UseVisualStyleBackColor = true;
+            btnShowLendDetail.Click += btnListLend_Click;
+            // 
+            // txtNick
+            // 
+            txtNick.Location = new Point(759, 227);
+            txtNick.Name = "txtNick";
+            txtNick.Size = new Size(56, 23);
+            txtNick.TabIndex = 31;
+            // 
+            // txtCompanyNumber
+            // 
+            txtCompanyNumber.Location = new Point(759, 199);
+            txtCompanyNumber.Name = "txtCompanyNumber";
+            txtCompanyNumber.Size = new Size(56, 23);
+            txtCompanyNumber.TabIndex = 30;
+            // 
+            // cbCN
+            // 
+            cbCN.FormattingEnabled = true;
+            cbCN.Location = new Point(821, 226);
+            cbCN.Name = "cbCN";
+            cbCN.Size = new Size(281, 25);
+            cbCN.TabIndex = 29;
+            cbCN.SelectedIndexChanged += cbCN_SelectedIndexChanged;
+            // 
+            // button8
+            // 
+            button8.Location = new Point(1078, 148);
+            button8.Name = "button8";
+            button8.Size = new Size(25, 23);
+            button8.TabIndex = 28;
+            button8.Text = "...";
+            button8.UseVisualStyleBackColor = true;
+            // 
+            // button7
+            // 
+            button7.Location = new Point(1078, 124);
+            button7.Name = "button7";
+            button7.Size = new Size(25, 23);
+            button7.TabIndex = 27;
+            button7.Text = "...";
+            button7.UseVisualStyleBackColor = true;
+            // 
+            // button6
+            // 
+            button6.Location = new Point(1078, 100);
+            button6.Name = "button6";
+            button6.Size = new Size(25, 23);
+            button6.TabIndex = 26;
+            button6.Text = "...";
+            button6.UseVisualStyleBackColor = true;
+            // 
+            // button5
+            // 
+            button5.Location = new Point(1078, 76);
+            button5.Name = "button5";
+            button5.Size = new Size(25, 23);
+            button5.TabIndex = 25;
+            button5.Text = "...";
+            button5.UseVisualStyleBackColor = true;
+            // 
+            // button4
+            // 
+            button4.Location = new Point(1078, 52);
+            button4.Name = "button4";
+            button4.Size = new Size(25, 23);
+            button4.TabIndex = 24;
+            button4.Text = "...";
+            button4.UseVisualStyleBackColor = true;
+            // 
+            // button3
+            // 
+            button3.Location = new Point(1078, 28);
+            button3.Name = "button3";
+            button3.Size = new Size(25, 23);
+            button3.TabIndex = 23;
+            button3.Text = "...";
+            button3.UseVisualStyleBackColor = true;
+            // 
+            // button2
+            // 
+            button2.Location = new Point(1078, 4);
+            button2.Name = "button2";
+            button2.Size = new Size(25, 23);
+            button2.TabIndex = 22;
+            button2.Text = "...";
+            button2.UseVisualStyleBackColor = true;
+            // 
+            // cbCompany
+            // 
+            cbCompany.FormattingEnabled = true;
+            cbCompany.Location = new Point(821, 198);
+            cbCompany.Name = "cbCompany";
+            cbCompany.Size = new Size(281, 25);
+            cbCompany.TabIndex = 21;
+            cbCompany.SelectedIndexChanged += cbCompany_SelectedIndexChanged;
+            // 
+            // btnShowProfit
+            // 
+            btnShowProfit.Location = new Point(759, 282);
+            btnShowProfit.Name = "btnShowProfit";
+            btnShowProfit.Size = new Size(90, 23);
+            btnShowProfit.TabIndex = 20;
+            btnShowProfit.Text = "显示利润";
+            btnShowProfit.UseVisualStyleBackColor = true;
+            btnShowProfit.Click += btnShowProfit_Click;
+            // 
+            // dateProfitEnd
+            // 
+            dateProfitEnd.CustomFormat = "yyyy-MM";
+            dateProfitEnd.Format = DateTimePickerFormat.Custom;
+            dateProfitEnd.Location = new Point(854, 255);
+            dateProfitEnd.Name = "dateProfitEnd";
+            dateProfitEnd.Size = new Size(90, 23);
+            dateProfitEnd.TabIndex = 19;
+            // 
+            // dateProfitStart
+            // 
+            dateProfitStart.CustomFormat = "yyyy-MM";
+            dateProfitStart.Format = DateTimePickerFormat.Custom;
+            dateProfitStart.Location = new Point(759, 255);
+            dateProfitStart.Name = "dateProfitStart";
+            dateProfitStart.Size = new Size(90, 23);
+            dateProfitStart.TabIndex = 18;
+            dateProfitStart.Value = new DateTime(2024, 1, 1, 0, 0, 0, 0);
+            // 
+            // btnCreateProfitXLSX
+            // 
+            btnCreateProfitXLSX.Location = new Point(948, 282);
+            btnCreateProfitXLSX.Name = "btnCreateProfitXLSX";
+            btnCreateProfitXLSX.Size = new Size(154, 23);
+            btnCreateProfitXLSX.TabIndex = 17;
+            btnCreateProfitXLSX.Text = "生成利润报表";
+            btnCreateProfitXLSX.UseVisualStyleBackColor = true;
+            btnCreateProfitXLSX.Click += btnCreateProfitXLSX_Click;
+            // 
+            // txtProfit
+            // 
+            txtProfit.Font = new Font("微软雅黑", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            txtProfit.Location = new Point(3, 3);
+            txtProfit.Multiline = true;
+            txtProfit.Name = "txtProfit";
+            txtProfit.ReadOnly = true;
+            txtProfit.ScrollBars = ScrollBars.Both;
+            txtProfit.Size = new Size(751, 494);
+            txtProfit.TabIndex = 16;
+            txtProfit.WordWrap = false;
+            // 
+            // txtNewestOrderDirectory
+            // 
+            txtNewestOrderDirectory.Location = new Point(821, 148);
+            txtNewestOrderDirectory.Name = "txtNewestOrderDirectory";
+            txtNewestOrderDirectory.Size = new Size(251, 23);
+            txtNewestOrderDirectory.TabIndex = 15;
+            // 
+            // txtNewestReparationDirectory
+            // 
+            txtNewestReparationDirectory.Location = new Point(821, 124);
+            txtNewestReparationDirectory.Name = "txtNewestReparationDirectory";
+            txtNewestReparationDirectory.Size = new Size(251, 23);
+            txtNewestReparationDirectory.TabIndex = 14;
+            // 
+            // txtNewestDailyDirectory
+            // 
+            txtNewestDailyDirectory.Location = new Point(821, 100);
+            txtNewestDailyDirectory.Name = "txtNewestDailyDirectory";
+            txtNewestDailyDirectory.Size = new Size(251, 23);
+            txtNewestDailyDirectory.TabIndex = 13;
+            // 
+            // txtNewestDeductionDirectory
+            // 
+            txtNewestDeductionDirectory.Location = new Point(821, 76);
+            txtNewestDeductionDirectory.Name = "txtNewestDeductionDirectory";
+            txtNewestDeductionDirectory.Size = new Size(251, 23);
+            txtNewestDeductionDirectory.TabIndex = 12;
+            // 
+            // txtNewestTotalDirectory
+            // 
+            txtNewestTotalDirectory.Location = new Point(821, 52);
+            txtNewestTotalDirectory.Name = "txtNewestTotalDirectory";
+            txtNewestTotalDirectory.Size = new Size(251, 23);
+            txtNewestTotalDirectory.TabIndex = 11;
+            // 
+            // txtNewestProfitDirectory
+            // 
+            txtNewestProfitDirectory.Location = new Point(821, 28);
+            txtNewestProfitDirectory.Name = "txtNewestProfitDirectory";
+            txtNewestProfitDirectory.Size = new Size(251, 23);
+            txtNewestProfitDirectory.TabIndex = 10;
+            // 
+            // label31
+            // 
+            label31.AutoSize = true;
+            label31.Location = new Point(759, 154);
+            label31.Name = "label31";
+            label31.Size = new Size(56, 17);
+            label31.TabIndex = 9;
+            label31.Text = "订单数据";
+            // 
+            // label30
+            // 
+            label30.AutoSize = true;
+            label30.Location = new Point(759, 130);
+            label30.Name = "label30";
+            label30.Size = new Size(56, 17);
+            label30.TabIndex = 8;
+            label30.Text = "索赔记录";
+            // 
+            // label29
+            // 
+            label29.AutoSize = true;
+            label29.Location = new Point(760, 106);
+            label29.Name = "label29";
+            label29.Size = new Size(56, 17);
+            label29.TabIndex = 7;
+            label29.Text = "每日数据";
+            // 
+            // label28
+            // 
+            label28.AutoSize = true;
+            label28.Location = new Point(759, 82);
+            label28.Name = "label28";
+            label28.Size = new Size(56, 17);
+            label28.TabIndex = 6;
+            label28.Text = "扣款记录";
+            // 
+            // label27
+            // 
+            label27.AutoSize = true;
+            label27.Location = new Point(759, 58);
+            label27.Name = "label27";
+            label27.Size = new Size(56, 17);
+            label27.TabIndex = 5;
+            label27.Text = "总表数据";
+            // 
+            // label26
+            // 
+            label26.AutoSize = true;
+            label26.Location = new Point(760, 34);
+            label26.Name = "label26";
+            label26.Size = new Size(56, 17);
+            label26.TabIndex = 4;
+            label26.Text = "利润统计";
+            // 
+            // txtRoot
+            // 
+            txtRoot.Location = new Point(821, 4);
+            txtRoot.Name = "txtRoot";
+            txtRoot.Size = new Size(251, 23);
+            txtRoot.TabIndex = 3;
+            txtRoot.Text = "D:\\我的坚果云\\数据采集";
+            // 
+            // label25
+            // 
+            label25.AutoSize = true;
+            label25.Location = new Point(760, 10);
+            label25.Name = "label25";
+            label25.Size = new Size(44, 17);
+            label25.TabIndex = 2;
+            label25.Text = "根目录";
+            // 
+            // tabPage2
+            // 
+            tabPage2.Controls.Add(panel4);
+            tabPage2.Location = new Point(4, 26);
+            tabPage2.Margin = new Padding(4);
+            tabPage2.Name = "tabPage2";
+            tabPage2.Size = new Size(1111, 502);
+            tabPage2.TabIndex = 2;
+            tabPage2.Text = "扣款";
+            tabPage2.UseVisualStyleBackColor = true;
+            // 
+            // panel4
+            // 
+            panel4.Controls.Add(txtOrderLog);
+            panel4.Controls.Add(btnDeduction);
+            panel4.Controls.Add(txtOrder);
+            panel4.Dock = DockStyle.Fill;
+            panel4.Location = new Point(0, 0);
+            panel4.Margin = new Padding(4);
+            panel4.Name = "panel4";
+            panel4.Size = new Size(1111, 502);
+            panel4.TabIndex = 0;
+            // 
+            // txtOrderLog
+            // 
+            txtOrderLog.Location = new Point(4, 4);
+            txtOrderLog.Margin = new Padding(4);
+            txtOrderLog.Multiline = true;
+            txtOrderLog.Name = "txtOrderLog";
+            txtOrderLog.ReadOnly = true;
+            txtOrderLog.ScrollBars = ScrollBars.Vertical;
+            txtOrderLog.Size = new Size(815, 494);
+            txtOrderLog.TabIndex = 2;
+            // 
+            // btnDeduction
+            // 
+            btnDeduction.Location = new Point(823, 465);
+            btnDeduction.Margin = new Padding(4);
+            btnDeduction.Name = "btnDeduction";
+            btnDeduction.Size = new Size(284, 33);
+            btnDeduction.TabIndex = 1;
+            btnDeduction.Text = "自动扣款";
+            btnDeduction.UseVisualStyleBackColor = true;
+            btnDeduction.Click += btnDeduction_Click;
+            // 
+            // txtOrder
+            // 
+            txtOrder.Location = new Point(823, 0);
+            txtOrder.Margin = new Padding(4);
+            txtOrder.Multiline = true;
+            txtOrder.Name = "txtOrder";
+            txtOrder.ScrollBars = ScrollBars.Vertical;
+            txtOrder.Size = new Size(288, 457);
+            txtOrder.TabIndex = 0;
+            // 
+            // tabPage3
+            // 
+            tabPage3.Controls.Add(panel5);
+            tabPage3.Location = new Point(4, 26);
+            tabPage3.Name = "tabPage3";
+            tabPage3.Size = new Size(1111, 502);
+            tabPage3.TabIndex = 5;
+            tabPage3.Text = "采购进度";
+            tabPage3.UseVisualStyleBackColor = true;
+            // 
+            // panel5
+            // 
+            panel5.Controls.Add(progressBar1);
+            panel5.Dock = DockStyle.Fill;
+            panel5.Location = new Point(0, 0);
+            panel5.Name = "panel5";
+            panel5.Size = new Size(1111, 502);
+            panel5.TabIndex = 0;
+            // 
+            // progressBar1
+            // 
+            progressBar1.Location = new Point(256, 134);
+            progressBar1.Name = "progressBar1";
+            progressBar1.Size = new Size(100, 23);
+            progressBar1.TabIndex = 0;
+            // 
+            // tabPage12
+            // 
+            tabPage12.Controls.Add(panel2);
+            tabPage12.Controls.Add(panel1);
+            tabPage12.Location = new Point(4, 26);
+            tabPage12.Margin = new Padding(4);
+            tabPage12.Name = "tabPage12";
+            tabPage12.Padding = new Padding(4);
+            tabPage12.Size = new Size(1111, 502);
+            tabPage12.TabIndex = 0;
+            tabPage12.Text = "生成面单";
+            tabPage12.UseVisualStyleBackColor = true;
             // 
             // panel2
             // 
@@ -507,17 +1032,17 @@ namespace analyze.core.win
             label8.TabIndex = 0;
             label8.Text = "服务类型(Service type)：";
             // 
-            // tabPage2
+            // tabPage22
             // 
-            tabPage2.Controls.Add(panel3);
-            tabPage2.Location = new Point(4, 26);
-            tabPage2.Margin = new Padding(4);
-            tabPage2.Name = "tabPage2";
-            tabPage2.Padding = new Padding(4);
-            tabPage2.Size = new Size(1003, 625);
-            tabPage2.TabIndex = 1;
-            tabPage2.Text = "自动回复";
-            tabPage2.UseVisualStyleBackColor = true;
+            tabPage22.Controls.Add(panel3);
+            tabPage22.Location = new Point(4, 26);
+            tabPage22.Margin = new Padding(4);
+            tabPage22.Name = "tabPage22";
+            tabPage22.Padding = new Padding(4);
+            tabPage22.Size = new Size(1111, 502);
+            tabPage22.TabIndex = 1;
+            tabPage22.Text = "自动回复";
+            tabPage22.UseVisualStyleBackColor = true;
             // 
             // panel3
             // 
@@ -751,85 +1276,44 @@ namespace analyze.core.win
             label20.TabIndex = 9;
             label20.Text = "尾  程";
             // 
-            // tabPage3
+            // tabPage53
             // 
-            tabPage3.Controls.Add(panel4);
-            tabPage3.Location = new Point(4, 26);
-            tabPage3.Margin = new Padding(4);
-            tabPage3.Name = "tabPage3";
-            tabPage3.Size = new Size(1003, 625);
-            tabPage3.TabIndex = 2;
-            tabPage3.Text = "扣款";
-            tabPage3.UseVisualStyleBackColor = true;
+            tabPage53.Location = new Point(4, 26);
+            tabPage53.Margin = new Padding(4);
+            tabPage53.Name = "tabPage53";
+            tabPage53.Size = new Size(1111, 502);
+            tabPage53.TabIndex = 4;
+            tabPage53.Text = "tabPage5";
+            tabPage53.UseVisualStyleBackColor = true;
             // 
-            // panel4
+            // openFileDialog
             // 
-            panel4.Controls.Add(txtOrderLog);
-            panel4.Controls.Add(btnDeduction);
-            panel4.Controls.Add(txtOrder);
-            panel4.Dock = DockStyle.Fill;
-            panel4.Location = new Point(0, 0);
-            panel4.Margin = new Padding(4);
-            panel4.Name = "panel4";
-            panel4.Size = new Size(1003, 625);
-            panel4.TabIndex = 0;
+            openFileDialog.FileName = "openFileDialog";
             // 
-            // txtOrderLog
+            // btnShowPurchase
             // 
-            txtOrderLog.Location = new Point(4, 4);
-            txtOrderLog.Margin = new Padding(4);
-            txtOrderLog.Multiline = true;
-            txtOrderLog.Name = "txtOrderLog";
-            txtOrderLog.ScrollBars = ScrollBars.Vertical;
-            txtOrderLog.Size = new Size(698, 612);
-            txtOrderLog.TabIndex = 2;
+            btnShowPurchase.Location = new Point(760, 354);
+            btnShowPurchase.Name = "btnShowPurchase";
+            btnShowPurchase.Size = new Size(90, 23);
+            btnShowPurchase.TabIndex = 40;
+            btnShowPurchase.Text = "显采购进度";
+            btnShowPurchase.UseVisualStyleBackColor = true;
+            btnShowPurchase.Click += btnShowPurchase_Click;
             // 
-            // btnDeduction
+            // label33
             // 
-            btnDeduction.Location = new Point(710, 583);
-            btnDeduction.Margin = new Padding(4);
-            btnDeduction.Name = "btnDeduction";
-            btnDeduction.Size = new Size(284, 33);
-            btnDeduction.TabIndex = 1;
-            btnDeduction.Text = "自动扣款";
-            btnDeduction.UseVisualStyleBackColor = true;
-            btnDeduction.Click += btnDeduction_Click;
-            // 
-            // txtOrder
-            // 
-            txtOrder.Location = new Point(710, 4);
-            txtOrder.Margin = new Padding(4);
-            txtOrder.Multiline = true;
-            txtOrder.Name = "txtOrder";
-            txtOrder.ScrollBars = ScrollBars.Vertical;
-            txtOrder.Size = new Size(284, 571);
-            txtOrder.TabIndex = 0;
-            // 
-            // tabPage4
-            // 
-            tabPage4.Location = new Point(4, 26);
-            tabPage4.Margin = new Padding(4);
-            tabPage4.Name = "tabPage4";
-            tabPage4.Size = new Size(1003, 625);
-            tabPage4.TabIndex = 3;
-            tabPage4.Text = "tabPage4";
-            tabPage4.UseVisualStyleBackColor = true;
-            // 
-            // tabPage5
-            // 
-            tabPage5.Location = new Point(4, 26);
-            tabPage5.Margin = new Padding(4);
-            tabPage5.Name = "tabPage5";
-            tabPage5.Size = new Size(1003, 625);
-            tabPage5.TabIndex = 4;
-            tabPage5.Text = "tabPage5";
-            tabPage5.UseVisualStyleBackColor = true;
+            label33.AutoSize = true;
+            label33.Location = new Point(760, 334);
+            label33.Name = "label33";
+            label33.Size = new Size(328, 17);
+            label33.TabIndex = 41;
+            label33.Text = "----------------------------------------------------------------";
             // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 17F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1011, 655);
+            ClientSize = new Size(1119, 532);
             Controls.Add(tabControl1);
             FormBorderStyle = FormBorderStyle.FixedDialog;
             Margin = new Padding(4);
@@ -840,24 +1324,29 @@ namespace analyze.core.win
             Load += Form_Load;
             tabControl1.ResumeLayout(false);
             tabPage1.ResumeLayout(false);
+            panelPage4.ResumeLayout(false);
+            panelPage4.PerformLayout();
+            tabPage2.ResumeLayout(false);
+            panel4.ResumeLayout(false);
+            panel4.PerformLayout();
+            tabPage3.ResumeLayout(false);
+            panel5.ResumeLayout(false);
+            tabPage12.ResumeLayout(false);
             panel1.ResumeLayout(false);
             panel1.PerformLayout();
-            tabPage2.ResumeLayout(false);
+            tabPage22.ResumeLayout(false);
             panel3.ResumeLayout(false);
             panel3.PerformLayout();
             flowLayoutPanel1.ResumeLayout(false);
             flowLayoutPanel1.PerformLayout();
-            tabPage3.ResumeLayout(false);
-            panel4.ResumeLayout(false);
-            panel4.PerformLayout();
             ResumeLayout(false);
         }
 
         #endregion
 
         private System.Windows.Forms.TabControl tabControl1;
-        private System.Windows.Forms.TabPage tabPage1;
-        private System.Windows.Forms.TabPage tabPage2;
+        private System.Windows.Forms.TabPage tabPage12;
+        private System.Windows.Forms.TabPage tabPage22;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label5;
@@ -917,13 +1406,59 @@ namespace analyze.core.win
         private System.Windows.Forms.RadioButton rbThree;
         private System.Windows.Forms.Label label24;
         private System.Windows.Forms.TextBox tbDate;
-        private System.Windows.Forms.TabPage tabPage3;
-        private System.Windows.Forms.TabPage tabPage4;
-        private System.Windows.Forms.TabPage tabPage5;
+        private System.Windows.Forms.TabPage tabPage2;
+        private System.Windows.Forms.TabPage tabPage1;
+        private System.Windows.Forms.TabPage tabPage53;
         private System.Windows.Forms.Panel panel4;
         private System.Windows.Forms.Button btnDeduction;
         private System.Windows.Forms.TextBox txtOrder;
         private TextBox txtOrderLog;
+        private Panel panelPage4;
+        private Label label25;
+        private TextBox txtProfit;
+        private TextBox txtNewestOrderDirectory;
+        private TextBox txtNewestReparationDirectory;
+        private TextBox txtNewestDailyDirectory;
+        private TextBox txtNewestDeductionDirectory;
+        private TextBox txtNewestTotalDirectory;
+        private TextBox txtNewestProfitDirectory;
+        private Label label31;
+        private Label label30;
+        private Label label29;
+        private Label label28;
+        private Label label27;
+        private Label label26;
+        private TextBox txtRoot;
+        private DateTimePicker dateProfitStart;
+        private Button btnCreateProfitXLSX;
+        private ComboBox cbCompany;
+        private Button btnShowProfit;
+        private DateTimePicker dateProfitEnd;
+        private Button button8;
+        private Button button7;
+        private Button button6;
+        private Button button5;
+        private Button button4;
+        private Button button3;
+        private Button button2;
+        private OpenFileDialog openFileDialog;
+        private System.ComponentModel.BackgroundWorker backgroundWorker;
+        private ComboBox cbCN;
+        private TextBox txtNick;
+        private TextBox txtCompanyNumber;
+        private Button btnShowLendDetail;
+        private Button btnProfitClear;
+        private Button button9;
+        private TextBox txtNewestResourcesFileName;
+        private Label label32;
+        private Button btnShowRefundDetail;
+        private Button brnShowRefund;
+        private Button btnCreateRefund;
+        private TabPage tabPage3;
+        private Panel panel5;
+        private ProgressBar progressBar1;
+        private Label label33;
+        private Button btnShowPurchase;
     }
 }
 
