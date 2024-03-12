@@ -366,7 +366,7 @@ namespace analyze.core
         {
             var yesterday = orderDetails.Where(o => o.OrderTime.Date == DateTime.Now.AddDays(-1).Date );
             var before = orderDetails.Where(o => o.OrderTime.Date == DateTime.Now.AddDays(-2).Date);
-            var ready = orderDetails.Where(o => o.Status.Contains("等待您发货"));
+            var ready = orderDetails.Where(o => o.Status.Contains("等待您发货") || o.Status.Contains("等待发货"));
             var wait = orderDetails.Where(o => o.Status.Contains("等待买家收货"));
             var notpay = orderDetails.Where(o => o.Status.Contains("等待买家付款"));
             var cancel = orderDetails.Where(o=> o.After == null ? false: o.After.Equals("已取消"));

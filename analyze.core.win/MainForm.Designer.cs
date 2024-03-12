@@ -31,7 +31,9 @@ namespace analyze.core.win
         {
             tabControl1 = new TabControl();
             tabPage1 = new TabPage();
-            panelPage4 = new Panel();
+            panelPage1 = new Panel();
+            label33 = new Label();
+            btnShowPurchase = new Button();
             btnShowRefundDetail = new Button();
             brnShowRefund = new Button();
             btnCreateRefund = new Button();
@@ -71,13 +73,19 @@ namespace analyze.core.win
             txtRoot = new TextBox();
             label25 = new Label();
             tabPage2 = new TabPage();
-            panel4 = new Panel();
+            panelPage2 = new Panel();
             txtOrderLog = new TextBox();
             btnDeduction = new Button();
             txtOrder = new TextBox();
             tabPage3 = new TabPage();
-            panel5 = new Panel();
-            progressBar1 = new ProgressBar();
+            panelPabge3 = new Panel();
+            txtFous = new TextBox();
+            btnGetIpPosition = new Button();
+            btnGetIP = new Button();
+            btnRefush = new Button();
+            btnCheck = new Button();
+            txtUserList = new TextBox();
+            txtIpShow = new TextBox();
             tabPage12 = new TabPage();
             panel2 = new Panel();
             panel1 = new Panel();
@@ -142,15 +150,13 @@ namespace analyze.core.win
             tabPage53 = new TabPage();
             openFileDialog = new OpenFileDialog();
             backgroundWorker = new System.ComponentModel.BackgroundWorker();
-            btnShowPurchase = new Button();
-            label33 = new Label();
             tabControl1.SuspendLayout();
             tabPage1.SuspendLayout();
-            panelPage4.SuspendLayout();
+            panelPage1.SuspendLayout();
             tabPage2.SuspendLayout();
-            panel4.SuspendLayout();
+            panelPage2.SuspendLayout();
             tabPage3.SuspendLayout();
-            panel5.SuspendLayout();
+            panelPabge3.SuspendLayout();
             tabPage12.SuspendLayout();
             panel1.SuspendLayout();
             tabPage22.SuspendLayout();
@@ -177,7 +183,7 @@ namespace analyze.core.win
             // 
             // tabPage1
             // 
-            tabPage1.Controls.Add(panelPage4);
+            tabPage1.Controls.Add(panelPage1);
             tabPage1.Location = new Point(4, 26);
             tabPage1.Margin = new Padding(4);
             tabPage1.Name = "tabPage1";
@@ -186,53 +192,72 @@ namespace analyze.core.win
             tabPage1.Text = "利润统计";
             tabPage1.UseVisualStyleBackColor = true;
             // 
-            // panelPage4
+            // panelPage1
             // 
-            panelPage4.Controls.Add(label33);
-            panelPage4.Controls.Add(btnShowPurchase);
-            panelPage4.Controls.Add(btnShowRefundDetail);
-            panelPage4.Controls.Add(brnShowRefund);
-            panelPage4.Controls.Add(btnCreateRefund);
-            panelPage4.Controls.Add(button9);
-            panelPage4.Controls.Add(txtNewestResourcesFileName);
-            panelPage4.Controls.Add(label32);
-            panelPage4.Controls.Add(btnProfitClear);
-            panelPage4.Controls.Add(btnShowLendDetail);
-            panelPage4.Controls.Add(txtNick);
-            panelPage4.Controls.Add(txtCompanyNumber);
-            panelPage4.Controls.Add(cbCN);
-            panelPage4.Controls.Add(button8);
-            panelPage4.Controls.Add(button7);
-            panelPage4.Controls.Add(button6);
-            panelPage4.Controls.Add(button5);
-            panelPage4.Controls.Add(button4);
-            panelPage4.Controls.Add(button3);
-            panelPage4.Controls.Add(button2);
-            panelPage4.Controls.Add(cbCompany);
-            panelPage4.Controls.Add(btnShowProfit);
-            panelPage4.Controls.Add(dateProfitEnd);
-            panelPage4.Controls.Add(dateProfitStart);
-            panelPage4.Controls.Add(btnCreateProfitXLSX);
-            panelPage4.Controls.Add(txtProfit);
-            panelPage4.Controls.Add(txtNewestOrderDirectory);
-            panelPage4.Controls.Add(txtNewestReparationDirectory);
-            panelPage4.Controls.Add(txtNewestDailyDirectory);
-            panelPage4.Controls.Add(txtNewestDeductionDirectory);
-            panelPage4.Controls.Add(txtNewestTotalDirectory);
-            panelPage4.Controls.Add(txtNewestProfitDirectory);
-            panelPage4.Controls.Add(label31);
-            panelPage4.Controls.Add(label30);
-            panelPage4.Controls.Add(label29);
-            panelPage4.Controls.Add(label28);
-            panelPage4.Controls.Add(label27);
-            panelPage4.Controls.Add(label26);
-            panelPage4.Controls.Add(txtRoot);
-            panelPage4.Controls.Add(label25);
-            panelPage4.Dock = DockStyle.Fill;
-            panelPage4.Location = new Point(0, 0);
-            panelPage4.Name = "panelPage4";
-            panelPage4.Size = new Size(1111, 502);
-            panelPage4.TabIndex = 0;
+            panelPage1.Controls.Add(label33);
+            panelPage1.Controls.Add(btnShowPurchase);
+            panelPage1.Controls.Add(btnShowRefundDetail);
+            panelPage1.Controls.Add(brnShowRefund);
+            panelPage1.Controls.Add(btnCreateRefund);
+            panelPage1.Controls.Add(button9);
+            panelPage1.Controls.Add(txtNewestResourcesFileName);
+            panelPage1.Controls.Add(label32);
+            panelPage1.Controls.Add(btnProfitClear);
+            panelPage1.Controls.Add(btnShowLendDetail);
+            panelPage1.Controls.Add(txtNick);
+            panelPage1.Controls.Add(txtCompanyNumber);
+            panelPage1.Controls.Add(cbCN);
+            panelPage1.Controls.Add(button8);
+            panelPage1.Controls.Add(button7);
+            panelPage1.Controls.Add(button6);
+            panelPage1.Controls.Add(button5);
+            panelPage1.Controls.Add(button4);
+            panelPage1.Controls.Add(button3);
+            panelPage1.Controls.Add(button2);
+            panelPage1.Controls.Add(cbCompany);
+            panelPage1.Controls.Add(btnShowProfit);
+            panelPage1.Controls.Add(dateProfitEnd);
+            panelPage1.Controls.Add(dateProfitStart);
+            panelPage1.Controls.Add(btnCreateProfitXLSX);
+            panelPage1.Controls.Add(txtProfit);
+            panelPage1.Controls.Add(txtNewestOrderDirectory);
+            panelPage1.Controls.Add(txtNewestReparationDirectory);
+            panelPage1.Controls.Add(txtNewestDailyDirectory);
+            panelPage1.Controls.Add(txtNewestDeductionDirectory);
+            panelPage1.Controls.Add(txtNewestTotalDirectory);
+            panelPage1.Controls.Add(txtNewestProfitDirectory);
+            panelPage1.Controls.Add(label31);
+            panelPage1.Controls.Add(label30);
+            panelPage1.Controls.Add(label29);
+            panelPage1.Controls.Add(label28);
+            panelPage1.Controls.Add(label27);
+            panelPage1.Controls.Add(label26);
+            panelPage1.Controls.Add(txtRoot);
+            panelPage1.Controls.Add(label25);
+            panelPage1.Dock = DockStyle.Fill;
+            panelPage1.Location = new Point(0, 0);
+            panelPage1.Name = "panelPage1";
+            panelPage1.Size = new Size(1111, 502);
+            panelPage1.TabIndex = 0;
+            // 
+            // label33
+            // 
+            label33.AutoSize = true;
+            label33.Location = new Point(760, 334);
+            label33.Name = "label33";
+            label33.Size = new Size(328, 17);
+            label33.TabIndex = 41;
+            label33.Text = "----------------------------------------------------------------";
+            // 
+            // btnShowPurchase
+            // 
+            btnShowPurchase.Location = new Point(760, 354);
+            btnShowPurchase.Name = "btnShowPurchase";
+            btnShowPurchase.Size = new Size(90, 23);
+            btnShowPurchase.TabIndex = 40;
+            btnShowPurchase.Text = "显采购进度";
+            btnShowPurchase.UseVisualStyleBackColor = true;
+            btnShowPurchase.Click += btnShowPurchase_Click;
             // 
             // btnShowRefundDetail
             // 
@@ -569,7 +594,7 @@ namespace analyze.core.win
             // 
             // tabPage2
             // 
-            tabPage2.Controls.Add(panel4);
+            tabPage2.Controls.Add(panelPage2);
             tabPage2.Location = new Point(4, 26);
             tabPage2.Margin = new Padding(4);
             tabPage2.Name = "tabPage2";
@@ -578,17 +603,17 @@ namespace analyze.core.win
             tabPage2.Text = "扣款";
             tabPage2.UseVisualStyleBackColor = true;
             // 
-            // panel4
+            // panelPage2
             // 
-            panel4.Controls.Add(txtOrderLog);
-            panel4.Controls.Add(btnDeduction);
-            panel4.Controls.Add(txtOrder);
-            panel4.Dock = DockStyle.Fill;
-            panel4.Location = new Point(0, 0);
-            panel4.Margin = new Padding(4);
-            panel4.Name = "panel4";
-            panel4.Size = new Size(1111, 502);
-            panel4.TabIndex = 0;
+            panelPage2.Controls.Add(txtOrderLog);
+            panelPage2.Controls.Add(btnDeduction);
+            panelPage2.Controls.Add(txtOrder);
+            panelPage2.Dock = DockStyle.Fill;
+            panelPage2.Location = new Point(0, 0);
+            panelPage2.Margin = new Padding(4);
+            panelPage2.Name = "panelPage2";
+            panelPage2.Size = new Size(1111, 502);
+            panelPage2.TabIndex = 0;
             // 
             // txtOrderLog
             // 
@@ -624,7 +649,7 @@ namespace analyze.core.win
             // 
             // tabPage3
             // 
-            tabPage3.Controls.Add(panel5);
+            tabPage3.Controls.Add(panelPabge3);
             tabPage3.Location = new Point(4, 26);
             tabPage3.Name = "tabPage3";
             tabPage3.Size = new Size(1111, 502);
@@ -632,21 +657,85 @@ namespace analyze.core.win
             tabPage3.Text = "采购进度";
             tabPage3.UseVisualStyleBackColor = true;
             // 
-            // panel5
+            // panelPabge3
             // 
-            panel5.Controls.Add(progressBar1);
-            panel5.Dock = DockStyle.Fill;
-            panel5.Location = new Point(0, 0);
-            panel5.Name = "panel5";
-            panel5.Size = new Size(1111, 502);
-            panel5.TabIndex = 0;
+            panelPabge3.Controls.Add(txtFous);
+            panelPabge3.Controls.Add(btnGetIpPosition);
+            panelPabge3.Controls.Add(btnGetIP);
+            panelPabge3.Controls.Add(btnRefush);
+            panelPabge3.Controls.Add(btnCheck);
+            panelPabge3.Controls.Add(txtUserList);
+            panelPabge3.Controls.Add(txtIpShow);
+            panelPabge3.Dock = DockStyle.Fill;
+            panelPabge3.Location = new Point(0, 0);
+            panelPabge3.Name = "panelPabge3";
+            panelPabge3.Size = new Size(1111, 502);
+            panelPabge3.TabIndex = 0;
             // 
-            // progressBar1
+            // txtFous
             // 
-            progressBar1.Location = new Point(256, 134);
-            progressBar1.Name = "progressBar1";
-            progressBar1.Size = new Size(100, 23);
-            progressBar1.TabIndex = 0;
+            txtFous.Location = new Point(785, 238);
+            txtFous.Multiline = true;
+            txtFous.Name = "txtFous";
+            txtFous.Size = new Size(318, 200);
+            txtFous.TabIndex = 6;
+            // 
+            // btnGetIpPosition
+            // 
+            btnGetIpPosition.Location = new Point(866, 444);
+            btnGetIpPosition.Name = "btnGetIpPosition";
+            btnGetIpPosition.Size = new Size(75, 23);
+            btnGetIpPosition.TabIndex = 5;
+            btnGetIpPosition.Text = "获取IP位置";
+            btnGetIpPosition.UseVisualStyleBackColor = true;
+            btnGetIpPosition.Click += btnGetIpPosition_Click;
+            // 
+            // btnGetIP
+            // 
+            btnGetIP.Location = new Point(866, 209);
+            btnGetIP.Name = "btnGetIP";
+            btnGetIP.Size = new Size(75, 23);
+            btnGetIP.TabIndex = 4;
+            btnGetIP.Text = "获取IP";
+            btnGetIP.UseVisualStyleBackColor = true;
+            btnGetIP.Click += btnGetIP_Click;
+            // 
+            // btnRefush
+            // 
+            btnRefush.Location = new Point(785, 444);
+            btnRefush.Name = "btnRefush";
+            btnRefush.Size = new Size(75, 23);
+            btnRefush.TabIndex = 3;
+            btnRefush.Text = "切换IP";
+            btnRefush.UseVisualStyleBackColor = true;
+            btnRefush.Click += btnRefush_Click;
+            // 
+            // btnCheck
+            // 
+            btnCheck.Location = new Point(785, 209);
+            btnCheck.Name = "btnCheck";
+            btnCheck.Size = new Size(75, 23);
+            btnCheck.TabIndex = 2;
+            btnCheck.Text = "检测";
+            btnCheck.UseVisualStyleBackColor = true;
+            btnCheck.Click += btnCheck_Click;
+            // 
+            // txtUserList
+            // 
+            txtUserList.Location = new Point(785, 3);
+            txtUserList.Multiline = true;
+            txtUserList.Name = "txtUserList";
+            txtUserList.Size = new Size(318, 200);
+            txtUserList.TabIndex = 1;
+            // 
+            // txtIpShow
+            // 
+            txtIpShow.Location = new Point(3, 3);
+            txtIpShow.Multiline = true;
+            txtIpShow.Name = "txtIpShow";
+            txtIpShow.ReadOnly = true;
+            txtIpShow.Size = new Size(776, 496);
+            txtIpShow.TabIndex = 0;
             // 
             // tabPage12
             // 
@@ -1290,25 +1379,6 @@ namespace analyze.core.win
             // 
             openFileDialog.FileName = "openFileDialog";
             // 
-            // btnShowPurchase
-            // 
-            btnShowPurchase.Location = new Point(760, 354);
-            btnShowPurchase.Name = "btnShowPurchase";
-            btnShowPurchase.Size = new Size(90, 23);
-            btnShowPurchase.TabIndex = 40;
-            btnShowPurchase.Text = "显采购进度";
-            btnShowPurchase.UseVisualStyleBackColor = true;
-            btnShowPurchase.Click += btnShowPurchase_Click;
-            // 
-            // label33
-            // 
-            label33.AutoSize = true;
-            label33.Location = new Point(760, 334);
-            label33.Name = "label33";
-            label33.Size = new Size(328, 17);
-            label33.TabIndex = 41;
-            label33.Text = "----------------------------------------------------------------";
-            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 17F);
@@ -1324,13 +1394,14 @@ namespace analyze.core.win
             Load += Form_Load;
             tabControl1.ResumeLayout(false);
             tabPage1.ResumeLayout(false);
-            panelPage4.ResumeLayout(false);
-            panelPage4.PerformLayout();
+            panelPage1.ResumeLayout(false);
+            panelPage1.PerformLayout();
             tabPage2.ResumeLayout(false);
-            panel4.ResumeLayout(false);
-            panel4.PerformLayout();
+            panelPage2.ResumeLayout(false);
+            panelPage2.PerformLayout();
             tabPage3.ResumeLayout(false);
-            panel5.ResumeLayout(false);
+            panelPabge3.ResumeLayout(false);
+            panelPabge3.PerformLayout();
             tabPage12.ResumeLayout(false);
             panel1.ResumeLayout(false);
             panel1.PerformLayout();
@@ -1409,11 +1480,11 @@ namespace analyze.core.win
         private System.Windows.Forms.TabPage tabPage2;
         private System.Windows.Forms.TabPage tabPage1;
         private System.Windows.Forms.TabPage tabPage53;
-        private System.Windows.Forms.Panel panel4;
+        private System.Windows.Forms.Panel panelPage2;
         private System.Windows.Forms.Button btnDeduction;
         private System.Windows.Forms.TextBox txtOrder;
         private TextBox txtOrderLog;
-        private Panel panelPage4;
+        private Panel panelPage1;
         private Label label25;
         private TextBox txtProfit;
         private TextBox txtNewestOrderDirectory;
@@ -1455,10 +1526,16 @@ namespace analyze.core.win
         private Button brnShowRefund;
         private Button btnCreateRefund;
         private TabPage tabPage3;
-        private Panel panel5;
-        private ProgressBar progressBar1;
+        private Panel panelPabge3;
         private Label label33;
         private Button btnShowPurchase;
+        private Button btnCheck;
+        private TextBox txtUserList;
+        private TextBox txtIpShow;
+        private TextBox txtFous;
+        private Button btnGetIpPosition;
+        private Button btnGetIP;
+        private Button btnRefush;
     }
 }
 

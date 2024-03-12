@@ -32,14 +32,16 @@ namespace analyze.core.test
             consoleTables.Write(Format.Minimal);
         }
 
-        public void Write(string str, bool online)
+        public string Write(string str, bool online)
         {
             Debug.WriteLine(str);
+            return str;
         }
 
         public void WriteLine(string str = "")
         {
             Debug.WriteLine(str);
         }
+
     }
 }

@@ -44,15 +44,10 @@ namespace analyze.core.Outputs
             return str;
         }
 
-        public string WriteLine(string str = "")
+        public void WriteLine(string str = "")
         {
             Console.WriteLine(str);
-            return str;
         }
 
-        void IOutput.WriteLine(string str)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

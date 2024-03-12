@@ -1,4 +1,6 @@
-﻿using analyze.core.Models.Sheet;
+﻿using analyze.core.Clients;
+using analyze.core.Models.Rola;
+using analyze.core.Models.Sheet;
 using analyze.core.Options;
 using NPOI.SS.Formula.Functions;
 using System;
@@ -7,6 +9,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
 using System.Drawing;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -265,6 +268,85 @@ namespace analyze.core.win
         private void btnShowPurchase_Click(object sender, EventArgs e)
         {
             _analyzer.ShowPurchase();
+        }
+
+        #region page3
+        string[][] list;
+        RolaClient rolaClient = new RolaClient();
+        private void btnCheck_Click(object sender, EventArgs e)
+        {
+            this.txtIpShow.Clear();
+            foreach (var item in GetList(this.txtUserList.Text))
+            {
+                Position i = rolaClient.RolaCheck(item.Country, item.Region, item.City);
+                this.txtIpShow.AppendText($"{item.UserName} {i.Country} {i.Region} {i.City}\r\n");
+            }
+        }
+
+        private Position[] GetList(string str)
+        {
+            string[] strings = str.Split("\r\n");
+            Position[] positions = new Position[strings.Length];
+            for (int i = 0; i < strings.Length; i++)
+            {
+                positions[i] = new Position();
+                string[] split = strings[i].Split(' ');
+                if (split.Length > 0)
+                {
+                    positions[i].UserName = strings[i].Split(' ')[0];
+                }
+                if (split.Length > 1)
+                {
+                    positions[i].Country = strings[i].Split(' ')[1];
+                }
+                if (split.Length > 2)
+                {
+                    positions[i].Region = strings[i].Split(' ')[2];
+                }
+                if (split.Length > 3)
+                {
+                    positions[i].City = strings[i].Split(' ')[3];
+                }
+            }
+            return positions;
+        }
+
+        private async void btnGetIP_Click(object sender, EventArgs e)
+        {
+            this.txtIpShow.Clear();
+            foreach (var item in GetList(this.txtUserList.Text))
+            {
+                Position i = rolaClient.RolaCheck(item.Country, item.Region, item.City);
+                Position j = await rolaClient.GetPosition("gate8.rola.vip", 2024, item.UserName, "123");
+                this.txtIpShow.AppendText($"{item.UserName} {i.Country} {i.Region} {i.City} {j.IP} {j.Country} {j.Region} {j.City} \r\n");
+            }
+        }
+        #endregion
+
+
+        private async void btnRefush_Click(object sender, EventArgs e)
+        {
+            this.txtIpShow.Clear();
+            foreach (var item in GetList(this.txtFous.Text))
+            {
+                Position i = rolaClient.RolaCheck(item.Country, item.Region, item.City);
+                string result = await rolaClient.RolaRefresh(item.UserName, i.Country, i.Region, i.City);
+                Position j = await rolaClient.GetPosition("gate8.rola.vip", 2024, item.UserName, "123");
+                this.txtIpShow.AppendText($"{item.UserName} {i.Country} {i.Region} {i.City} {j.IP} {j.Country} {j.Region} {j.City} {result} \r\n");
+            }
+        }
+
+        private async void btnGetIpPosition_Click(object sender, EventArgs e)
+        {
+            this.txtIpShow.Clear();
+            foreach (var item in GetList(this.txtFous.Text))
+            {
+                Position i = rolaClient.RolaCheck(item.Country, item.Region, item.City);
+                Position j = await rolaClient.GetPosition("gate8.rola.vip", 2024, item.UserName, "123");
+                Position p = await rolaClient.CheckIpPosition(j.IP);
+                this.txtIpShow.AppendText($"{item.UserName} {i.Country} {i.Region} {i.City} {j.IP} {j.Country} {j.Region} {j.City}  {p.Country} {p.Region} {p.City} \r\n");
+            }
+
         }
     }
 }
