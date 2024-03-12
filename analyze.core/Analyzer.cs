@@ -6,19 +6,25 @@ using analyze.core.Options;
 using analyze.core.Outputs;
 using analyze.Models.Manage;
 using ConsoleTables;
+using IPinfo.Models;
 using NPOI.HSSF.Record;
 using NPOI.OpenXmlFormats.Shared;
 using NPOI.SS.Formula.Functions;
 using NPOI.SS.UserModel;
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.Metrics;
 using System.Drawing.Drawing2D;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.PortableExecutable;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Xml.Linq;
+using static analyze.core.Analyzer;
 using static analyze.core.Clients.SheetClient;
 using static System.Formats.Asn1.AsnWriter;
 
@@ -446,7 +452,7 @@ namespace analyze.core
         public void DailyRun(DailyOptions o)
         {
             List<Shop> shops = new List<Shop>();
-            List<Daily> dailys = new List<Daily>();
+            List<DailyDetail> dailys = new List<DailyDetail>();
             SheetClient client = new SheetClient();
             client.Output = _output;
             ManageClient manageClient = new ManageClient();
@@ -461,11 +467,11 @@ namespace analyze.core
 
             User[] users = null;
             Recharge[] recharges = null;
-            Task<bool> task = Task.Run(() =>
+            Task<bool> task = Task.Run(async () =>
             {
                 manageClient.LoginAdmin();
-                users = manageClient.ListUsers();
-                recharges = manageClient.ListAllRecharge();
+                users = await manageClient.ListUsersAsync();
+                recharges = await manageClient.ListAllRechargeAsync();
                 return true;
             });
 
@@ -476,7 +482,7 @@ namespace analyze.core
                 {
                     if(!Path.GetFileName(filename).StartsWith("~"))
                     {
-                        Daily daily = client.ReadDaily(filename);
+                        DailyDetail daily = client.ReadDaily(filename);
                         dailys.Add(daily);
                     }
                 }
@@ -533,7 +539,7 @@ namespace analyze.core
             int count1 = 0;
             double total2 = 0.0;
             int count2 = 0;
-            Daily old = null;
+            DailyDetail old = null;
 
             Dictionary<string, List<object[]>> objDic = new Dictionary<string, List<object[]>>();
             string[] listHeader = new string[] { "Company", "CN", "Opera", "UP", "Check", "Down",
@@ -796,6 +802,290 @@ namespace analyze.core
 
 
         }
+
+
+
+        public DailyDetail[] GetDailyDetails(string dirPath)
+        {
+            // 获取每天店铺数据
+            List<DailyDetail> dailyDetailList = new List<DailyDetail>();
+            string[] files = Directory.GetFiles(dirPath);
+            foreach (string filename in files)
+            {
+                if (!Path.GetFileName(filename).StartsWith("~") && !Path.GetFileName(filename).EndsWith("txt"))
+                {
+                    DailyDetail daily = _sheetClient.ReadDaily(filename);
+                    dailyDetailList.Add(daily);
+                }
+            }
+            dailyDetailList.Sort();
+            return dailyDetailList.ToArray();
+        }
+
+        public void ListMissingStores(DailyDetail[] dailyDetails)
+        {
+            List<Shop> shops = _sheetClient.ReadShopInfo(this.ShopInfoFileName).ToList();
+
+            var runShop = shops.Where(s => s.Status.Equals("运营中")).ToArray();
+            _output.WriteLine($"运营中：{runShop.Count()} 读取数量：{dailyDetails.Length}");
+
+            string[] arr = System.Array.ConvertAll(runShop.ToArray(), r => r.CN);
+
+            foreach (var shop in runShop)
+            {
+
+                bool flag = dailyDetails.Where(d => d.CN.Equals(shop.CN)).Count() > 0;
+
+                if (!flag)
+                {
+                    _output.WriteLine(shop.CompanyNumber + shop.CN + shop.CompanyName + shop.Nick);
+
+                }
+            }
+        }
+
+        private async Task<StoreOverview[]> GetStoreOverviews(DailyDetail[] dailyDetails)
+        {
+            User[] users = null;
+            Recharge[] recharges = null;
+            List<StoreOverview> overs = new List<StoreOverview>();
+            // 获取用户列表，充值列表
+
+            ManageClient manageClient = new ManageClient();
+            manageClient.LoginAdmin();
+            users = manageClient.ListUsers();
+            recharges = await manageClient.ListAllRechargeAsync();
+
+            foreach (var daily in dailyDetails)
+            {
+                // 公司简称
+                string name = daily.Company.Replace("市", "").Replace("县", "").Substring(2, 4);
+                var orderDic = ClassifiedOrders(daily.OrderDetails);
+                var disputeDic = ClassifiedDispute(daily.DisputeOrders);
+
+                var max = DateTime.Now;
+                var min = DateTime.Now.AddMonths(-1);
+                int disCount30 = daily.DisputeOrders.Where(o => o.DisputeTime.CompareTo(min) >= 0 && o.DisputeTime.CompareTo(max) <= 0).Count();
+                int finCount30 = orderDic[OrderTypes.Finish].Where(o => o.OrderTime.CompareTo(min) >= 0 && o.OrderTime.CompareTo(max) <= 0).Count();
+                int disCount = daily.DisputeOrders.Count();
+                int finCount = orderDic[OrderTypes.Finish].Count();
+
+                double exp30 = (disCount30 / 0.3) - disCount30 - finCount30;
+
+                // 在途纠纷及拒付订单
+                var onwayLose = daily.OnWayOrders.Where(o => o.Reason.Contains("纠纷中") || o.Reason.Contains("拒付中"));
+                var loseAmount = onwayLose.Sum(o => o.Amount);
+
+                // 实际充值 不是索赔，不是返点
+                double reality = recharges.Where(r => r.CompanyName.Contains(daily.Company) && !r.Mark.Contains("返点") && !r.Mark.Contains("索赔") && !r.Mark.Contains("海外仓")).Sum(o => o.Amount);
+
+                // 云仓余额
+                double balance = users.Where(u => u.CompanyName.Contains(daily.Company)).FirstOrDefault().Balance;
+
+                // 实际提现
+                double withdraws = daily.Withdraws.Sum(o => o.Amount);
+
+                // 纠纷最小处理天数
+                var disputeLasts = daily.DisputeOrders.Where(d => d.LastTime != null);
+                var disputeTime = System.Array.ConvertAll(disputeLasts.ToArray(), d => d.LastTime).Min();
+
+                // 待发货最小处理天数
+                var orderLasts = daily.OrderDetails.Where(d => d.LastTime != null);
+                var orderTime = System.Array.ConvertAll(orderLasts.ToArray(), d => d.LastTime).Min();
+
+
+                // 昨天等待发货及等待收货
+                var r1 = ClassifiedOrders(orderDic[OrderTypes.Yesterday])[OrderTypes.Ready];
+                var w1 = ClassifiedOrders(orderDic[OrderTypes.Yesterday])[OrderTypes.Wait];
+
+
+                StoreOverview over = new StoreOverview();
+                // 再售数据
+                over.Company = name;
+                over.CN = daily.Nick;
+                over.Opera = daily.Operator;
+                over.UP = daily.InSrockNumber;
+                over.Check = daily.ReviewNumber;
+                over.Down = daily.RemovedNumber;
+                // 服务数据
+                over.IM24 = daily.IM24;
+                over.Good = daily.GoodReviews;
+                over.Dispute = daily.Dispute;
+                over.Wrong = daily.WrongGoods;
+                // 纠纷数据
+                over.DisputeLine = disputeTime;
+                over.F30 = finCount30;
+                over.D30 = disCount30;
+                over.Exp30 = (int)exp30;
+                over.Fin = finCount;
+                over.Dis = disCount;
+                over.Close = disputeDic[DisputeTypes.Close].Count();
+                over.Talk = disputeDic[DisputeTypes.Talk].Count();
+                over.Palt = disputeDic[DisputeTypes.Platform].Count();
+                // 订单数据
+                over.All = orderDic[OrderTypes.Ready].Count();
+                over.ReadyLine = orderTime;
+                over.New = orderDic[OrderTypes.Yesterday].Count();
+                over.Ready = r1.Count();
+                over.Wait = w1.Count();
+                // 资金数据
+                Funds funds = new Funds();
+                funds.Lend = daily.Lend;
+                funds.Freeze = daily.Freeze;
+                funds.OnWay = daily.OnWay;
+                funds.Arre = daily.Arrears;
+                funds.Lose = loseAmount;
+                funds.Get = Math.Abs(withdraws);
+                funds.Reality = reality;
+                funds.Balance = balance;
+                over.Funds = funds;
+
+                overs.Add(over);
+            }
+
+            return overs.ToArray();
+        }
+
+        private Funds GetCompanyFunds(StoreOverview[] storeOverviews)
+        {
+            double lend = 0.0;
+            double freeze = 0.0;
+            double onWay = 0.0;
+            double arrears = 0.0;
+            double lose = 0.0;
+            double withdraws = 0.0;
+            double reality = 0.0;
+            double balance = 0.0;
+            foreach (var overview in storeOverviews)
+            {
+                lend += overview.Funds.Lend;
+                freeze += overview.Funds.Freeze;
+                onWay += overview.Funds.OnWay;
+                arrears += overview.Funds.Arre;
+                lose += overview.Funds.Lose;
+                withdraws += overview.Funds.Get;
+                reality = overview.Funds.Reality;
+                balance = overview.Funds.Balance;
+
+            }
+            Funds funds = new Funds();
+            funds.Lend = lend;
+            funds.Freeze = freeze;
+            funds.OnWay = onWay;
+            funds.Arre = arrears;
+            funds.Lose = lose;
+            funds.Get = withdraws;
+            funds.Reality = reality;
+            funds.Balance = balance;
+
+
+            return funds;
+        }
+
+        public async void BuildCompanyProfits(DailyDetail[] dailyDetails, string filename)
+        {
+            File.Create(filename);
+            StoreOverview[] storeOverviews = await GetStoreOverviews(dailyDetails);
+            var group = storeOverviews.GroupBy(x => x.Company);
+            foreach (var item in group)
+            {
+                Funds funds = GetCompanyFunds(item.ToArray());
+                var upload = new List<KeyValuePair<string, string>>();
+                double total = funds.Lend + funds.OnWay + funds.Get + funds.Balance - (funds.Arre + funds.Lose + funds.Reality);
+                upload.Add(KeyValuePair.Create($"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}", $""));
+                upload.Add(KeyValuePair.Create("-------------------------------", $""));
+                upload.Add(KeyValuePair.Create($"  公司", $"{item.Key}"));
+                upload.Add(KeyValuePair.Create($"（加）放款", $"{funds.Lend:0.00}"));
+                upload.Add(KeyValuePair.Create($"（减）冻结", $"{funds.Freeze:0.00}"));
+                upload.Add(KeyValuePair.Create($"（加）在途", $"{funds.OnWay:0.00}"));
+                upload.Add(KeyValuePair.Create($"（减）欠款", $"{funds.Arre:0.00}"));
+                upload.Add(KeyValuePair.Create($"（减）损耗", $"{funds.Lose:0.00}"));
+                upload.Add(KeyValuePair.Create($"（加）回款", $"{funds.Get:0.00}"));
+                upload.Add(KeyValuePair.Create($"（减）实充", $"{funds.Reality:0.00}"));
+                upload.Add(KeyValuePair.Create($"（加）余额", $"{funds.Balance:0.00}"));
+                upload.Add(KeyValuePair.Create($"（等）利润", $"{total:0.00}"));
+
+                foreach (var os in item.ToArray())
+                {
+                    upload.Add(KeyValuePair.Create("-------------------------------", $""));
+                    upload.Add(KeyValuePair.Create($"{os.Company}{os.CN}", $"{os.Opera}"));
+                    upload.Add(KeyValuePair.Create($"上架:{os.UP} 审核:{os.Check} 下架:{os.Down}", ""));
+                    upload.Add(KeyValuePair.Create($"IM24:{os.IM24:P} ", $"好评:{os.Good:P}"));
+                    upload.Add(KeyValuePair.Create($"纠纷:{os.Dispute:P} ", $"错发:{os.Wrong:P}"));
+                    upload.Add(KeyValuePair.Create($"纠纷处理:", $"{os.DisputeLine}"));
+                    upload.Add(KeyValuePair.Create($"发货处理:", $"{os.ReadyLine}"));
+                    upload.Add(KeyValuePair.Create($"F30:{os.F30} D30:{os.D30} ExpD30%:{os.Exp30}", $""));
+                    upload.Add(KeyValuePair.Create($"完成:{os.Fin} 纠纷:{os.Dis} 结束:{os.Close}", $""));
+                    upload.Add(KeyValuePair.Create($"协商:{os.Talk} 介入:{os.Palt} 总待:{os.All}", $""));
+                    upload.Add(KeyValuePair.Create($"新单:{os.New} 待发:{os.Ready} 已发:{os.Wait}", $""));
+                    upload.Add(KeyValuePair.Create($"放款:{os.Funds.Lend:0.00} ", $"冻结:{os.Funds.Freeze:0.00}"));
+                    upload.Add(KeyValuePair.Create($"在途:{os.Funds.OnWay:0.00} ", $"欠款:{os.Funds.Arre:0.00}"));
+                    upload.Add(KeyValuePair.Create($"损耗:{os.Funds.Lose:0.00} ", $"回款:{os.Funds.Get:0.00}"));
+                }
+                upload.Add(KeyValuePair.Create("", ""));
+                string str = "";
+                upload.ForEach(x => str += (x.Key+" "+x.Value+"\r\n"));
+                
+                File.AppendAllText(filename, str);
+            }
+        }
+   
+
+        public void BuildOrders(DailyDetail[] dailyDetails, string filename)
+        {
+
+            double total1 = 0.0;
+            int count1 = 0;
+            double total2 = 0.0;
+            int count2 = 0;
+            List<KeyValuePair<string, string>> list = new List<KeyValuePair<string, string>>();
+            foreach (var detail in dailyDetails)
+            {
+                
+                var orderDic = ClassifiedOrders(detail.OrderDetails);
+                // 昨天等待发货及等待收货
+                var r1 = ClassifiedOrders(orderDic[OrderTypes.Yesterday])[OrderTypes.Ready];
+                var w1 = ClassifiedOrders(orderDic[OrderTypes.Yesterday])[OrderTypes.Wait];
+                var kvs1 = CreateDetail(r1, w1);
+
+                // 前天等待发货及等待收货
+                var r2 = ClassifiedOrders(orderDic[OrderTypes.BeforeOneDay])[OrderTypes.Ready];
+                var w2 = ClassifiedOrders(orderDic[OrderTypes.BeforeOneDay])[OrderTypes.Wait];
+                var kvs2 = CreateDetail(r2, w2);
+
+                string name = detail.Company.Replace("市", "").Replace("县", "").Substring(2, 4);
+                var kvs = CreateOverview(name + detail.Nick, r1, w1, r2, w2);
+                var n1 = CreateNumber(r1, w1);
+                var n2 = CreateNumber(r2, w2);
+
+                if (n1.Key > 0 || n2.Key > 0)
+                {
+                    count1 += n1.Key;
+                    total1 += n1.Value;
+                    count2 += n2.Key;
+                    total2 += n2.Value;
+                    list.Add(kvs);
+                    list.AddRange(kvs1);
+                    list.AddRange(kvs2);
+                    list.Add(KeyValuePair.Create("", ""));
+
+                }
+            }
+
+            var kvt = KeyValuePair.Create($"{DateTime.Now.ToString("yyyy-MM-dd")}", $"巴西订单");
+            var kvt1 = KeyValuePair.Create($"昨天总计 {count1}单", $"R$ {total1:0.00}");
+            var kvt2 = KeyValuePair.Create($"前天总计 {count2}单", $"R$ {total2:0.00}");
+            list.Add(kvt);
+            list.Add(kvt1);
+            list.Add(kvt2);
+
+            string str = "";
+            list.ForEach(x => str += (x.Key + " " + x.Value + "\r\n"));
+
+            File.Delete(filename);
+            File.AppendAllText(filename, str);
+        }
+
         #endregion
 
         #region mamage 

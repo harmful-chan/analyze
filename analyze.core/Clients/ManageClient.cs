@@ -82,6 +82,15 @@ namespace analyze.core.Clients
             return backMsg;
 
         }
+
+        private Task<string> RequestAsync(string method, string url, string body = "")
+        {
+            return Task.Run(() =>
+            {
+                return Request(method, url, body);
+            });
+        }
+
         private string Request2(string url, string body = "")
         {
 
@@ -144,6 +153,25 @@ namespace analyze.core.Clients
             Request("POST", "https://gzbf-admin.goodhmy.com/default/index/login", "userName=globaltradeez&userPass=gzbf_aaabbb123456");
         }
 
+        public async Task<User[]> ListUsersAsync(string clientId = "")
+        {
+            int page = 0, page_size = 20, total = 0;
+
+            string raw = await RequestAsync("POST", @"https://gzbf-admin.goodhmy.com/customer/distributor/list", EncodeUser(1, 2000, clientId));
+            var jo = (JObject)JsonConvert.DeserializeObject(raw);
+
+            string p = jo["data"]["page"].ToString();
+            string ps = jo["data"]["page_size"].ToString();
+            string to = jo["data"]["total"].ToString();
+
+            int.TryParse(p, out page);
+            int.TryParse(ps, out page_size);
+            int.TryParse(to, out total);
+
+            var rows = jo["data"]["rows"].ToString();
+            User[] users = JsonConvert.DeserializeObject<User[]>(rows);
+            return users;
+        }
         public User[] ListUsers(string clientId = "")
         {
             int page = 0, page_size = 20, total = 0;
@@ -266,16 +294,16 @@ namespace analyze.core.Clients
         }
 
 
-        public Recharge[] ListAllRecharge()
+        public async Task<Recharge[]> ListAllRechargeAsync()
         {
 
-
             string str = $"cu_type=&cu_id=&reference_no=&pm_code=&pn_fee_type=&pn_status=&customer_code=&cu_code=&cu_type=&pn_add_time=&pn_verify_time=&pending=&page=1&limit=2000";
-            string raw = Request("POST", @"https://gzbf-admin.goodhmy.com/payment/payment/list", str);
+            string raw = await RequestAsync("POST", @"https://gzbf-admin.goodhmy.com/payment/payment/list", str);
             var jo = (JObject)JsonConvert.DeserializeObject(raw);
             var rows = jo["data"]["rows"].ToString();
             var recharge = JsonConvert.DeserializeObject<Recharge[]>(rows);
             return recharge;
+
         }
 
         private string EncodeOrder(int status, params string[] orders)

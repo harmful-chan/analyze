@@ -32,46 +32,53 @@ namespace analyze.core.win
             tabControl1 = new TabControl();
             tabPage1 = new TabPage();
             panelPage1 = new Panel();
+            panelHone = new Panel();
+            txtNewestProfitDirectory = new TextBox();
+            txtWebhool = new TextBox();
+            label25 = new Label();
+            btnUploadStoreTxt = new Button();
+            txtRoot = new TextBox();
+            btnUploadOrderTxt = new Button();
+            label26 = new Label();
+            btnCreateStoreTxt = new Button();
+            label27 = new Label();
+            btnCreateOrderTxt = new Button();
+            label28 = new Label();
+            label34 = new Label();
+            label29 = new Label();
             label33 = new Label();
+            label30 = new Label();
             btnShowPurchase = new Button();
+            label31 = new Label();
             btnShowRefundDetail = new Button();
+            txtNewestTotalDirectory = new TextBox();
             brnShowRefund = new Button();
+            txtNewestDeductionDirectory = new TextBox();
             btnCreateRefund = new Button();
+            txtNewestDailyDirectory = new TextBox();
             button9 = new Button();
+            txtNewestReparationDirectory = new TextBox();
             txtNewestResourcesFileName = new TextBox();
+            txtNewestOrderDirectory = new TextBox();
             label32 = new Label();
+            btnCreateProfitXLSX = new Button();
             btnProfitClear = new Button();
+            dateProfitStart = new DateTimePicker();
             btnShowLendDetail = new Button();
+            dateProfitEnd = new DateTimePicker();
             txtNick = new TextBox();
+            btnShowProfit = new Button();
             txtCompanyNumber = new TextBox();
+            cbCompany = new ComboBox();
             cbCN = new ComboBox();
+            button2 = new Button();
             button8 = new Button();
+            button3 = new Button();
             button7 = new Button();
+            button4 = new Button();
             button6 = new Button();
             button5 = new Button();
-            button4 = new Button();
-            button3 = new Button();
-            button2 = new Button();
-            cbCompany = new ComboBox();
-            btnShowProfit = new Button();
-            dateProfitEnd = new DateTimePicker();
-            dateProfitStart = new DateTimePicker();
-            btnCreateProfitXLSX = new Button();
             txtProfit = new TextBox();
-            txtNewestOrderDirectory = new TextBox();
-            txtNewestReparationDirectory = new TextBox();
-            txtNewestDailyDirectory = new TextBox();
-            txtNewestDeductionDirectory = new TextBox();
-            txtNewestTotalDirectory = new TextBox();
-            txtNewestProfitDirectory = new TextBox();
-            label31 = new Label();
-            label30 = new Label();
-            label29 = new Label();
-            label28 = new Label();
-            label27 = new Label();
-            label26 = new Label();
-            txtRoot = new TextBox();
-            label25 = new Label();
             tabPage2 = new TabPage();
             panelPage2 = new Panel();
             txtOrderLog = new TextBox();
@@ -153,6 +160,7 @@ namespace analyze.core.win
             tabControl1.SuspendLayout();
             tabPage1.SuspendLayout();
             panelPage1.SuspendLayout();
+            panelHone.SuspendLayout();
             tabPage2.SuspendLayout();
             panelPage2.SuspendLayout();
             tabPage3.SuspendLayout();
@@ -194,64 +202,207 @@ namespace analyze.core.win
             // 
             // panelPage1
             // 
-            panelPage1.Controls.Add(label33);
-            panelPage1.Controls.Add(btnShowPurchase);
-            panelPage1.Controls.Add(btnShowRefundDetail);
-            panelPage1.Controls.Add(brnShowRefund);
-            panelPage1.Controls.Add(btnCreateRefund);
-            panelPage1.Controls.Add(button9);
-            panelPage1.Controls.Add(txtNewestResourcesFileName);
-            panelPage1.Controls.Add(label32);
-            panelPage1.Controls.Add(btnProfitClear);
-            panelPage1.Controls.Add(btnShowLendDetail);
-            panelPage1.Controls.Add(txtNick);
-            panelPage1.Controls.Add(txtCompanyNumber);
-            panelPage1.Controls.Add(cbCN);
-            panelPage1.Controls.Add(button8);
-            panelPage1.Controls.Add(button7);
-            panelPage1.Controls.Add(button6);
-            panelPage1.Controls.Add(button5);
-            panelPage1.Controls.Add(button4);
-            panelPage1.Controls.Add(button3);
-            panelPage1.Controls.Add(button2);
-            panelPage1.Controls.Add(cbCompany);
-            panelPage1.Controls.Add(btnShowProfit);
-            panelPage1.Controls.Add(dateProfitEnd);
-            panelPage1.Controls.Add(dateProfitStart);
-            panelPage1.Controls.Add(btnCreateProfitXLSX);
+            panelPage1.Controls.Add(panelHone);
             panelPage1.Controls.Add(txtProfit);
-            panelPage1.Controls.Add(txtNewestOrderDirectory);
-            panelPage1.Controls.Add(txtNewestReparationDirectory);
-            panelPage1.Controls.Add(txtNewestDailyDirectory);
-            panelPage1.Controls.Add(txtNewestDeductionDirectory);
-            panelPage1.Controls.Add(txtNewestTotalDirectory);
-            panelPage1.Controls.Add(txtNewestProfitDirectory);
-            panelPage1.Controls.Add(label31);
-            panelPage1.Controls.Add(label30);
-            panelPage1.Controls.Add(label29);
-            panelPage1.Controls.Add(label28);
-            panelPage1.Controls.Add(label27);
-            panelPage1.Controls.Add(label26);
-            panelPage1.Controls.Add(txtRoot);
-            panelPage1.Controls.Add(label25);
             panelPage1.Dock = DockStyle.Fill;
             panelPage1.Location = new Point(0, 0);
             panelPage1.Name = "panelPage1";
             panelPage1.Size = new Size(1111, 502);
             panelPage1.TabIndex = 0;
             // 
+            // panelHone
+            // 
+            panelHone.Controls.Add(txtNewestProfitDirectory);
+            panelHone.Controls.Add(txtWebhool);
+            panelHone.Controls.Add(label25);
+            panelHone.Controls.Add(btnUploadStoreTxt);
+            panelHone.Controls.Add(txtRoot);
+            panelHone.Controls.Add(btnUploadOrderTxt);
+            panelHone.Controls.Add(label26);
+            panelHone.Controls.Add(btnCreateStoreTxt);
+            panelHone.Controls.Add(label27);
+            panelHone.Controls.Add(btnCreateOrderTxt);
+            panelHone.Controls.Add(label28);
+            panelHone.Controls.Add(label34);
+            panelHone.Controls.Add(label29);
+            panelHone.Controls.Add(label33);
+            panelHone.Controls.Add(label30);
+            panelHone.Controls.Add(btnShowPurchase);
+            panelHone.Controls.Add(label31);
+            panelHone.Controls.Add(btnShowRefundDetail);
+            panelHone.Controls.Add(txtNewestTotalDirectory);
+            panelHone.Controls.Add(brnShowRefund);
+            panelHone.Controls.Add(txtNewestDeductionDirectory);
+            panelHone.Controls.Add(btnCreateRefund);
+            panelHone.Controls.Add(txtNewestDailyDirectory);
+            panelHone.Controls.Add(button9);
+            panelHone.Controls.Add(txtNewestReparationDirectory);
+            panelHone.Controls.Add(txtNewestResourcesFileName);
+            panelHone.Controls.Add(txtNewestOrderDirectory);
+            panelHone.Controls.Add(label32);
+            panelHone.Controls.Add(btnCreateProfitXLSX);
+            panelHone.Controls.Add(btnProfitClear);
+            panelHone.Controls.Add(dateProfitStart);
+            panelHone.Controls.Add(btnShowLendDetail);
+            panelHone.Controls.Add(dateProfitEnd);
+            panelHone.Controls.Add(txtNick);
+            panelHone.Controls.Add(btnShowProfit);
+            panelHone.Controls.Add(txtCompanyNumber);
+            panelHone.Controls.Add(cbCompany);
+            panelHone.Controls.Add(cbCN);
+            panelHone.Controls.Add(button2);
+            panelHone.Controls.Add(button8);
+            panelHone.Controls.Add(button3);
+            panelHone.Controls.Add(button7);
+            panelHone.Controls.Add(button4);
+            panelHone.Controls.Add(button6);
+            panelHone.Controls.Add(button5);
+            panelHone.Location = new Point(758, 0);
+            panelHone.Name = "panelHone";
+            panelHone.Size = new Size(350, 502);
+            panelHone.TabIndex = 48;
+            panelHone.Paint += panel4_Paint;
+            // 
+            // txtNewestProfitDirectory
+            // 
+            txtNewestProfitDirectory.Location = new Point(65, 29);
+            txtNewestProfitDirectory.Name = "txtNewestProfitDirectory";
+            txtNewestProfitDirectory.Size = new Size(251, 23);
+            txtNewestProfitDirectory.TabIndex = 10;
+            // 
+            // txtWebhool
+            // 
+            txtWebhool.Location = new Point(4, 459);
+            txtWebhool.Name = "txtWebhool";
+            txtWebhool.Size = new Size(343, 23);
+            txtWebhool.TabIndex = 47;
+            txtWebhool.Text = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=8af72f8c-1f27-48b0-832e-dcfb8b7f17d2";
+            // 
+            // label25
+            // 
+            label25.AutoSize = true;
+            label25.Location = new Point(4, 11);
+            label25.Name = "label25";
+            label25.Size = new Size(44, 17);
+            label25.TabIndex = 2;
+            label25.Text = "根目录";
+            // 
+            // btnUploadStoreTxt
+            // 
+            btnUploadStoreTxt.Enabled = false;
+            btnUploadStoreTxt.Location = new Point(97, 430);
+            btnUploadStoreTxt.Name = "btnUploadStoreTxt";
+            btnUploadStoreTxt.Size = new Size(90, 23);
+            btnUploadStoreTxt.TabIndex = 46;
+            btnUploadStoreTxt.Text = "上传店铺txt";
+            btnUploadStoreTxt.UseVisualStyleBackColor = true;
+            btnUploadStoreTxt.Click += btnUploadStoreTxt_Click;
+            // 
+            // txtRoot
+            // 
+            txtRoot.Location = new Point(65, 5);
+            txtRoot.Name = "txtRoot";
+            txtRoot.Size = new Size(251, 23);
+            txtRoot.TabIndex = 3;
+            txtRoot.Text = "D:\\我的坚果云\\数据采集";
+            // 
+            // btnUploadOrderTxt
+            // 
+            btnUploadOrderTxt.Enabled = false;
+            btnUploadOrderTxt.Location = new Point(96, 401);
+            btnUploadOrderTxt.Name = "btnUploadOrderTxt";
+            btnUploadOrderTxt.Size = new Size(90, 23);
+            btnUploadOrderTxt.TabIndex = 45;
+            btnUploadOrderTxt.Text = "上传订单txt";
+            btnUploadOrderTxt.UseVisualStyleBackColor = true;
+            btnUploadOrderTxt.Click += btnUploadOrderTxt_Click;
+            // 
+            // label26
+            // 
+            label26.AutoSize = true;
+            label26.Location = new Point(4, 35);
+            label26.Name = "label26";
+            label26.Size = new Size(56, 17);
+            label26.TabIndex = 4;
+            label26.Text = "利润统计";
+            // 
+            // btnCreateStoreTxt
+            // 
+            btnCreateStoreTxt.Location = new Point(4, 430);
+            btnCreateStoreTxt.Name = "btnCreateStoreTxt";
+            btnCreateStoreTxt.Size = new Size(90, 23);
+            btnCreateStoreTxt.TabIndex = 44;
+            btnCreateStoreTxt.Text = "生成店铺txt";
+            btnCreateStoreTxt.UseVisualStyleBackColor = true;
+            btnCreateStoreTxt.Click += btnCreateStoreTxt_Click;
+            // 
+            // label27
+            // 
+            label27.AutoSize = true;
+            label27.Location = new Point(3, 59);
+            label27.Name = "label27";
+            label27.Size = new Size(56, 17);
+            label27.TabIndex = 5;
+            label27.Text = "总表数据";
+            // 
+            // btnCreateOrderTxt
+            // 
+            btnCreateOrderTxt.Location = new Point(4, 401);
+            btnCreateOrderTxt.Name = "btnCreateOrderTxt";
+            btnCreateOrderTxt.Size = new Size(90, 23);
+            btnCreateOrderTxt.TabIndex = 43;
+            btnCreateOrderTxt.Text = "生成订单txt";
+            btnCreateOrderTxt.UseVisualStyleBackColor = true;
+            btnCreateOrderTxt.Click += btnCreateOrderTxt_Click;
+            // 
+            // label28
+            // 
+            label28.AutoSize = true;
+            label28.Location = new Point(3, 83);
+            label28.Name = "label28";
+            label28.Size = new Size(56, 17);
+            label28.TabIndex = 6;
+            label28.Text = "扣款记录";
+            // 
+            // label34
+            // 
+            label34.AutoSize = true;
+            label34.Location = new Point(4, 381);
+            label34.Name = "label34";
+            label34.Size = new Size(328, 17);
+            label34.TabIndex = 42;
+            label34.Text = "----------------------------------------------------------------";
+            // 
+            // label29
+            // 
+            label29.AutoSize = true;
+            label29.Location = new Point(4, 107);
+            label29.Name = "label29";
+            label29.Size = new Size(56, 17);
+            label29.TabIndex = 7;
+            label29.Text = "每日数据";
+            // 
             // label33
             // 
             label33.AutoSize = true;
-            label33.Location = new Point(760, 334);
+            label33.Location = new Point(4, 335);
             label33.Name = "label33";
             label33.Size = new Size(328, 17);
             label33.TabIndex = 41;
             label33.Text = "----------------------------------------------------------------";
             // 
+            // label30
+            // 
+            label30.AutoSize = true;
+            label30.Location = new Point(3, 131);
+            label30.Name = "label30";
+            label30.Size = new Size(56, 17);
+            label30.TabIndex = 8;
+            label30.Text = "索赔记录";
+            // 
             // btnShowPurchase
             // 
-            btnShowPurchase.Location = new Point(760, 354);
+            btnShowPurchase.Location = new Point(4, 355);
             btnShowPurchase.Name = "btnShowPurchase";
             btnShowPurchase.Size = new Size(90, 23);
             btnShowPurchase.TabIndex = 40;
@@ -259,18 +410,34 @@ namespace analyze.core.win
             btnShowPurchase.UseVisualStyleBackColor = true;
             btnShowPurchase.Click += btnShowPurchase_Click;
             // 
+            // label31
+            // 
+            label31.AutoSize = true;
+            label31.Location = new Point(3, 155);
+            label31.Name = "label31";
+            label31.Size = new Size(56, 17);
+            label31.TabIndex = 9;
+            label31.Text = "订单数据";
+            // 
             // btnShowRefundDetail
             // 
-            btnShowRefundDetail.Location = new Point(852, 308);
+            btnShowRefundDetail.Location = new Point(96, 309);
             btnShowRefundDetail.Name = "btnShowRefundDetail";
             btnShowRefundDetail.Size = new Size(90, 23);
             btnShowRefundDetail.TabIndex = 39;
             btnShowRefundDetail.Text = "显示退款详情";
             btnShowRefundDetail.UseVisualStyleBackColor = true;
             // 
+            // txtNewestTotalDirectory
+            // 
+            txtNewestTotalDirectory.Location = new Point(65, 53);
+            txtNewestTotalDirectory.Name = "txtNewestTotalDirectory";
+            txtNewestTotalDirectory.Size = new Size(251, 23);
+            txtNewestTotalDirectory.TabIndex = 11;
+            // 
             // brnShowRefund
             // 
-            brnShowRefund.Location = new Point(759, 308);
+            brnShowRefund.Location = new Point(3, 309);
             brnShowRefund.Name = "brnShowRefund";
             brnShowRefund.Size = new Size(90, 23);
             brnShowRefund.TabIndex = 38;
@@ -278,9 +445,16 @@ namespace analyze.core.win
             brnShowRefund.UseVisualStyleBackColor = true;
             brnShowRefund.Click += brnShowRefund_Click;
             // 
+            // txtNewestDeductionDirectory
+            // 
+            txtNewestDeductionDirectory.Location = new Point(65, 77);
+            txtNewestDeductionDirectory.Name = "txtNewestDeductionDirectory";
+            txtNewestDeductionDirectory.Size = new Size(251, 23);
+            txtNewestDeductionDirectory.TabIndex = 12;
+            // 
             // btnCreateRefund
             // 
-            btnCreateRefund.Location = new Point(948, 308);
+            btnCreateRefund.Location = new Point(192, 309);
             btnCreateRefund.Name = "btnCreateRefund";
             btnCreateRefund.Size = new Size(154, 23);
             btnCreateRefund.TabIndex = 37;
@@ -288,34 +462,65 @@ namespace analyze.core.win
             btnCreateRefund.UseVisualStyleBackColor = true;
             btnCreateRefund.Click += btnCreateRefund_Click;
             // 
+            // txtNewestDailyDirectory
+            // 
+            txtNewestDailyDirectory.Location = new Point(65, 101);
+            txtNewestDailyDirectory.Name = "txtNewestDailyDirectory";
+            txtNewestDailyDirectory.Size = new Size(251, 23);
+            txtNewestDailyDirectory.TabIndex = 13;
+            // 
             // button9
             // 
-            button9.Location = new Point(1078, 172);
+            button9.Location = new Point(322, 173);
             button9.Name = "button9";
             button9.Size = new Size(25, 23);
             button9.TabIndex = 36;
             button9.Text = "...";
             button9.UseVisualStyleBackColor = true;
             // 
+            // txtNewestReparationDirectory
+            // 
+            txtNewestReparationDirectory.Location = new Point(65, 125);
+            txtNewestReparationDirectory.Name = "txtNewestReparationDirectory";
+            txtNewestReparationDirectory.Size = new Size(251, 23);
+            txtNewestReparationDirectory.TabIndex = 14;
+            // 
             // txtNewestResourcesFileName
             // 
-            txtNewestResourcesFileName.Location = new Point(821, 173);
+            txtNewestResourcesFileName.Location = new Point(65, 174);
             txtNewestResourcesFileName.Name = "txtNewestResourcesFileName";
             txtNewestResourcesFileName.Size = new Size(251, 23);
             txtNewestResourcesFileName.TabIndex = 35;
             // 
+            // txtNewestOrderDirectory
+            // 
+            txtNewestOrderDirectory.Location = new Point(65, 149);
+            txtNewestOrderDirectory.Name = "txtNewestOrderDirectory";
+            txtNewestOrderDirectory.Size = new Size(251, 23);
+            txtNewestOrderDirectory.TabIndex = 15;
+            // 
             // label32
             // 
             label32.AutoSize = true;
-            label32.Location = new Point(759, 178);
+            label32.Location = new Point(3, 179);
             label32.Name = "label32";
             label32.Size = new Size(56, 17);
             label32.TabIndex = 34;
             label32.Text = "资源路径";
             // 
+            // btnCreateProfitXLSX
+            // 
+            btnCreateProfitXLSX.Location = new Point(192, 283);
+            btnCreateProfitXLSX.Name = "btnCreateProfitXLSX";
+            btnCreateProfitXLSX.Size = new Size(154, 23);
+            btnCreateProfitXLSX.TabIndex = 17;
+            btnCreateProfitXLSX.Text = "生成利润报表";
+            btnCreateProfitXLSX.UseVisualStyleBackColor = true;
+            btnCreateProfitXLSX.Click += btnCreateProfitXLSX_Click;
+            // 
             // btnProfitClear
             // 
-            btnProfitClear.Location = new Point(948, 255);
+            btnProfitClear.Location = new Point(192, 256);
             btnProfitClear.Name = "btnProfitClear";
             btnProfitClear.Size = new Size(154, 23);
             btnProfitClear.TabIndex = 33;
@@ -323,9 +528,19 @@ namespace analyze.core.win
             btnProfitClear.UseVisualStyleBackColor = true;
             btnProfitClear.Click += btnProfitClear_Click;
             // 
+            // dateProfitStart
+            // 
+            dateProfitStart.CustomFormat = "yyyy-MM";
+            dateProfitStart.Format = DateTimePickerFormat.Custom;
+            dateProfitStart.Location = new Point(3, 256);
+            dateProfitStart.Name = "dateProfitStart";
+            dateProfitStart.Size = new Size(90, 23);
+            dateProfitStart.TabIndex = 18;
+            dateProfitStart.Value = new DateTime(2024, 1, 1, 0, 0, 0, 0);
+            // 
             // btnShowLendDetail
             // 
-            btnShowLendDetail.Location = new Point(852, 282);
+            btnShowLendDetail.Location = new Point(96, 283);
             btnShowLendDetail.Name = "btnShowLendDetail";
             btnShowLendDetail.Size = new Size(90, 23);
             btnShowLendDetail.TabIndex = 32;
@@ -333,50 +548,106 @@ namespace analyze.core.win
             btnShowLendDetail.UseVisualStyleBackColor = true;
             btnShowLendDetail.Click += btnListLend_Click;
             // 
+            // dateProfitEnd
+            // 
+            dateProfitEnd.CustomFormat = "yyyy-MM";
+            dateProfitEnd.Format = DateTimePickerFormat.Custom;
+            dateProfitEnd.Location = new Point(98, 256);
+            dateProfitEnd.Name = "dateProfitEnd";
+            dateProfitEnd.Size = new Size(90, 23);
+            dateProfitEnd.TabIndex = 19;
+            // 
             // txtNick
             // 
-            txtNick.Location = new Point(759, 227);
+            txtNick.Location = new Point(3, 228);
             txtNick.Name = "txtNick";
             txtNick.Size = new Size(56, 23);
             txtNick.TabIndex = 31;
             // 
+            // btnShowProfit
+            // 
+            btnShowProfit.Location = new Point(3, 283);
+            btnShowProfit.Name = "btnShowProfit";
+            btnShowProfit.Size = new Size(90, 23);
+            btnShowProfit.TabIndex = 20;
+            btnShowProfit.Text = "显示利润";
+            btnShowProfit.UseVisualStyleBackColor = true;
+            btnShowProfit.Click += btnShowProfit_Click;
+            // 
             // txtCompanyNumber
             // 
-            txtCompanyNumber.Location = new Point(759, 199);
+            txtCompanyNumber.Location = new Point(3, 200);
             txtCompanyNumber.Name = "txtCompanyNumber";
             txtCompanyNumber.Size = new Size(56, 23);
             txtCompanyNumber.TabIndex = 30;
             // 
+            // cbCompany
+            // 
+            cbCompany.FormattingEnabled = true;
+            cbCompany.Location = new Point(65, 199);
+            cbCompany.Name = "cbCompany";
+            cbCompany.Size = new Size(281, 25);
+            cbCompany.TabIndex = 21;
+            cbCompany.SelectedIndexChanged += cbCompany_SelectedIndexChanged;
+            // 
             // cbCN
             // 
             cbCN.FormattingEnabled = true;
-            cbCN.Location = new Point(821, 226);
+            cbCN.Location = new Point(65, 227);
             cbCN.Name = "cbCN";
             cbCN.Size = new Size(281, 25);
             cbCN.TabIndex = 29;
             cbCN.SelectedIndexChanged += cbCN_SelectedIndexChanged;
             // 
+            // button2
+            // 
+            button2.Location = new Point(322, 5);
+            button2.Name = "button2";
+            button2.Size = new Size(25, 23);
+            button2.TabIndex = 22;
+            button2.Text = "...";
+            button2.UseVisualStyleBackColor = true;
+            button2.Click += button2_Click;
+            // 
             // button8
             // 
-            button8.Location = new Point(1078, 148);
+            button8.Location = new Point(322, 149);
             button8.Name = "button8";
             button8.Size = new Size(25, 23);
             button8.TabIndex = 28;
             button8.Text = "...";
             button8.UseVisualStyleBackColor = true;
             // 
+            // button3
+            // 
+            button3.Location = new Point(322, 29);
+            button3.Name = "button3";
+            button3.Size = new Size(25, 23);
+            button3.TabIndex = 23;
+            button3.Text = "...";
+            button3.UseVisualStyleBackColor = true;
+            // 
             // button7
             // 
-            button7.Location = new Point(1078, 124);
+            button7.Location = new Point(322, 125);
             button7.Name = "button7";
             button7.Size = new Size(25, 23);
             button7.TabIndex = 27;
             button7.Text = "...";
             button7.UseVisualStyleBackColor = true;
             // 
+            // button4
+            // 
+            button4.Location = new Point(322, 53);
+            button4.Name = "button4";
+            button4.Size = new Size(25, 23);
+            button4.TabIndex = 24;
+            button4.Text = "...";
+            button4.UseVisualStyleBackColor = true;
+            // 
             // button6
             // 
-            button6.Location = new Point(1078, 100);
+            button6.Location = new Point(322, 101);
             button6.Name = "button6";
             button6.Size = new Size(25, 23);
             button6.TabIndex = 26;
@@ -385,212 +656,25 @@ namespace analyze.core.win
             // 
             // button5
             // 
-            button5.Location = new Point(1078, 76);
+            button5.Location = new Point(322, 77);
             button5.Name = "button5";
             button5.Size = new Size(25, 23);
             button5.TabIndex = 25;
             button5.Text = "...";
             button5.UseVisualStyleBackColor = true;
             // 
-            // button4
-            // 
-            button4.Location = new Point(1078, 52);
-            button4.Name = "button4";
-            button4.Size = new Size(25, 23);
-            button4.TabIndex = 24;
-            button4.Text = "...";
-            button4.UseVisualStyleBackColor = true;
-            // 
-            // button3
-            // 
-            button3.Location = new Point(1078, 28);
-            button3.Name = "button3";
-            button3.Size = new Size(25, 23);
-            button3.TabIndex = 23;
-            button3.Text = "...";
-            button3.UseVisualStyleBackColor = true;
-            // 
-            // button2
-            // 
-            button2.Location = new Point(1078, 4);
-            button2.Name = "button2";
-            button2.Size = new Size(25, 23);
-            button2.TabIndex = 22;
-            button2.Text = "...";
-            button2.UseVisualStyleBackColor = true;
-            // 
-            // cbCompany
-            // 
-            cbCompany.FormattingEnabled = true;
-            cbCompany.Location = new Point(821, 198);
-            cbCompany.Name = "cbCompany";
-            cbCompany.Size = new Size(281, 25);
-            cbCompany.TabIndex = 21;
-            cbCompany.SelectedIndexChanged += cbCompany_SelectedIndexChanged;
-            // 
-            // btnShowProfit
-            // 
-            btnShowProfit.Location = new Point(759, 282);
-            btnShowProfit.Name = "btnShowProfit";
-            btnShowProfit.Size = new Size(90, 23);
-            btnShowProfit.TabIndex = 20;
-            btnShowProfit.Text = "显示利润";
-            btnShowProfit.UseVisualStyleBackColor = true;
-            btnShowProfit.Click += btnShowProfit_Click;
-            // 
-            // dateProfitEnd
-            // 
-            dateProfitEnd.CustomFormat = "yyyy-MM";
-            dateProfitEnd.Format = DateTimePickerFormat.Custom;
-            dateProfitEnd.Location = new Point(854, 255);
-            dateProfitEnd.Name = "dateProfitEnd";
-            dateProfitEnd.Size = new Size(90, 23);
-            dateProfitEnd.TabIndex = 19;
-            // 
-            // dateProfitStart
-            // 
-            dateProfitStart.CustomFormat = "yyyy-MM";
-            dateProfitStart.Format = DateTimePickerFormat.Custom;
-            dateProfitStart.Location = new Point(759, 255);
-            dateProfitStart.Name = "dateProfitStart";
-            dateProfitStart.Size = new Size(90, 23);
-            dateProfitStart.TabIndex = 18;
-            dateProfitStart.Value = new DateTime(2024, 1, 1, 0, 0, 0, 0);
-            // 
-            // btnCreateProfitXLSX
-            // 
-            btnCreateProfitXLSX.Location = new Point(948, 282);
-            btnCreateProfitXLSX.Name = "btnCreateProfitXLSX";
-            btnCreateProfitXLSX.Size = new Size(154, 23);
-            btnCreateProfitXLSX.TabIndex = 17;
-            btnCreateProfitXLSX.Text = "生成利润报表";
-            btnCreateProfitXLSX.UseVisualStyleBackColor = true;
-            btnCreateProfitXLSX.Click += btnCreateProfitXLSX_Click;
-            // 
             // txtProfit
             // 
+            txtProfit.Dock = DockStyle.Left;
             txtProfit.Font = new Font("微软雅黑", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            txtProfit.Location = new Point(3, 3);
+            txtProfit.Location = new Point(0, 0);
             txtProfit.Multiline = true;
             txtProfit.Name = "txtProfit";
             txtProfit.ReadOnly = true;
             txtProfit.ScrollBars = ScrollBars.Both;
-            txtProfit.Size = new Size(751, 494);
+            txtProfit.Size = new Size(756, 502);
             txtProfit.TabIndex = 16;
             txtProfit.WordWrap = false;
-            // 
-            // txtNewestOrderDirectory
-            // 
-            txtNewestOrderDirectory.Location = new Point(821, 148);
-            txtNewestOrderDirectory.Name = "txtNewestOrderDirectory";
-            txtNewestOrderDirectory.Size = new Size(251, 23);
-            txtNewestOrderDirectory.TabIndex = 15;
-            // 
-            // txtNewestReparationDirectory
-            // 
-            txtNewestReparationDirectory.Location = new Point(821, 124);
-            txtNewestReparationDirectory.Name = "txtNewestReparationDirectory";
-            txtNewestReparationDirectory.Size = new Size(251, 23);
-            txtNewestReparationDirectory.TabIndex = 14;
-            // 
-            // txtNewestDailyDirectory
-            // 
-            txtNewestDailyDirectory.Location = new Point(821, 100);
-            txtNewestDailyDirectory.Name = "txtNewestDailyDirectory";
-            txtNewestDailyDirectory.Size = new Size(251, 23);
-            txtNewestDailyDirectory.TabIndex = 13;
-            // 
-            // txtNewestDeductionDirectory
-            // 
-            txtNewestDeductionDirectory.Location = new Point(821, 76);
-            txtNewestDeductionDirectory.Name = "txtNewestDeductionDirectory";
-            txtNewestDeductionDirectory.Size = new Size(251, 23);
-            txtNewestDeductionDirectory.TabIndex = 12;
-            // 
-            // txtNewestTotalDirectory
-            // 
-            txtNewestTotalDirectory.Location = new Point(821, 52);
-            txtNewestTotalDirectory.Name = "txtNewestTotalDirectory";
-            txtNewestTotalDirectory.Size = new Size(251, 23);
-            txtNewestTotalDirectory.TabIndex = 11;
-            // 
-            // txtNewestProfitDirectory
-            // 
-            txtNewestProfitDirectory.Location = new Point(821, 28);
-            txtNewestProfitDirectory.Name = "txtNewestProfitDirectory";
-            txtNewestProfitDirectory.Size = new Size(251, 23);
-            txtNewestProfitDirectory.TabIndex = 10;
-            // 
-            // label31
-            // 
-            label31.AutoSize = true;
-            label31.Location = new Point(759, 154);
-            label31.Name = "label31";
-            label31.Size = new Size(56, 17);
-            label31.TabIndex = 9;
-            label31.Text = "订单数据";
-            // 
-            // label30
-            // 
-            label30.AutoSize = true;
-            label30.Location = new Point(759, 130);
-            label30.Name = "label30";
-            label30.Size = new Size(56, 17);
-            label30.TabIndex = 8;
-            label30.Text = "索赔记录";
-            // 
-            // label29
-            // 
-            label29.AutoSize = true;
-            label29.Location = new Point(760, 106);
-            label29.Name = "label29";
-            label29.Size = new Size(56, 17);
-            label29.TabIndex = 7;
-            label29.Text = "每日数据";
-            // 
-            // label28
-            // 
-            label28.AutoSize = true;
-            label28.Location = new Point(759, 82);
-            label28.Name = "label28";
-            label28.Size = new Size(56, 17);
-            label28.TabIndex = 6;
-            label28.Text = "扣款记录";
-            // 
-            // label27
-            // 
-            label27.AutoSize = true;
-            label27.Location = new Point(759, 58);
-            label27.Name = "label27";
-            label27.Size = new Size(56, 17);
-            label27.TabIndex = 5;
-            label27.Text = "总表数据";
-            // 
-            // label26
-            // 
-            label26.AutoSize = true;
-            label26.Location = new Point(760, 34);
-            label26.Name = "label26";
-            label26.Size = new Size(56, 17);
-            label26.TabIndex = 4;
-            label26.Text = "利润统计";
-            // 
-            // txtRoot
-            // 
-            txtRoot.Location = new Point(821, 4);
-            txtRoot.Name = "txtRoot";
-            txtRoot.Size = new Size(251, 23);
-            txtRoot.TabIndex = 3;
-            txtRoot.Text = "D:\\我的坚果云\\数据采集";
-            // 
-            // label25
-            // 
-            label25.AutoSize = true;
-            label25.Location = new Point(760, 10);
-            label25.Name = "label25";
-            label25.Size = new Size(44, 17);
-            label25.TabIndex = 2;
-            label25.Text = "根目录";
             // 
             // tabPage2
             // 
@@ -1396,6 +1480,8 @@ namespace analyze.core.win
             tabPage1.ResumeLayout(false);
             panelPage1.ResumeLayout(false);
             panelPage1.PerformLayout();
+            panelHone.ResumeLayout(false);
+            panelHone.PerformLayout();
             tabPage2.ResumeLayout(false);
             panelPage2.ResumeLayout(false);
             panelPage2.PerformLayout();
@@ -1536,6 +1622,13 @@ namespace analyze.core.win
         private Button btnGetIpPosition;
         private Button btnGetIP;
         private Button btnRefush;
+        private Label label34;
+        private Button btnUploadStoreTxt;
+        private Button btnUploadOrderTxt;
+        private Button btnCreateStoreTxt;
+        private Button btnCreateOrderTxt;
+        private TextBox txtWebhool;
+        private Panel panelHone;
     }
 }
 

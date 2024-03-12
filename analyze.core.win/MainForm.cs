@@ -1,4 +1,5 @@
 ﻿using analyze.core.Clients;
+using analyze.core.Models.Daily;
 using analyze.core.Models.Rola;
 using analyze.core.Models.Sheet;
 using analyze.core.Options;
@@ -98,16 +99,19 @@ namespace analyze.core.win
 
         #region page1
 
+        DailyDetail[] daily;
         private void InitializePage1()
         {
             _analyzer.Output = new FormOutput(this, this.txtProfit);
-            if (!_analyzer.IsRunning)
+            if(Directory.Exists(this.txtRoot.Text))
             {
-                BackgroundWorker bk = new BackgroundWorker();
-                bk.DoWork += ReadRecord;
-                bk.RunWorkerAsync();
+                if (!_analyzer.IsRunning)
+                {
+                    BackgroundWorker bk = new BackgroundWorker();
+                    bk.DoWork += ReadRecord;
+                    bk.RunWorkerAsync();
+                }
             }
-
         }
 
         private Dictionary<string, ShopRecord> SureShopRecordDic()
@@ -137,10 +141,23 @@ namespace analyze.core.win
         }
         private void ReadRecord(object? sender, DoWorkEventArgs e)
         {
-            this.AllowSelect = false;
+            this.BeginInvoke(new Action(() =>
+            {
+                this.AllowSelect = false;
+                this.panelHone.Enabled = false;
+            }));
+
             _analyzer.SetRootDirectorie(this.txtRoot.Text);
             _analyzer.CollectShopRecords();
+            daily = _analyzer.GetDailyDetails(_analyzer.NewestDailyDirectory);
             _analyzer.Output.WriteLine();
+            _analyzer.ListMissingStores(daily);
+            _analyzer.Output.WriteLine("读取完成");
+
+
+
+
+
             ShopRecord[] shopRecords = _analyzer.GetShopRecords();
             var sGroup = shopRecords.GroupBy(x => x.Shop.CompanyName);
 
@@ -159,8 +176,11 @@ namespace analyze.core.win
                 this.txtNewestProfitDirectory.Text = _analyzer.NewestProfitDirectory;
                 this.txtNewestReparationDirectory.Text = _analyzer.NewestReparationDirectory;
                 this.txtNewestResourcesFileName.Text = _analyzer.NewestResourcesDirectory;
+
+                this.AllowSelect = true;
+                this.panelHone.Enabled = true;
             }));
-            this.AllowSelect = true;
+
         }
 
         private void cbCompany_SelectedIndexChanged(object sender, EventArgs e)
@@ -223,8 +243,6 @@ namespace analyze.core.win
                 _analyzer.SaveProfit(filename, shopLends);
             }
         }
-        #endregion
-
         private void tabControl1_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (tabControl1.SelectedIndex == 1)
@@ -269,6 +287,32 @@ namespace analyze.core.win
         {
             _analyzer.ShowPurchase();
         }
+
+        private void btnCreateOrderTxt_Click(object sender, EventArgs e)
+        {
+            string filename = Path.Combine(this.txtNewestDailyDirectory.Text,  DateTime.Now.ToString("yyyy年MM月dd日") + "订单.txt");
+            _analyzer.BuildOrders(daily, filename);
+            _analyzer.Output.WriteLine($"创建 {filename}");
+        }
+        private void btnUploadOrderTxt_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void btnCreateStoreTxt_Click(object sender, EventArgs e)
+        {
+            string filename = Path.Combine(this.txtNewestDailyDirectory.Text, DateTime.Now.ToString("yyyy年MM月dd日") + "店铺数据.txt");
+            _analyzer.BuildCompanyProfits(daily, filename);
+            _analyzer.Output.WriteLine($"创建 {filename}");
+        }
+
+        private void btnUploadStoreTxt_Click(object sender, EventArgs e)
+        {
+
+        }
+        #endregion
+
+
 
         #region page3
         string[][] list;
@@ -347,6 +391,16 @@ namespace analyze.core.win
                 this.txtIpShow.AppendText($"{item.UserName} {i.Country} {i.Region} {i.City} {j.IP} {j.Country} {j.Region} {j.City}  {p.Country} {p.Region} {p.City} \r\n");
             }
 
+        }
+
+        private void panel4_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            InitializePage1();
         }
     }
 }

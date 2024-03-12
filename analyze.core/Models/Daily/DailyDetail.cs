@@ -5,10 +5,11 @@ using System.Text;
 
 namespace analyze.core.Models.Daily
 {
-    public class Daily : IComparable<Daily>
+    public class DailyDetail : IComparable<DailyDetail>
     {
         public string CompanyNumber { get; set; }
         public string Company { get; set; }
+        public string CN { get; set; }
         public string Nick { get; set; }
         public string Operator { get; set; }
 
@@ -33,7 +34,7 @@ namespace analyze.core.Models.Daily
 
         public OnWayOrder[] OnWayOrders { get; set; }
 
-        public int CompareTo([AllowNull] Daily other)
+        public int CompareTo([AllowNull] DailyDetail other)
         {
             int index = CompanyNumber.CompareTo(other.CompanyNumber);  
             if(index == 0)

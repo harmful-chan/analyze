@@ -1,6 +1,7 @@
 ﻿using analyze.core.Models.Daily;
 using analyze.core.Models.Sheet;
 using analyze.core.Outputs;
+using IPinfo.Models;
 using NPOI.SS.Formula.Functions;
 using NPOI.SS.UserModel;
 using System;
@@ -601,9 +602,9 @@ namespace analyze.core.Clients
         } 
 
         private string[] headerFirst = new string[] { "时间", "订单号", "订单信息", "订单详情" };
-        public Daily ReadDaily(string filename)
+        public DailyDetail ReadDaily(string filename)
         {
-            Daily daily = new Daily();
+            DailyDetail daily = new DailyDetail();
             List<NotShip> notShips = new List<NotShip>();
             List<OrderDetail> orderDetails = new List<OrderDetail>();
 
@@ -618,7 +619,7 @@ namespace analyze.core.Clients
                 daily.Company = sheet.GetRow(0).GetCell(0).ToString();
                 daily.Nick = sheet.GetRow(0).GetCell(1).ToString();
                 daily.Operator = sheet.GetRow(1).GetCell(0).ToString();
-
+                daily.CN = Path.GetFileNameWithoutExtension(filename).Replace(daily.Company, "").Replace(daily.Nick, "").Replace(daily.CompanyNumber, "");
                 // 在售数据
                 string u = sheet.GetRow(1).GetCell(1).ToString();
                 daily.InSrockNumber = 0;
