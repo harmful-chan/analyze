@@ -5,7 +5,9 @@ using analyze.core.Options;
 using analyze.core.Outputs;
 using CommandLine;
 using NPOI.SS.Formula.Functions;
+using PlaywrightSharp;
 using System.Diagnostics;
+using static NPOI.HSSF.Util.HSSFColor;
 
 namespace analyze.core.test
 {
@@ -78,6 +80,14 @@ namespace analyze.core.test
             {
                 analyzer.DailyRun(o);
             }
+        }
+
+        [Test]
+        public async Task TestUrlAsync()
+        {
+            DebugOutput output = new DebugOutput();
+            Analyzer analyzer = new Analyzer();
+            await analyzer.GetUrl();
         }
     }
 }

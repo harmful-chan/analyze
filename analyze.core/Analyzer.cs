@@ -6,14 +6,17 @@ using analyze.core.Options;
 using analyze.core.Outputs;
 using analyze.Models.Manage;
 using ConsoleTables;
+using Esprima.Ast;
 using IPinfo.Models;
 using NPOI.HSSF.Record;
 using NPOI.OpenXmlFormats.Shared;
 using NPOI.SS.Formula.Functions;
 using NPOI.SS.UserModel;
+using PlaywrightSharp;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Drawing.Drawing2D;
 using System.Globalization;
@@ -23,9 +26,11 @@ using System.Reflection;
 using System.Reflection.PortableExecutable;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Xml;
 using System.Xml.Linq;
 using static analyze.core.Analyzer;
 using static analyze.core.Clients.SheetClient;
+using static NPOI.HSSF.Util.HSSFColor;
 using static System.Formats.Asn1.AsnWriter;
 
 namespace analyze.core
@@ -448,7 +453,6 @@ namespace analyze.core
             return KeyValuePair.Create(count, total);
         }
 
-
         public void DailyRun(DailyOptions o)
         {
             List<Shop> shops = new List<Shop>();
@@ -802,9 +806,6 @@ namespace analyze.core
 
 
         }
-
-
-
         public DailyDetail[] GetDailyDetails(string dirPath)
         {
             // 获取每天店铺数据
@@ -1450,6 +1451,93 @@ namespace analyze.core
             {
                 return _sheetClient.ShopRecords.ToArray();
             }
+
+        }
+
+
+        public async Task GetUrl()
+        {
+
+            // 初始化 Playwright
+            using var playwright = await Playwright.CreateAsync();
+            //亿牛云爬虫代理加强版的代理服务器地址和端口号
+            //var proxyServer = "http://www.16yun.cn:3100";
+            //var browser = await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
+            //{
+            //    Proxy = new ProxySettings
+            //    {
+            //        Server = proxyServer,
+            //        //亿牛云爬虫代理加强版的用户名
+            //        Username = "your_username",
+            //        //亿牛云爬虫代理加强版的密码
+            //        Password = "your_password",
+            //    }
+            //});
+
+            //var browser = await playwright.Chromium.LaunchAsync(new LaunchOptions() 
+            //{ 
+            //    Headless = false,
+            //   
+            //});
+            var browser = await playwright.Chromium.LaunchAsync();
+            // 创建一个新的页面
+            var context = await browser.NewContextAsync();
+            var page = await context.NewPageAsync();
+            await page.SetViewportSizeAsync(1280, 720);
+
+            // 导航到亚马逊网站
+            await page.GoToAsync("https://www.amazon.com.br/");
+
+            // 输入关键字搜索
+            await page.FillAsync("#twotabsearchtextbox", "B0813S9VWG");
+            await page.ClickAsync("#nav-search-submit-button");
+
+            // 等待搜索结果页面加载完成
+            await page.WaitForLoadStateAsync();
+
+            // 获取商品链接列表
+
+            var links = await page.GetAttributeAsync("div[data-asin='B0813S9VWG'] a.a-link-normal", "href");
+            // 创建任务列表
+            var tasks = new List<Task>();
+
+            // 遍历商品链接列表，采集评论数据
+            foreach (var link in links)
+            {
+                tasks.Add(Task.Run(async () =>
+                {
+                    // 创建一个新的页面
+                    var page = await context.NewPageAsync();
+
+                    // 设置页面的 User-Agent
+                    //await page.SetUserAgentAsync("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Safari/537.36");
+                
+                    // 导航到商品页面
+                    //await page.GoToAsync(link);
+
+                    // 等待商品页面加载完成
+                    await page.WaitForLoadStateAsync();
+
+                    // 获取商品名称
+                    var title = await page.GetInnerTextAsync("#productTitle");
+
+                    // 获取商品评价信息
+                    var rating = await page.GetInnerTextAsync("#averageCustomerReviews .a-icon-star-small .a-icon-alt");
+                    var reviewCount = await page.GetInnerTextAsync("#acrCustomerReviewText");
+
+                    // 输出采集的数据
+                    Console.WriteLine($"{title}: {rating} ({reviewCount})");
+
+                    // 关闭页面
+                    await page.CloseAsync();
+                }));
+            }
+
+            // 等待所有任务完成
+            await Task.WhenAll(tasks);
+
+            // 关闭浏览器
+            await browser.CloseAsync();
 
         }
 

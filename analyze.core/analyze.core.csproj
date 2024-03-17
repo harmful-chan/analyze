@@ -33,6 +33,7 @@
     <PackageReference Include="DotNetCore.NPOI" Version="1.2.3" />
     <PackageReference Include="IPinfo" Version="3.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="PlaywrightSharp" Version="0.192.0" />
     <PackageReference Include="SocksSharp" Version="1.1.1" />
   </ItemGroup>
 
