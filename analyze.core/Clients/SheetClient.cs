@@ -37,10 +37,10 @@ namespace analyze.core.Clients
 
         #region XLSX操作
 
-        public IList<Purchase> ReadPurchase(int type, string fileName)
+        public IList<PurchaseOrder> ReadPurchaseOrder(int type, string fileName)
         {
 
-            List<Purchase> os = new List<Purchase>();
+            List<PurchaseOrder> os = new List<PurchaseOrder>();
             string[] files = ReadSortFiles(fileName);  // 读取相同文件
             for (int i = 0; i < files.Length; i++)
             {
@@ -59,7 +59,7 @@ namespace analyze.core.Clients
                                 continue;
                             }
 
-                            Purchase to = new Purchase();
+                            PurchaseOrder to = new PurchaseOrder();
                             string A1 = row.GetCell(0)?.ToString();
                             string B1 = row.GetCell(1)?.ToString();
                             // 去除表格 us A1空 B1=操作人
@@ -442,9 +442,9 @@ namespace analyze.core.Clients
             return os;
         }
 
-        public IList<Order> ReadOrder(string fileName)
+        public IList<SubmitOrder> ReadSubmitOrder(string fileName)
         {
-            List<Order> os = new List<Order>();
+            List<SubmitOrder> os = new List<SubmitOrder>();
             string[] files = ReadSortFiles(fileName);
             for (int i = 0; i < files.Length; i++)
             {
@@ -459,7 +459,7 @@ namespace analyze.core.Clients
                         {
                             var row = sheet.GetRow(j);
 
-                            Order to = new Order();
+                            SubmitOrder to = new SubmitOrder();
                             to.StoreName = row.GetCell(0)?.ToString();
                             // 跳过表头
                             if (to.StoreName != null && to.StoreName.Contains("店铺"))
@@ -505,7 +505,7 @@ namespace analyze.core.Clients
             return os;
         }
 
-        public IList<Shop> ReadShopInfo(string fileName)
+        public IList<Shop> ReadShopCatalog(string fileName)
         {
             List<Shop> os = new List<Shop>();
             string[] files = ReadSortFiles(fileName);
@@ -542,25 +542,32 @@ namespace analyze.core.Clients
 
         public KeyValuePair<string, double> SplitAmount(string raw)
         {
-
-            string[] str = new string[2];
-            int index = new Regex(@"\d").Match(raw).Index;
-            str[0] = raw.Substring(0, index).Replace("(", ""); // 符号
-            str[1] = raw.Substring(index).Replace(")", "");
-            int v = str[1].LastIndexOf(',');
-            if (str[1].LastIndexOf(',') == str[1].Length - 3 || str[1].LastIndexOf(',') == str[1].Length - 2)
+            if (!string.IsNullOrWhiteSpace(raw))
             {
-                str[1] = str[1].Replace(',', '.');
-            }
-            double d1;
-            double.TryParse(str[1], out d1);
+                string[] str = new string[2];
+                int index = new Regex(@"\d").Match(raw).Index;
+                str[0] = raw.Substring(0, index).Replace("(", ""); // 符号
+                str[1] = raw.Substring(index).Replace(")", "");
+                int v = str[1].LastIndexOf(',');
+                if (str[1].LastIndexOf(',') == str[1].Length - 3 || str[1].LastIndexOf(',') == str[1].Length - 2)
+                {
+                    str[1] = str[1].Replace(',', '.');
+                }
+                double d1;
+                double.TryParse(str[1], out d1);
 
-            return new KeyValuePair<string, double>(str[0], d1);
+                return new KeyValuePair<string, double>(str[0], d1);
+            }
+            else
+            {
+                return new KeyValuePair<string, double>("", 0.00);
+            }
         }
 
         private int[] GetHeaderLine(ISheet sheet, string header, string[] headerList)
         {
             int start = -1, end = -1;
+            // 搜索开始序号
             for (int i = 0; i < sheet.LastRowNum; i++)
             {
                 ICell cell = sheet.GetRow(i).GetCell(0);
@@ -573,6 +580,7 @@ namespace analyze.core.Clients
                     }
                 }
             }
+            // 搜索结束序号，搜不到就用表格最后一行
             if(start != -1)
             {
                 ArrayList arrayList = new ArrayList(headerList);
@@ -601,7 +609,7 @@ namespace analyze.core.Clients
             return start == -1 ? null: new int[] { start, end-1 };
         } 
 
-        private string[] headerFirst = new string[] { "时间", "订单号", "订单信息", "订单详情" };
+        private string[] headerFirst = new string[] { "时间", "订单号", "订单信息", "订单详情", "日期" };
         public DailyDetail ReadDaily(string filename)
         {
             DailyDetail daily = new DailyDetail();
@@ -615,11 +623,13 @@ namespace analyze.core.Clients
                 var sheet = workbook.GetSheetAt(0);
 
                 // 公司数据
+                string date = Path.GetFileName(Path.GetDirectoryName(filename));
+                daily.CollectionDate = DateTime.Parse(date);
                 daily.CompanyNumber = Path.GetFileNameWithoutExtension(filename).Substring(0, 4);
                 daily.Company = sheet.GetRow(0).GetCell(0).ToString();
                 daily.Nick = sheet.GetRow(0).GetCell(1).ToString();
                 daily.Operator = sheet.GetRow(1).GetCell(0).ToString();
-                daily.CN = Path.GetFileNameWithoutExtension(filename).Replace(daily.Company, "").Replace(daily.Nick, "").Replace(daily.CompanyNumber, "");
+                daily.CN = Shop.Convert(filename).CN;
                 // 在售数据
                 string u = sheet.GetRow(1).GetCell(1).ToString();
                 daily.InSrockNumber = 0;
@@ -670,6 +680,9 @@ namespace analyze.core.Clients
                 daily.OnWay = SplitAmount(r1.GetCell(2).ToString()).Value;
                 daily.Arrears = SplitAmount(r1.GetCell(3).ToString()).Value;
 
+                // 直通车数据
+                daily.Consume = SplitAmount(r1.GetCell(4)?.ToString()).Value;
+                daily.Promotion = SplitAmount(r1.GetCell(5)?.ToString()).Value;
 
                 // 提现数据
                 var ints = GetHeaderLine(sheet, "时间", headerFirst); 
@@ -804,9 +817,8 @@ namespace analyze.core.Clients
                 ////
                 ////    notShips.Add(notShip);
                 ////}
-                //
-                //// 订单详情
-                ///
+
+                // 订单详情
                 ints = GetHeaderLine(sheet, "订单详情", headerFirst);
                 if (ints != null)
                 {
@@ -831,15 +843,31 @@ namespace analyze.core.Clients
                     
                         // 标题
                         var c2 = row.GetCell(2)?.ToString();
-                        od.Title = c2.Split('\n')[0];
-                    
+                        string[] raw = c2.Split('\n');
+                        od.Title = raw.ElementAtOrDefault(0);    // 标题
+                        od.IsAssess = raw.Contains("上网时效考核订单");
+                        for (int i = 0; i < raw.Length; i++)
+                        {
+                            if (raw[i].Equals("商品属性:") && raw[i+1].IndexOf("United States", StringComparison.OrdinalIgnoreCase) >= 0)
+                            {
+                                od.ShipsFrom = OrderShipsFromTypes.UnitedStates;
+                            }
+                            if (raw[i].Equals("商品属性:") && raw[i + 1].IndexOf("brazil", StringComparison.OrdinalIgnoreCase) >= 0)
+                            {
+                                od.ShipsFrom = OrderShipsFromTypes.Brazil;
+                            }
+                        }
+
+
+
                         // 数量 
                         var c3 = row.GetCell(3)?.ToString();
                         string n = string.IsNullOrWhiteSpace(c3) ? "1" :  c3.Substring(1);
                         int d1;
                         int.TryParse(n, out d1);
                         od.Quantity = d1;
-                    
+
+
                         //售后
                         var c4 = row.GetCell(4)?.ToString();
                         od.After = c4;
@@ -877,6 +905,36 @@ namespace analyze.core.Clients
                 {
                     daily.OrderDetails = new OrderDetail[0];
                 }
+
+                // 直通车消耗
+                ints = GetHeaderLine(sheet, "日期", headerFirst);
+                if (ints != null)
+                {
+                    List<PromotionDetail> list = new List<PromotionDetail>();
+
+                    for (int j = ints[0]; j <= ints[1]; j++)
+                    {
+                        var row = sheet.GetRow(j);
+                        PromotionDetail pd = new PromotionDetail();
+                        var c0 = row.GetCell(0)?.ToString();
+                        if (c0.Equals("日期"))
+                        {
+                            continue;
+                        }
+
+                        pd.Time = row.GetCell(0).DateCellValue;
+                        pd.Expenses = row.GetCell(1).NumericCellValue;
+                        pd.InCome = row.GetCell(2).NumericCellValue;
+
+                        list.Add(pd);
+                    }
+
+                    daily.PromotionDetails = list.ToArray();
+                }
+                else
+                {
+                    daily.PromotionDetails = new PromotionDetail[0];
+                }
             }
 
             return daily;
@@ -888,114 +946,23 @@ namespace analyze.core.Clients
 
         #region Collect
 
-        public List<Shop> AllShops = new List<Shop>();
-        public List<ShopRecord> ShopRecords = new List<ShopRecord>();
-        public List<Order> TotalOrders = new List<Order>();
-        public List<Purchase> TotalPurchases = new List<Purchase>();
         public string DefaultBrPurchasesFilename { get; set; }
             = Path.Combine(Path.GetDirectoryName(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName), 
                 "原始数据", $"{DateTime.Now.ToString("yyyy年MM月dd日")}", "巴西采购单.xlsx");
 
-        public List<Shop> SelectShop(string prefix)
-        {
-            List<Shop> ss = new List<Shop>();
-            if (!string.IsNullOrWhiteSpace(prefix))
-            {
 
-                ss = AllShops.Where((s) =>
-                {
-                    string str = $"{s.CompanyNumber}{s.CN}";
-                    string str1 = $"{prefix}";
-                    if (str.Length >= str1.Length)
-                    {
-                        return str.Contains(str1);
-                    }
-                    else
-                    {
-                        return str1.Contains(str);
-                    }
 
-                }).ToList();
-                if (ss.Count() > 0)
-                {
-                    return ss;
-                }
-            }
-            return ss;
-        }
 
-        public void CollectTotalInfo(string shopInfoFilename, string orderRecordFileName, string usPruchasRecordFileName, string brPruchasRecordFileName)
-        {
-            if (TotalOrders.Count == 0)
-            {
-                TotalOrders = ReadOrder(orderRecordFileName).ToList();
-            }
-            if (TotalPurchases.Count == 0)
-            {
-                IList<Purchase> totalPurchases1 = ReadPurchase(1, brPruchasRecordFileName);
-                IList<Purchase> totalPurchases2 = ReadPurchase(2, usPruchasRecordFileName);
-                TotalPurchases.AddRange(totalPurchases1);
-                TotalPurchases.AddRange(totalPurchases2);
-            }
-
-            if (AllShops.Count == 0)
-            {
-                AllShops = ReadShopInfo(shopInfoFilename).ToList();
-            }
-
-        }
 
         public void CollectOrderRecords(string orderDir, params string[] shopDirPrefixs)
         {
-            foreach (var item in shopDirPrefixs)
-            {
-                List<Shop> ss = SelectShop(item);    // 搜索店铺
-                foreach (var shop in ss)
-                {
-                    CollectOrderRecord(orderDir, shop.CompanyNumber, shop.CN);
-                }
-            }
+
         }
 
-        public void CollectOrderRecord(string orderDir, string companyNumber, string cn)
-        {
-            int count = ShopRecords.Where(sr => sr.Shop.CN.Equals(cn)).Count();
-            if (count == 0)    // 未采集过再采集
-            {
-                string[] ds = Directory.GetDirectories(orderDir);
-                ds = ds.Where(d => Path.GetFileName(d).StartsWith($"{companyNumber}{cn}")).ToArray();
-                if (ds.Length == 1)
-                {
-                    IList<ShopOrder> orders = ReadShopOrder(Path.Combine(ds[0], "订单.xlsx")).OrderBy(o => o.OrderTime).ToList();
-                    IList<ShopLend> lendings = ReadShopLend(Path.Combine(ds[0], "放款.xlsx")).OrderBy(o => o.SettlementTime).ToList();
-                    IList<ShopRefund> refunds = ReadShopRefund(Path.Combine(ds[0], "退款.xlsx")).OrderBy(o => o.RefundTime).ToList();
-                    Shop shop = SelectShop($"{companyNumber}{cn}").FirstOrDefault();
-                    ShopRecords.Add(new ShopRecord() { Shop = shop, ShopOrderList = orders, ShopLendList = lendings, ShopRefundList = refunds });
-                }
-            }
-        }
+
 
         #endregion
 
-        public bool CheckData()
-        {
-            bool ret = true;
-            // 订单总表
-            /// 非采购单 促销单 ： 订单号 交易号 扣款金额不完整。
-            string[] clientIds = Array.ConvertAll(AllShops.ToArray(), s => s.ClientId);
-            foreach (var item in TotalOrders.Where(t => clientIds.Contains(t.ClientId?.Trim()) && !string.IsNullOrWhiteSpace(t.ClientId)))
-            {
-                if (!string.IsNullOrWhiteSpace(item.OrderId) && string.IsNullOrWhiteSpace(item.TradeId) || item.DeductionAmount < 0)
-                {
-                    if (!item.OrderStatus.Equals("采购单") && !item.OrderStatus.Equals("促销单"))
-                    {
-                        _output.WriteLine($"{item.StoreName} {item.OrderId} {item.TradeId} {item.DeductionAmount}");
-                        ret = false;
-                    }
-                }
-            }
-            return ret;
-        }
         public static string[] ReadSortFiles(string fileName)
         {
             string fullPath = Path.GetFullPath(fileName);

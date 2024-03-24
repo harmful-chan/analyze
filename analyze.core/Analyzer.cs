@@ -1,41 +1,30 @@
 ﻿using analyze.core.Clients;
 using analyze.core.Models.Daily;
 using analyze.core.Models.Manage;
+using analyze.core.Models.Purchase;
 using analyze.core.Models.Sheet;
 using analyze.core.Options;
 using analyze.core.Outputs;
 using analyze.Models.Manage;
 using ConsoleTables;
 using Esprima.Ast;
-using IPinfo.Models;
-using NPOI.HSSF.Record;
-using NPOI.OpenXmlFormats.Shared;
-using NPOI.SS.Formula.Functions;
-using NPOI.SS.UserModel;
 using PlaywrightSharp;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Diagnostics.Metrics;
-using System.Drawing.Drawing2D;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Reflection.PortableExecutable;
 using System.Text.RegularExpressions;
+using System.Threading.Channels;
 using System.Threading.Tasks;
-using System.Xml;
-using System.Xml.Linq;
-using static analyze.core.Analyzer;
-using static analyze.core.Clients.SheetClient;
-using static NPOI.HSSF.Util.HSSFColor;
-using static System.Formats.Asn1.AsnWriter;
 
 namespace analyze.core
 {
-
+    public enum CollectTypes
+    {
+        Daily = 0x0001,
+        Shop = 0x0002,
+    }
 
     public delegate void LogDelegate(string arg="", bool isOnline = false);
     public class Analyzer
@@ -63,8 +52,9 @@ namespace analyze.core
         public string ShopInfoFileName { get; private set; }
         public string NewestBinFileName { get; private set; }
         public string NewestOrderDirectory { get; private set; }
+
         public string ShopRecordFileName { get; private set; }
-        public string OrderRecordFileName { get; private set; }
+        public string SubmitOrderFileName { get; private set; }
         public string UsPruchasRecordFileName { get; private set; }
         public string BrPruchasRecordFileName { get; private set; }
 
@@ -75,6 +65,8 @@ namespace analyze.core
         public string NewestReparationDirectory { get; private set; } 
         public string NewestTotalDirectory { get; private set; }
         public string NewestResourcesDirectory { get; private set; }
+
+        public DateTime NewestDailyDate { get; private set; }
         #endregion
 
         #region 实例化
@@ -141,8 +133,8 @@ namespace analyze.core
                 bool flag4 = true;
 
                 ShopOrder[] shopOrders = shop.ShopOrderList.Where(t => t.OrderId.Equals(r.OrderId)).ToArray();
-                Models.Sheet.Order[] torders = _sheetClient.TotalOrders.Where(t => t.OrderId != null && t.OrderId.Contains(r.OrderId)).ToArray();
-                Purchase[] porder = _sheetClient.TotalPurchases.Where(t => t.OrderId != null && t.OrderId.Equals(r.OrderId)).ToArray();
+                SubmitOrder[] torders = SubmitOrders.Where(t => t.OrderId != null && t.OrderId.Contains(r.OrderId)).ToArray();
+                PurchaseOrder[] porder = PurchasesOrders.Where(t => t.OrderId != null && t.OrderId.Equals(r.OrderId)).ToArray();
 
                 string ot = shopOrders.FirstOrDefault()?.OrderTime.ToString("yyyy-MM-dd HH:mm:ss");
                 string pt = shopOrders.FirstOrDefault()?.PaymentTime.ToString("yyyy-MM-dd HH:mm:ss");
@@ -250,8 +242,8 @@ namespace analyze.core
                 bool flag4 = true;
 
                 ShopOrder[] shopOrders = shop.ShopOrderList.Where(t => t.OrderId.Equals(r.OrderId)).ToArray();
-                Models.Sheet.Order[] torders = _sheetClient.TotalOrders.Where(t => t.OrderId != null && t.OrderId.Equals(r.OrderId)).ToArray();
-                Purchase[] porder = _sheetClient.TotalPurchases.Where(t => t.OrderId != null && t.OrderId.Equals(r.OrderId)).ToArray();
+                Models.Sheet.SubmitOrder[] torders = SubmitOrders.Where(t => t.OrderId != null && t.OrderId.Equals(r.OrderId)).ToArray();
+                PurchaseOrder[] porder = PurchasesOrders.Where(t => t.OrderId != null && t.OrderId.Equals(r.OrderId)).ToArray();
                 if (r.Turnover != r.Refund)    // 放款退款不同
                 {
                     flag1 = false;
@@ -295,7 +287,7 @@ namespace analyze.core
                 // 退款理由：纠纷退款， 未发货退款，纠纷退款。
                 if (torders.Length > 0)
                 {
-                    Models.Sheet.Order to = torders.FirstOrDefault();
+                    Models.Sheet.SubmitOrder to = torders.FirstOrDefault();
                     r.RefundReason = "未发货退款";
                     if (!string.IsNullOrWhiteSpace(to.TradeId))  // 有交易号，有发货之间 ： 纠纷退款
                     {
@@ -406,7 +398,29 @@ namespace analyze.core
             {
                 foreach (var item in orderDetails)
                 {
-                    var kv = KeyValuePair.Create(item.OrderTime.ToString("yyyy-MM-dd"), $"{item.Symbol} {item.Amount}");
+                    KeyValuePair<string, string> kv;
+                    if (!string.IsNullOrWhiteSpace(item.Symbol))
+                    {
+                        kv = KeyValuePair.Create(item.OrderTime.ToString("yyyy-MM-dd"), $"{item.Symbol} {item.Amount}");
+                    }
+                    else
+                    {
+                        if(item.ShipsFrom == OrderShipsFromTypes.UnitedStates)
+                        {
+                            kv = KeyValuePair.Create(item.OrderTime.ToString("yyyy-MM-dd"), $"US {item.RMB}RMB");
+                        }
+                        else if (item.ShipsFrom == OrderShipsFromTypes.Brazil)
+                        {
+                            kv = KeyValuePair.Create(item.OrderTime.ToString("yyyy-MM-dd"), $"BR {item.RMB}RMB");
+                        }
+                        else
+                        {
+                            kv = KeyValuePair.Create(item.OrderTime.ToString("yyyy-MM-dd"), $"None {item.RMB}RMB");
+                        }
+                        
+                        
+                    }
+                    
                     dic.Add(kv);
                 }
             }
@@ -421,16 +435,21 @@ namespace analyze.core
                 double t = 0.0;
                 foreach (var item in orderDetails)
                 {
-                    if (item.Symbol.Contains("R"))
+                    if (item.Symbol != null && item.Symbol.Contains("R"))
                     {
                         t += item.Amount;
+                        count++;
+                    }
+                    else if(item.ShipsFrom == OrderShipsFromTypes.Brazil)
+                    {
+                        t += item.RMB;
                         count++;
                     }
                 }
                 total += t;
 
             }
-            return  KeyValuePair.Create(name, $"{count} 单 总R$ {total:0.00}");
+            return  KeyValuePair.Create(name, $"{count} 单 总BR {total:0.00}RMB");
         }
 
         public KeyValuePair<int, double> CreateNumber(params IEnumerable<OrderDetail>[] orderDetailss)
@@ -442,9 +461,15 @@ namespace analyze.core
                 double t = 0.0;
                 foreach (var item in orderDetails)
                 {
-                    if (item.Symbol.Contains("R"))
+
+                    if (item.Symbol != null && item.Symbol.Contains("R"))
                     {
                         t += item.Amount;
+                        count++;
+                    }
+                    else if (item.ShipsFrom == OrderShipsFromTypes.Brazil)
+                    {
+                        t += item.RMB;
                         count++;
                     }
                 }
@@ -460,7 +485,7 @@ namespace analyze.core
             SheetClient client = new SheetClient();
             client.Output = _output;
             ManageClient manageClient = new ManageClient();
-            IList<Purchase> brPurchases = null;
+            IList<PurchaseOrder> brPurchases = null;
             // 获取目录文件
             if(Directory.Exists(o.FileDir))
             {
@@ -494,7 +519,7 @@ namespace analyze.core
 
                 if (File.Exists(o.ShopInfoFileName))
                 {
-                    shops = client.ReadShopInfo(o.ShopInfoFileName).ToList();
+                    shops = client.ReadShopCatalog(o.ShopInfoFileName).ToList();
 
                     var runShop = shops.Where(s => s.Status.Equals("运营中")).ToArray();
                     _output.WriteLine($"运营中：{runShop.Count()} 读取数量：{o.DailyFiles.Count()}");
@@ -531,7 +556,7 @@ namespace analyze.core
 
             if (File.Exists(o.BrPurchaseFilenmae))
             {
-                brPurchases = client.ReadPurchase(1, o.BrPurchaseFilenmae);
+                brPurchases = client.ReadPurchaseOrder(1, o.BrPurchaseFilenmae);
             }
 
             task.Wait();
@@ -806,40 +831,48 @@ namespace analyze.core
 
 
         }
-        public DailyDetail[] GetDailyDetails(string dirPath)
+
+
+        public DailyDetail[] GetDaily(DateTime dateTime)
         {
-            // 获取每天店铺数据
-            List<DailyDetail> dailyDetailList = new List<DailyDetail>();
-            string[] files = Directory.GetFiles(dirPath);
-            foreach (string filename in files)
+            List<DailyDetail> list = new List<DailyDetail>();
+            foreach (var sr in ShopRecords)
             {
-                if (!Path.GetFileName(filename).StartsWith("~") && !Path.GetFileName(filename).EndsWith("txt"))
+                if (sr.DailyDetailsList != null)
                 {
-                    DailyDetail daily = _sheetClient.ReadDaily(filename);
-                    dailyDetailList.Add(daily);
+                    DailyDetail dailyDetail = sr.DailyDetailsList.FirstOrDefault(y => y.CollectionDate.Date == dateTime.Date);
+                    if(dailyDetail != null){
+
+                        list.Add(dailyDetail);
+                    }
                 }
+
+
             }
-            dailyDetailList.Sort();
-            return dailyDetailList.ToArray();
+
+            return list.ToArray();  
         }
 
-        public void ListMissingStores(DailyDetail[] dailyDetails)
+        public void ListMissingStores(DateTime dateTime)
         {
-            List<Shop> shops = _sheetClient.ReadShopInfo(this.ShopInfoFileName).ToList();
+            List<Shop> catalogshops = _sheetClient.ReadShopCatalog(this.ShopInfoFileName).ToList();
+            var runCatalogshops = catalogshops.Where(s => s.Status.Equals("运营中")).ToArray();
 
-            var runShop = shops.Where(s => s.Status.Equals("运营中")).ToArray();
-            _output.WriteLine($"运营中：{runShop.Count()} 读取数量：{dailyDetails.Length}");
 
-            string[] arr = System.Array.ConvertAll(runShop.ToArray(), r => r.CN);
+            DailyDetail[] dailys = GetDaily(dateTime);
 
-            foreach (var shop in runShop)
+            _output.WriteLine($"运营中：{runCatalogshops.Count()} 读取数量：{dailys.Length}");
+
+    
+
+            foreach (var run in runCatalogshops)
             {
 
-                bool flag = dailyDetails.Where(d => d.CN.Equals(shop.CN)).Count() > 0;
+                bool flag = dailys.Where(x => x.CN.Equals(run.CN)).Count() > 0;
 
                 if (!flag)
                 {
-                    _output.WriteLine(shop.CompanyNumber + shop.CN + shop.CompanyName + shop.Nick);
+                    _output.WriteLine(run.CompanyNumber + run.CN + run.CompanyName + run.Nick);
 
                 }
             }
@@ -983,9 +1016,9 @@ namespace analyze.core
             return funds;
         }
 
-        public async void BuildCompanyProfits(DailyDetail[] dailyDetails, string filename)
+        public async void BuildCompanyProfits(DateTime dateTime, string filename)
         {
-            File.Create(filename);
+            DailyDetail[] dailyDetails = GetDaily(dateTime);
             StoreOverview[] storeOverviews = await GetStoreOverviews(dailyDetails);
             var group = storeOverviews.GroupBy(x => x.Company);
             foreach (var item in group)
@@ -1032,7 +1065,7 @@ namespace analyze.core
         }
    
 
-        public void BuildOrders(DailyDetail[] dailyDetails, string filename)
+        public void BuildOrders(DateTime dateTime, string filename)
         {
 
             double total1 = 0.0;
@@ -1040,6 +1073,8 @@ namespace analyze.core
             double total2 = 0.0;
             int count2 = 0;
             List<KeyValuePair<string, string>> list = new List<KeyValuePair<string, string>>();
+
+            DailyDetail[] dailyDetails = GetDaily(dateTime);
             foreach (var detail in dailyDetails)
             {
                 
@@ -1074,8 +1109,8 @@ namespace analyze.core
             }
 
             var kvt = KeyValuePair.Create($"{DateTime.Now.ToString("yyyy-MM-dd")}", $"巴西订单");
-            var kvt1 = KeyValuePair.Create($"昨天总计 {count1}单", $"R$ {total1:0.00}");
-            var kvt2 = KeyValuePair.Create($"前天总计 {count2}单", $"R$ {total2:0.00}");
+            var kvt1 = KeyValuePair.Create($"昨天总计 {count1}单", $"BR {total1:0.00}RMB");
+            var kvt2 = KeyValuePair.Create($"前天总计 {count2}单", $"BR {total2:0.00}RMB");
             list.Add(kvt);
             list.Add(kvt1);
             list.Add(kvt2);
@@ -1091,70 +1126,107 @@ namespace analyze.core
 
         #region mamage 
 
-        public List<KeyValuePair<string, string>> ReadNeedDeduction(string raw)
+        public List<ShipObject> ReadNeedShip(string raw)
         {
+            raw = raw.Replace("\t", " ");
             string[] strings = raw.Split("\r\n");
-            var list = new List<KeyValuePair<string, string>>();
+            var list = new List<ShipObject>();
             foreach (string s in strings)
             {
                 string[] v = s.Split(" ");
+                ShipObject sb = new ShipObject();
                 if(v.Length == 2)
                 {
-                    list.Add(KeyValuePair.Create(v[0], v[1]));
+                    sb.ClientID = v[0];
+                    sb.OrderID = v[1];
                 }
+
+                if (v.Length == 4)
+                {
+                    sb.ClientID = v[0];
+                    sb.OrderID = v[1];
+                    sb.ShipNumber = v[2];
+                    sb.Carrier = v[3];
+                }
+                list.Add(sb);
             }
             return list;
         }
 
-        public void Deduction(IEnumerable<KeyValuePair<string, string>> list)
+        public void Deduction(IEnumerable<ShipObject> list)
         {
             ManageClient client = new ManageClient();
             string msg = string.Empty;
             client.LoginAdmin();
             this.IsRunning = true;
-            foreach (var item in list)
+            string oldClientId = "";
+            int i = 1;
+            foreach (var sb in list)
             {
-                string clientId = item.Key;
-                string orderId = item.Value;
-
+                string clientId = sb.ClientID;
+                string orderId = sb.OrderID;
+                string orderResult = "";
                 string ret = null;
 
                 try
                 {
-                    msg += _output.Write("登录用户 ", false);
-                    string v = client.LoginUser(clientId);
+                    // 登录用户
+                    msg += _output.Write($"{i++:00} 登录用户 ", false);
+                    if (!oldClientId.Equals(clientId))
+                    {
+                        client.LoginUser(clientId);
+                        oldClientId = clientId;
+                    }
                     msg += _output.Write($"{clientId} ", false);
+                    
+                    // 搜索订单号
                     Models.Manage.Order[] orders = client.ListOrder(orderId);
                     msg += _output.Write($"{orders.Length} ", false);
-                    if (orders.Length == 1)
+                    if (orders.Length == 1)  // 搜到1个订单
                     {
-                        Models.Manage.Order order = orders.First();
+                        // 扣款
+                        Order order = orders.First();
                         msg += _output.Write($"{order.OrderId} ", false);
                         double cost = order.Cost;
                         msg += _output.Write($"扣除金额：{cost} ", false);
                         ret = client.Deduction(order);
-                        if ("Success.".Equals(ret))
+                        if ("Success.".Equals(ret))    // 扣款成功
                         {
-                            DebitRecord[] debitRecords = client.ListDebitRecord();
+                            // 搜索订单
+                            DebitRecord[] debitRecords = client.ListDebitRecord(clientId);
                             DebitRecord debitRecord = debitRecords.First();
-                            msg += _output.Write($"{debitRecord.RecordId} {debitRecord.TradeId}\t{debitRecord.Cost}RMB ", false);
-                            if ((int)debitRecord.Cost == (int)cost)
+                            msg += _output.Write($"{debitRecord.RecordId} {debitRecord.TradeId} {debitRecord.Cost}RMB ", false);
+                            if ((int)debitRecord.Cost == (int)cost)  // 扣款金额相同
                             {
-                                ret = client.DeductionYes(debitRecord.RecordId);
-                                msg += _output.Write($"{ret} ", false);
-                                if ("审核成功".Equals(ret))
+                                // 交易号重复则放弃订单
+                                int num = debitRecords.Where(x => x.TradeId.Equals(debitRecord.TradeId)).Count();
+                                if(num == 1)    
                                 {
-                                    ret = client.DeductionPassed(debitRecord.RecordId);
+                                    // 同意扣款
+                                    
+                                    ret = client.DeductionYes(debitRecord.RecordId);
                                     msg += _output.Write($"{ret} ", false);
-                                    if ("success".Equals(ret) && order.Status == 1)
+                                    if ("审核成功".Equals(ret))
                                     {
-                                        ret = client.Shipments(order);
-                                        msg += _output.Write($"{ret} ", false);
-                                    }
+                                        
 
+                                        // 同意出纳
+                                        ret = client.DeductionPassed(debitRecord.RecordId);
+                                        msg += _output.Write($"{ret} ", false);
+                                        if ("success".Equals(ret) && order.Status == 1)
+                                        {
+                                            // 订单转已发货
+                                            ret = client.Shipments(order);
+                                            msg += _output.Write($"{ret} ", false);
+                                        }
+
+                                    }
+                                }
+                                else  // 存在重复订单
+                                {
+                                    msg += _output.Write($"重复订单", false);
                                 }
                             }
-
                         }
                     }
                 }
@@ -1171,6 +1243,51 @@ namespace analyze.core
             }
             this.IsRunning = false;
         }
+
+        public void MarkShipment(IEnumerable<ShipObject> list)
+        {
+            ManageClient client = new ManageClient();
+            string msg = string.Empty;
+            string oldClientId = "";
+            client.LoginAdmin();
+            this.IsRunning = true;
+            int i = 1;
+            foreach (var so in list)
+            {
+                // 避免重复登录
+                msg += _output.Write($"{i++:00} 登录用户 ", false);
+                if (!oldClientId.Equals(so.ClientID))
+                {
+                    client.LoginUser(so.ClientID);
+                    oldClientId = so.ClientID;
+                }
+                msg += _output.Write($"{so.ClientID} ", false);
+
+                // 获取标发订单
+                msg += _output.Write("标发订单 ", false);
+                MarkOrder markOrder = client.ListMarkOrders(so.OrderID).FirstOrDefault();
+                msg += _output.Write($"{markOrder.OrderId} {markOrder.Step} ", false);
+
+                // 获取订单
+                msg += _output.Write("发货订单 ", false);
+                Order order = client.ListOrder(so.OrderID).FirstOrDefault();
+                msg += _output.Write($"{order.OrderId} {order.Status} ", false);
+
+                // 标发
+                if (order!=null && markOrder != null && order.OrderId.Equals(markOrder.OrderId))
+                {
+                    msg += _output.Write("标发 ", false);
+                    string ret = client.MarkOrder(order.Id, markOrder.Step, so.Carrier, so.ShipNumber, markOrder.CarrierOld, markOrder.TrackingNumberOld);
+                    msg += _output.Write($"{ret} ", false);
+                    msg += _output.Write($"{so.ShipNumber} ", false);
+                }
+                _output.WriteLine();
+            }
+
+            this.IsRunning = false;
+
+        }
+
 
         private void Save(string orderId, string msg)
         {
@@ -1277,28 +1394,52 @@ namespace analyze.core
         #endregion
 
         #region purchase
-        public void ShowPurchase()
+        public PurchaseProgress[] GetPurchaseProgress(params string[] buyers)
         {
-            var surePurchases = _sheetClient.TotalPurchases.Where(p => p.SubmissionDate != DateTime.MinValue && p.Country.Equals("BR")).ToArray();
-
-
-            int i = 1;
+            var sure = from o in PurchasesOrders where o.Country.Equals("BR") && o.OrderDate != DateTime.MinValue select o;
  
-            var enumerable = surePurchases.GroupBy(x => x.SubmissionDate).OrderBy(y => y.Key).ToArray();
-            foreach (var item in enumerable)
+            var sureOrder = sure.GroupBy(x => x.OrderDate.Date).OrderBy(y => y.Key).ToArray();
+            var dic = new Dictionary<string, PurchaseProgress>();
+            foreach (var buyer in buyers)
             {
-                var processing = item.Where(e => "已下单".Equals(e.Status));
-                var solved = item.Where(e => "已发货".Equals(e.Status));
-                var cancel = item.Where(e => "砍单".Equals(e.Status));
-                var cut = item.Where(e => "截单".Equals(e.Status));
-                var pending = item.Where(e => string.IsNullOrWhiteSpace(e.Status) ||
-                    !e.Status.Equals("已下单") && !e.Status.Equals("已发货") && !e.Status.Equals("砍单") && !e.Status.Equals("截单"));
-                _output.AddRow( (DateTime.Now - item.Key).Days, item.Key.ToString("yyyy-MM-dd"), item.Count(),
-                    pending.Count(), processing.Count(), solved.Count(), cancel.Count(), cut.Count());
-
+                dic[buyer] = new PurchaseProgress();
+                dic[buyer].Progress = new PurchaseProgressUnit[17];
             }
-            _output.Show("I",  "date", "Order", "Pending", "Processing", "Solved", "Cancel", "Cut");
+            dic["None"] = new PurchaseProgress();
+            dic["None"].Progress = new PurchaseProgressUnit[17];
 
+            int i = 0;
+            foreach (var oneDayOrder in sureOrder)
+            {
+                if(i < 16)
+                {
+                    foreach (var buyer in buyers)
+                    {
+                        var oneDayBuyerOrder = oneDayOrder.Where(x => buyer.Equals(x.Buyer));
+                        var processing = oneDayBuyerOrder.Where(e => "已下单".Equals(e.Status));
+                        var solved = oneDayBuyerOrder.Where(e => "已发货".Equals(e.Status));
+                        var cancel = oneDayBuyerOrder.Where(e => "砍单".Equals(e.Status));
+                        var cut = oneDayBuyerOrder.Where(e => "截单".Equals(e.Status));
+                        var pending = oneDayBuyerOrder.Where(e => string.IsNullOrWhiteSpace(e.Status) ||
+                            !e.Status.Equals("已下单") && !e.Status.Equals("已发货") && !e.Status.Equals("砍单") && !e.Status.Equals("截单"));
+
+
+                        var unit = dic[buyer].Progress[i];
+                        unit.Processing = processing.Count();
+                        unit.Solved = solved.Count();
+                        unit.Cancel = cancel.Count();
+                        unit.Cut = cut.Count();
+                        unit.Pending = pending.Count();
+                        unit.Date = oneDayOrder.Key;
+                        unit.Total = oneDayBuyerOrder.Count();
+                    }
+
+                    i++;
+                }
+            }
+     
+            _output.Show("I",  "date", "Order", "Pending", "Processing", "Solved", "Cancel", "Cut");
+            return null;
 
         }
         #endregion
@@ -1367,7 +1508,7 @@ namespace analyze.core
             string[] dirs = Directory.GetDirectories(Path.Combine(root, "总表数据"));
             Array.Sort(dirs);
             NewestTotalDirectory = dirs.LastOrDefault();
-            OrderRecordFileName = Path.Combine(NewestTotalDirectory, "订单总表.xlsx");
+            SubmitOrderFileName = Path.Combine(NewestTotalDirectory, "订单总表.xlsx");
             UsPruchasRecordFileName = Path.Combine(NewestTotalDirectory, "美国采购单.xlsx");
             BrPruchasRecordFileName = Path.Combine(NewestTotalDirectory, "巴西采购单.xlsx");
             _output.WriteLine($"总表数据 {NewestTotalDirectory}");
@@ -1390,6 +1531,9 @@ namespace analyze.core
             Array.Sort(dirs3);
             NewestDailyDirectory = dirs3.LastOrDefault();
             _output.WriteLine($"每日数据 {NewestDailyDirectory}");
+            string dateStr = Path.GetFileName(NewestDailyDirectory);
+            NewestDailyDate = DateTime.Parse(dateStr);
+
 
             // 索赔记录
             string[] dirs4 = Directory.GetDirectories(Path.Combine(root, "索赔记录"));
@@ -1419,40 +1563,113 @@ namespace analyze.core
             return true;
         }
 
-        public void CollectShopRecords(params string[] prefixs)
-        {
 
-            // 没有指定文件夹。获取所有文件夹
-            if (prefixs == null || prefixs.Count() == 0)
+
+        public List<Shop> ShopCatalogs = new List<Shop>();
+        public List<ShopRecord> ShopRecords = new List<ShopRecord>();
+        public List<SubmitOrder> SubmitOrders = new List<SubmitOrder>();
+        public List<PurchaseOrder> PurchasesOrders = new List<PurchaseOrder>();
+
+
+        public void StartCollect(CollectTypes collectType, string cn=null, DateTime date = default)
+        {
+            // 总表数据读一次 缓存起来。
+            if (SubmitOrders.Count == 0)
             {
-                prefixs = Directory.GetDirectories(NewestOrderDirectory).Select(o => Path.GetFileName(o)).ToArray();
+                SubmitOrders = _sheetClient.ReadSubmitOrder(SubmitOrderFileName).ToList();
+            }
+            if (PurchasesOrders.Count == 0)
+            {
+                IList<PurchaseOrder> totalPurchases1 = _sheetClient.ReadPurchaseOrder(1, BrPruchasRecordFileName);
+                IList<PurchaseOrder> totalPurchases2 = _sheetClient.ReadPurchaseOrder(2, UsPruchasRecordFileName);
+                PurchasesOrders.AddRange(totalPurchases1);
+                PurchasesOrders.AddRange(totalPurchases2);
             }
 
-            _sheetClient.CollectTotalInfo(ShopInfoFileName, OrderRecordFileName, UsPruchasRecordFileName, BrPruchasRecordFileName);
-            _sheetClient.CollectOrderRecords(NewestOrderDirectory, prefixs);
-        }
-
-        public ShopRecord[] GetShopRecords(params string[] prefixs)
-        {
-            if (prefixs.Length != 0)
+            if (ShopCatalogs.Count == 0)
             {
-                List<ShopRecord> shops = new List<ShopRecord>();
-                // 返回指定的商店订单记录
-                foreach (var dir in prefixs)
+                ShopCatalogs = _sheetClient.ReadShopCatalog(ShopInfoFileName).ToList();
+                foreach (var shop in ShopCatalogs)
                 {
-                    List<Shop> shops1 = _sheetClient.SelectShop(dir);
-                    IEnumerable<ShopRecord> enumerable = _sheetClient.ShopRecords.Where(r => shops1.Where(s1 => s1.CN.Equals(r.Shop.CN)).Count() > 0);
-                    shops.AddRange(enumerable);
+                    ShopRecords.Add(new ShopRecord() { Shop = shop });
+                }
+            }
+
+
+
+            // 读取店铺数据
+            if ((CollectTypes.Shop & collectType) == CollectTypes.Shop)
+            {
+                string[] dirs = Directory.GetDirectories(NewestOrderDirectory);
+
+                if (!string.IsNullOrWhiteSpace(cn))
+                {
+                    dirs = dirs.Where(d => Path.GetFileName(d).Contains(cn)).ToArray();
                 }
 
-                return shops.ToArray();
-            }
-            else
-            {
-                return _sheetClient.ShopRecords.ToArray();
+                foreach (var dir in dirs)
+                {
+                    ShopRecord shopRecord = ShopRecords.Where(sr => sr.Shop.CN.Equals(cn)).FirstOrDefault();
+
+                    if (Directory.Exists(dir) && shopRecord != null)
+                    {
+                        IList<ShopOrder> orders = _sheetClient.ReadShopOrder(Path.Combine(dir, "订单.xlsx")).OrderBy(o => o.OrderTime).ToList();
+                        IList<ShopLend> lendings = _sheetClient.ReadShopLend(Path.Combine(dir, "放款.xlsx")).OrderBy(o => o.SettlementTime).ToList();
+                        IList<ShopRefund> refunds = _sheetClient.ReadShopRefund(Path.Combine(dir, "退款.xlsx")).OrderBy(o => o.RefundTime).ToList();
+                        shopRecord.ShopOrderList = orders;
+                        shopRecord.ShopLendList = lendings;
+                        shopRecord.ShopRefundList = refunds;
+                    }
+                }
+                
+
             }
 
+
+            if ((CollectTypes.Daily & collectType) == CollectTypes.Daily)
+            {
+                
+               
+
+                string dir;
+                if (date != DateTime.MinValue)
+                {
+                    dir = Path.Combine(Path.GetDirectoryName(NewestDailyDirectory), date.ToString("yyyy年MM月dd日"));
+                }
+                else
+                {
+                    dir = NewestDailyDirectory;
+                }
+
+                string[] files = Directory.GetFiles(dir);
+                if (!string.IsNullOrWhiteSpace(cn))
+                {
+                    files = files.Where(d => Path.GetFileName(d).Contains(cn)).ToArray();
+                }
+
+                foreach (var filename in files)
+                {
+                    string name = Path.GetFileName(filename);
+                    if(name.StartsWith('~') || name.EndsWith(".txt"))
+                    {
+                        continue;
+                    }
+                    
+                    string cnn = Shop.Convert(filename).CN;
+                    ShopRecord shopRecord = ShopRecords.Where(s => s.Shop.CN.Equals(cnn)).FirstOrDefault();
+                    if (shopRecord.DailyDetailsList == null)
+                    {
+                        shopRecord.DailyDetailsList = new List<DailyDetail>();
+                    }
+
+
+                    DailyDetail daily = _sheetClient.ReadDaily(filename);
+                    shopRecord.DailyDetailsList.Add(daily);
+                }
+
+            }
         }
+
 
 
         public async Task GetUrl()

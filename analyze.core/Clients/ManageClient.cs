@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NPOI.XWPF.UserModel;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -229,7 +230,7 @@ namespace analyze.core.Clients
 
             }
 
-            string raw3 = Request("POST", @"https://gzbf-shop.goodhmy.com/auth/order/manage", EncodeOrder(1, orders));
+            string raw3 = Request("POST", @"https://gzbf-shop.goodhmy.com/auth/order/manage", EncodeOrder(3, orders));
             var jo3 = (JObject)JsonConvert.DeserializeObject(raw3);
             var counts3 = jo["data"]["counts"].ToString();
             OrderHeader orderHeader3 = JsonConvert.DeserializeObject<OrderHeader>(counts3);
@@ -261,6 +262,7 @@ namespace analyze.core.Clients
             return debitRecords;
         }
 
+        #region 发货操作
         public string Deduction(Order order)
         {
             string str = $"payment_method=BANK&payment_date={DateTime.Now.ToString("yyyy-MM-dd+HH:mm:ss")}&payment_amount={order.Cost}&beneficiary_name=Wal-Mart+(China)+Inv&beneficiary_bank=中国建设银行股份有限&beneficiary_sub_bank=Community&beneficiary_account_number=44050110069700001060&payment_currency=RMB";
@@ -293,6 +295,51 @@ namespace analyze.core.Clients
             return rows;
         }
 
+        public MarkOrder[] ListMarkOrders(params string[] orderIds)
+        {
+            string raw = Request("POST", @"https://gzbf-shop.goodhmy.com/auth/shipping/index", EncodeMarkOrder(orderIds));
+            var jo = (JObject)JsonConvert.DeserializeObject(raw);
+            var rows = jo["data"]["rows"].ToString();
+            MarkOrder[] orderList = JsonConvert.DeserializeObject<MarkOrder[]>(rows);
+            return orderList;
+        }
+
+        public string MarkOrder(int id, int step, string carrier, string trackingNumber, string carrierOld, string trackingNumberOld)
+        {
+            string param = "";
+            string raw = null;
+            if (step == 1)
+            {
+                param = $"data[orders][0][id]={id}&" +
+                    $"data[orders][0][platform_carrier_code]={carrier.ToLower()}&" +
+                    $"data[orders][0][send_date]={DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}&" +
+                    $"data[orders][0][shipping_url]=https://t.17track.net/en#nums={trackingNumber}&" +
+                    $"data[orders][0][tracking_number]={trackingNumber}";
+
+                raw = Request("POST", @"https://gzbf-shop.goodhmy.com/auth/shipping/save-service", param);
+                var jo = (JObject)JsonConvert.DeserializeObject(raw);
+                raw = jo["success_num"].ToString();
+            }
+            else if (step == 2)
+            {
+                param = $"data[orders][0][id]={id}&" +
+                    $"data[orders][0][platform_carrier_code]={carrier.ToLower()}&" +
+                    $"data[orders][0][send_date]={DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}&" +
+                    $"data[orders][0][shipping_url]=https://t.17track.net/en#nums={trackingNumber}&" +
+                    $"data[orders][0][tracking_number]={trackingNumber}&" +
+                    $"data[orders][0][is_all]=0&" +
+                    $"data[orders][0][platform_carrier_code_old]={carrierOld.ToLower()}&" +
+                    $"data[orders][0][tracking_number_old]={trackingNumberOld}";
+
+                raw = Request("POST", @"https://gzbf-shop.goodhmy.com/auth/shipping/update-service", param);
+                var jo = (JObject)JsonConvert.DeserializeObject(raw);
+                raw = jo["success_num"].ToString();
+            }
+
+            return raw;
+        }
+
+        #endregion
 
         public async Task<Recharge[]> ListAllRechargeAsync()
         {
@@ -304,6 +351,28 @@ namespace analyze.core.Clients
             var recharge = JsonConvert.DeserializeObject<Recharge[]>(rows);
             return recharge;
 
+        }
+
+
+
+        private string EncodeMarkOrder(params string[] orders)
+        {
+            string raw = "";
+            Array.ForEach(orders, o => raw += $" {o}");
+            if (orders.Length > 0)
+            {
+                raw = raw.Remove(0, 1);
+            }
+            string para = $"data[0][name]=platform_id&data[0][value]=&data[1][name]=account_id&data[1][value]=&" +
+                $"data[2][name]=sync_status&data[2][value]=&data[3][name]=buyer_message&data[3][value]=&" +
+                $"data[4][name]=has_tracking_number&data[4][value]=&data[5][name]=is_split&data[5][value]=&" +
+                $"data[6][name]=is_update_mark&data[6][value]=&data[7][name]=status&data[7][value]=&" +
+                $"data[8][name]=search_type&data[8][value]=1&data[9][name]=search_val&data[9][value]={raw}&" +
+                $"data[10][name]=page&data[10][value]=1&data[11][name]=page_size&data[11][value]=20&" +
+                $"data[12][name]=paid_time_start&data[12][value]=&data[13][name]=paid_time_end&data[13][value]=&" +
+                $"data[14][name]=over_time_left_start&data[14][value]=&data[15][name]=over_time_left_end&data[15][value]=&" +
+                $"data[16][name]=is_sub&data[16][value]=0&data[17][name]=sub_map_ids";
+            return para;
         }
 
         private string EncodeOrder(int status, params string[] orders)

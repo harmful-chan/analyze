@@ -3,6 +3,7 @@ using analyze.core.Models.Daily;
 using analyze.core.Models.Rola;
 using analyze.core.Models.Sheet;
 using analyze.core.Options;
+using NPOI.HPSF;
 using NPOI.SS.Formula.Functions;
 using System;
 using System.Collections.Generic;
@@ -10,6 +11,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -22,23 +24,46 @@ namespace analyze.core.win
     {
 
         public bool AllowSelect { get; set; } = true;
+
+        public string TempDir 
+        { 
+            get 
+            {
+                string path = Path.Combine(Path.GetTempPath(), "analyze.core.win");
+                if (!Directory.Exists(path))
+                {
+                    Directory.CreateDirectory(path);
+                }
+                return path;
+            } 
+        
+        }
+        Analyzer _analyzer = new Analyzer();
+
         public MainForm()
         {
             InitializeComponent();
         }
 
-        Analyzer _analyzer = new Analyzer();
+
         private void Form_Load(object sender, EventArgs e)
         {
             InitializeParameter();
 
-            tabControl1.Selecting += (sender, e) => { e.Cancel = !AllowSelect; };
+            // 禁止切换 tab
+            tabctl.Selecting += (sender, e) => { e.Cancel = !AllowSelect; };
             InitializePage1();
 
         }
         private void InitializeParameter()
         {
-            // 自动回复模板
+            // 版本号
+            var assemblyLocation = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
+           // var c = System.Diagnostics.FileVersionInfo.GetVersionInfo(assemblyLocation).FileVersion;
+            this.Text = $"{this.Text} [{assemblyLocation}]";
+
+
+            #region page5
             this.txtOne.Text = "Prezado cliente, lamentamos muito o problema causado a você. Confirmamos seu pedido e temos rastreamento completo.\r\n"
     + "O primeiro segmento de logística foi enviado com o número de rastreamento [número do conhecimento de embarque]. Acompanhe as informações de envio por meio deste site oficial [URL de consulta].\r\n"
     + "Atualmente, pode levar de 3 a 7 dias para atualizar o cronograma logístico da segunda etapa da logística. Aguarde pacientemente e garantiremos que seu pedido seja entregue sem problemas.\r\n"
@@ -53,66 +78,101 @@ namespace analyze.core.win
             this.txtThree.Text = "Prezado cliente, entendemos suas preocupações sobre o status logístico do seu pedido. Notamos que você afirmou que não recebeu a mercadoria. Para resolver o problema, verifique primeiro a veracidade do endereço de entrega, principalmente o número da casa, andar e outros detalhes. Posteriormente, entre em contato com o correio local para obter detalhes. Às vezes, os pacotes podem ser deixados na casa de um vizinho ou em outro local sem notificação imediata. Por favor, aguarde um certo tempo de espera, pois às vezes há um atraso nas informações de rastreamento logístico. Número de rastreamento logístico: [número do conhecimento de embarque]. Informações de contato do fornecedor de logística: [URL de consulta]\r\n"
                 + "Se você ainda não resolveu o problema após as etapas acima, cooperaremos ativamente com a empresa de logística para ajudá - lo a resolver o problema durante todo o processo. Obrigado pela sua compreensão e apoio.";
 
-        }
+            #endregion
 
-        private void button1_Click(object sender, EventArgs e)
-        {
-            if (this.rbOne.Checked)
+            // 读取所有资源文件并另存为到 C:\Users\Administrator\AppData\Local\Temp\analyze.core.win
+            System.Reflection.Assembly assembly = this.GetType().Assembly;
+            string[] names = assembly.GetManifestResourceNames();
+            names = names.Where(x => !x.EndsWith("resources")).ToArray();
+            foreach (var name in names)
             {
-                this.txt.Text = this.txtOne.Text.Replace("[número do conhecimento de embarque]", this.tbFirstLeg.Text).Replace("[URL de consulta]", this.tbFirstLegCarrier.Text);
+                Stream? stream = assembly.GetManifestResourceStream(name);
+                string[] strings = name.Split('.');
+                string filename = strings[strings.Length - 2] + '.' + strings[strings.Length - 1];
+                FileStream fileStream = File.Create(Path.Combine(TempDir, filename));
+                stream.Seek(0, SeekOrigin.Begin);
+                stream.CopyTo(fileStream);
+                fileStream.Close();
             }
-            else if (this.rbTwo.Checked)
+
+            // 修订记录
+            if (File.Exists(Path.Combine(TempDir, "Revision.txt")))
             {
-                this.txt.Text = this.txtTwo.Text.Replace("[número do conhecimento de embarque]", this.tbLastLeg.Text).Replace("[URL de consulta]", this.tbInquire.Text).Replace("[Transportadora]", this.tbLastLegCarrier.Text).Replace("[Data estimada de entrega]", this.tbDate.Text);
+                this.txtRevision.Text = File.ReadAllText(Path.Combine(TempDir, "Revision.txt"));
             }
-            else if (this.rbThree.Checked)
+
+        }
+
+        private void SwitchPage(int pageIndex)
+        {
+            switch (pageIndex)
             {
-                this.txt.Text = this.txtThree.Text.Replace("[número do conhecimento de embarque]", this.tbLastLeg.Text).Replace("[URL de consulta]", this.tbInquire.Text);
+                case 0: InitializePage1(); break;
+                case 1: InitializePage2(); break;
+                default: break;
             }
         }
-
-        #region page2
-        private void InitializePage2()
-        {
-            _analyzer.Output = new FormOutput(this, this.txtOrderLog);
-        }
-
-        private void btnDeduction_Click(object sender, EventArgs e)
-        {
-
-            if (!_analyzer.IsRunning)
-            {
-                BackgroundWorker bk = new BackgroundWorker();
-                bk.DoWork += Deduction;
-                bk.RunWorkerAsync();
-            }
-        }
-
-        private void Deduction(object? sender, DoWorkEventArgs e)
-        {
-            string raw = this.txtOrder.Text;
-            List<KeyValuePair<string, string>> list = _analyzer.ReadNeedDeduction(raw);
-            _analyzer.Deduction(list);
-        }
-        #endregion
 
 
         #region page1
 
         DailyDetail[] daily;
+
+        bool IsInitializePage1 = false;
         private void InitializePage1()
         {
+            // 切换显示 textbox
             _analyzer.Output = new FormOutput(this, this.txtProfit);
-            if(Directory.Exists(this.txtRoot.Text))
+
+
+            if (Directory.Exists(this.txtRoot.Text) && !IsInitializePage1 && !_analyzer.IsRunning)
             {
-                if (!_analyzer.IsRunning)
+                BackgroundWorker bk = new BackgroundWorker();
+                bk.DoWork += (sender, e) =>
                 {
-                    BackgroundWorker bk = new BackgroundWorker();
-                    bk.DoWork += ReadRecord;
-                    bk.RunWorkerAsync();
-                }
+                    // 禁止切换 不能点击按钮
+                    this.BeginInvoke(new Action(() =>
+                    {
+                        this.AllowSelect = false;
+                        this.panelHone.Enabled = false;
+                    }));
+
+                    // 设置根目录，采集所有表格数据
+                    _analyzer.SetRootDirectorie(this.txtRoot.Text);
+                    _analyzer.StartCollect(CollectTypes.Shop | CollectTypes.Daily);
+                    _analyzer.Output.WriteLine();
+                    _analyzer.ListMissingStores(DateTime.Now);
+                    _analyzer.Output.WriteLine("读取完成");
+
+                    ShopRecord[] shopRecords = _analyzer.ShopRecords.ToArray();
+                    var sGroup = shopRecords.GroupBy(x => x.Shop.CompanyName);
+
+
+                    this.BeginInvoke(new Action(() =>
+                    {
+                        this.cbCompany.Items.Clear();
+                        string[] companys = sGroup.Select(y => y.Key).ToArray();
+                        System.Array.Sort(companys);
+                        this.cbCompany.Items.AddRange(companys);
+                        this.cbCompany.SelectedIndex = 0;
+                        this.txtNewestTotalDirectory.Text = _analyzer.NewestTotalDirectory;
+                        this.txtNewestDailyDirectory.Text = _analyzer.NewestDailyDirectory;
+                        this.txtNewestDeductionDirectory.Text = _analyzer.NewestDeductionDirectory;
+                        this.txtNewestOrderDirectory.Text = _analyzer.NewestOrderDirectory;
+                        this.txtNewestProfitDirectory.Text = _analyzer.NewestProfitDirectory;
+                        this.txtNewestReparationDirectory.Text = _analyzer.NewestReparationDirectory;
+                        this.txtNewestResourcesFileName.Text = _analyzer.NewestResourcesDirectory;
+
+                        this.AllowSelect = true;
+                        this.panelHone.Enabled = true;
+                    }));
+
+                    IsInitializePage1 = true;
+                };
+                bk.RunWorkerAsync();
             }
         }
+
 
         private Dictionary<string, ShopRecord> SureShopRecordDic()
         {
@@ -122,7 +182,7 @@ namespace analyze.core.win
             string company = this.txtCompanyNumber.Text + this.cbCN.Text + this.cbCompany.Text;
             for (DateTime i = start; i < end; i = i.AddMonths(1))
             {
-                ShopRecord shopRecord = _analyzer.GetShopRecords(company).FirstOrDefault();
+                ShopRecord shopRecord = _analyzer.ShopRecords.FirstOrDefault(sr => sr.Shop.CN.Equals(this.cbCN.Text));
                 dic[i.ToString("yyyy-MM")] = shopRecord;
             }
             return dic;
@@ -139,54 +199,12 @@ namespace analyze.core.win
 
             }
         }
-        private void ReadRecord(object? sender, DoWorkEventArgs e)
-        {
-            this.BeginInvoke(new Action(() =>
-            {
-                this.AllowSelect = false;
-                this.panelHone.Enabled = false;
-            }));
 
-            _analyzer.SetRootDirectorie(this.txtRoot.Text);
-            _analyzer.CollectShopRecords();
-            daily = _analyzer.GetDailyDetails(_analyzer.NewestDailyDirectory);
-            _analyzer.Output.WriteLine();
-            _analyzer.ListMissingStores(daily);
-            _analyzer.Output.WriteLine("读取完成");
-
-
-
-
-
-            ShopRecord[] shopRecords = _analyzer.GetShopRecords();
-            var sGroup = shopRecords.GroupBy(x => x.Shop.CompanyName);
-
-
-            this.BeginInvoke(new Action(() =>
-            {
-                this.cbCompany.Items.Clear();
-                string[] companys = sGroup.Select(y => y.Key).ToArray();
-                Array.Sort(companys);
-                this.cbCompany.Items.AddRange(companys);
-                this.cbCompany.SelectedIndex = 0;
-                this.txtNewestTotalDirectory.Text = _analyzer.NewestTotalDirectory;
-                this.txtNewestDailyDirectory.Text = _analyzer.NewestDailyDirectory;
-                this.txtNewestDeductionDirectory.Text = _analyzer.NewestDeductionDirectory;
-                this.txtNewestOrderDirectory.Text = _analyzer.NewestOrderDirectory;
-                this.txtNewestProfitDirectory.Text = _analyzer.NewestProfitDirectory;
-                this.txtNewestReparationDirectory.Text = _analyzer.NewestReparationDirectory;
-                this.txtNewestResourcesFileName.Text = _analyzer.NewestResourcesDirectory;
-
-                this.AllowSelect = true;
-                this.panelHone.Enabled = true;
-            }));
-
-        }
 
         private void cbCompany_SelectedIndexChanged(object sender, EventArgs e)
         {
             this.cbCN.Items.Clear();
-            ShopRecord[] shopRecords = _analyzer.GetShopRecords();
+            ShopRecord[] shopRecords = _analyzer.ShopRecords.ToArray();
             // 设置公司序号
             string text = (sender as ComboBox).Text;
             this.txtCompanyNumber.Text = shopRecords.Where(s => s.Shop.CompanyName.Equals(text)).First().Shop.CompanyNumber;
@@ -206,7 +224,7 @@ namespace analyze.core.win
         private void cbCN_SelectedIndexChanged(object sender, EventArgs e)
         {
             // 设置昵称
-            ShopRecord[] shopRecords = _analyzer.GetShopRecords();
+            ShopRecord[] shopRecords = _analyzer.ShopRecords.ToArray();
             string text = ((ComboBox)sender).Text;
             this.txtNick.Text = shopRecords.Where(s => s.Shop.CN.Equals(text)).First().Shop.Nick;
         }
@@ -243,17 +261,7 @@ namespace analyze.core.win
                 _analyzer.SaveProfit(filename, shopLends);
             }
         }
-        private void tabControl1_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (tabControl1.SelectedIndex == 1)
-            {
-                InitializePage2();
-            }
-            else if (tabControl1.SelectedIndex == 0)
-            {
-                InitializePage1();
-            }
-        }
+
 
         private void brnShowRefund_Click(object sender, EventArgs e)
         {
@@ -285,31 +293,23 @@ namespace analyze.core.win
 
         private void btnShowPurchase_Click(object sender, EventArgs e)
         {
-            _analyzer.ShowPurchase();
+            //_analyzer.ShowPurchase();
         }
 
         private void btnCreateOrderTxt_Click(object sender, EventArgs e)
         {
-            string filename = Path.Combine(this.txtNewestDailyDirectory.Text,  DateTime.Now.ToString("yyyy年MM月dd日") + "订单.txt");
-            _analyzer.BuildOrders(daily, filename);
+            string filename = Path.Combine(this.txtNewestDailyDirectory.Text, _analyzer.NewestDailyDate.ToString("yyyy年MM月dd日") + "订单.txt");
+            _analyzer.BuildOrders(_analyzer.NewestDailyDate, filename);
             _analyzer.Output.WriteLine($"创建 {filename}");
-        }
-        private void btnUploadOrderTxt_Click(object sender, EventArgs e)
-        {
-
         }
 
         private void btnCreateStoreTxt_Click(object sender, EventArgs e)
         {
-            string filename = Path.Combine(this.txtNewestDailyDirectory.Text, DateTime.Now.ToString("yyyy年MM月dd日") + "店铺数据.txt");
-            _analyzer.BuildCompanyProfits(daily, filename);
+            string filename = Path.Combine(this.txtNewestDailyDirectory.Text, _analyzer.NewestDailyDate.ToString("yyyy年MM月dd日") + "店铺数据.txt");
+            _analyzer.BuildCompanyProfits(_analyzer.NewestDailyDate, filename);
             _analyzer.Output.WriteLine($"创建 {filename}");
         }
 
-        private void btnUploadStoreTxt_Click(object sender, EventArgs e)
-        {
-
-        }
         #endregion
 
 
@@ -368,6 +368,101 @@ namespace analyze.core.win
         #endregion
 
 
+
+        #region page2
+        private void InitializePage2()
+        {
+            _analyzer.Output = new FormOutput(this, this.txtOrderLog);
+        }
+
+        private void btnDeduction_Click(object sender, EventArgs e)
+        {
+
+            if (!_analyzer.IsRunning)
+            {
+                BackgroundWorker bk = new BackgroundWorker();
+                bk.DoWork += (sender, e) => 
+                {
+                    string raw = this.txtOrder.Text;
+                    var list = _analyzer.ReadNeedShip(raw);
+                    _analyzer.Deduction(list);
+                };
+                bk.RunWorkerAsync();
+            }
+        }
+
+        private void btnShip_Click(object sender, EventArgs e)
+        {
+            if (!_analyzer.IsRunning)
+            {
+                BackgroundWorker bk = new BackgroundWorker();
+                bk.DoWork += (sender, e) =>
+                {
+                    string raw = this.txtOrder.Text;
+                    var list = _analyzer.ReadNeedShip(raw);
+                    _analyzer.MarkShipment(list);
+                };
+                bk.RunWorkerAsync();
+            }
+        }
+
+        private void btnDeductionShip_Click(object sender, EventArgs e)
+        {
+            if (!_analyzer.IsRunning)
+            {
+                BackgroundWorker bk = new BackgroundWorker();
+                bk.DoWork += (sender, e) =>
+                {
+                    string raw = this.txtOrder.Text;
+                    var list = _analyzer.ReadNeedShip(raw);
+                    _analyzer.Deduction(list);
+                    _analyzer.MarkShipment(list);
+                };
+                bk.RunWorkerAsync();
+            }
+        }
+
+        #endregion
+
+
+        #region page5
+        private void btnCreateAnswer_Click(object sender, EventArgs e)
+        {
+            if (this.rbOne.Checked)
+            {
+                this.txt.Text = this.txtOne.Text.Replace("[número do conhecimento de embarque]", this.tbFirstLeg.Text).Replace("[URL de consulta]", this.tbFirstLegCarrier.Text);
+            }
+            else if (this.rbTwo.Checked)
+            {
+                this.txt.Text = this.txtTwo.Text.Replace("[número do conhecimento de embarque]", this.tbLastLeg.Text).Replace("[URL de consulta]", this.tbInquire.Text).Replace("[Transportadora]", this.tbLastLegCarrier.Text).Replace("[Data estimada de entrega]", this.tbDate.Text);
+            }
+            else if (this.rbThree.Checked)
+            {
+                this.txt.Text = this.txtThree.Text.Replace("[número do conhecimento de embarque]", this.tbLastLeg.Text).Replace("[URL de consulta]", this.tbInquire.Text);
+            }
+        }
+        #endregion
+
+        #region page6
+
+
+
+        public Image PressImg()
+        {
+            Bitmap bmp = new Bitmap(104, 30); //这里给104是为了左边和右边空出2个像素，剩余的100就是百分比的值
+            Graphics g = Graphics.FromImage(bmp);
+            g.Clear(Color.White); //背景填白色
+                                  //g.FillRectangle(Brushes.Red, 2, 2, this.Press, 26);  //普通效果
+                                  //填充渐变效果
+            //g.FillRectangle(new LinearGradientBrush(new Point(30, 2), new Point(30, 30), Color.Black, Color.Gray), 2, 2, this.Press, 26);
+            return bmp;
+        }
+
+
+        #endregion
+
+
+
         private async void btnRefush_Click(object sender, EventArgs e)
         {
             this.txtIpShow.Clear();
@@ -402,5 +497,24 @@ namespace analyze.core.win
         {
             InitializePage1();
         }
+
+        private void label18_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label23_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void tabctl_SelectedIndexChanged(object sender, EventArgs e) => SwitchPage(tabctl.SelectedIndex);
+
+        private void btnDeductionClean_Click(object sender, EventArgs e)
+        {
+            this.txtOrderLog.Clear();
+        }
+
+ 
     }
 }

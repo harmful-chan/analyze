@@ -6,8 +6,47 @@
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
-    <PackageIcon>图标.png</PackageIcon>
+    <PackageIcon>logo.ico</PackageIcon>
+    <AssemblyVersion>1.1.0.100</AssemblyVersion>
+    <ApplicationIcon>Resources\logo.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Docs\README.md" />
+    <None Remove="Docs\Revision.txt" />
+    <None Remove="Docs\TODO.md" />
+    <None Remove="Resources\country-state-city.txt" />
+    <None Remove="Resources\lend.xlsx" />
+    <None Remove="Resources\refund.xlsx" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Resources\logo.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Docs\README.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Docs\Revision.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Docs\TODO.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\country-state-city.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\lend.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\logo.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\refund.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="ConsoleTables" Version="2.6.1" />
@@ -21,6 +60,11 @@
     <Compile Update="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>
@@ -28,7 +72,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="D:\Downloads\图标.png">
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Resources\logo.ico">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>

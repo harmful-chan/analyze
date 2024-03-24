@@ -29,16 +29,15 @@ namespace analyze.core.win
         /// </summary>
         private void InitializeComponent()
         {
-            tabControl1 = new TabControl();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
+            tabctl = new TabControl();
             tabPage1 = new TabPage();
-            panelPage1 = new Panel();
+            panel1 = new Panel();
             panelHone = new Panel();
             txtNewestProfitDirectory = new TextBox();
             txtWebhool = new TextBox();
             label25 = new Label();
-            btnUploadStoreTxt = new Button();
             txtRoot = new TextBox();
-            btnUploadOrderTxt = new Button();
             label26 = new Label();
             btnCreateStoreTxt = new Button();
             label27 = new Label();
@@ -80,12 +79,15 @@ namespace analyze.core.win
             button5 = new Button();
             txtProfit = new TextBox();
             tabPage2 = new TabPage();
-            panelPage2 = new Panel();
+            panel2 = new Panel();
+            btnDeductionShip = new Button();
+            btnDeductionClean = new Button();
+            btnShip = new Button();
             txtOrderLog = new TextBox();
             btnDeduction = new Button();
             txtOrder = new TextBox();
             tabPage3 = new TabPage();
-            panelPabge3 = new Panel();
+            panel3 = new Panel();
             txtFous = new TextBox();
             btnGetIpPosition = new Button();
             btnGetIP = new Button();
@@ -93,9 +95,9 @@ namespace analyze.core.win
             btnCheck = new Button();
             txtUserList = new TextBox();
             txtIpShow = new TextBox();
-            tabPage12 = new TabPage();
-            panel2 = new Panel();
-            panel1 = new Panel();
+            tabPage4 = new TabPage();
+            panel22 = new Panel();
+            panel11 = new Panel();
             label18 = new Label();
             textBox18 = new TextBox();
             shipment_id = new TextBox();
@@ -131,8 +133,8 @@ namespace analyze.core.win
             label7 = new Label();
             label9 = new Label();
             label8 = new Label();
-            tabPage22 = new TabPage();
-            panel3 = new Panel();
+            tabPage5 = new TabPage();
+            panel33 = new Panel();
             label24 = new Label();
             tbDate = new TextBox();
             txt = new TextBox();
@@ -140,7 +142,7 @@ namespace analyze.core.win
             txtTwo = new TextBox();
             label23 = new Label();
             tbInquire = new TextBox();
-            button1 = new Button();
+            btnCreateAnswer = new Button();
             tbLastLegCarrier = new TextBox();
             label22 = new Label();
             tbLastLeg = new TextBox();
@@ -154,70 +156,77 @@ namespace analyze.core.win
             label21 = new Label();
             label19 = new Label();
             label20 = new Label();
-            tabPage53 = new TabPage();
+            tabPage6 = new TabPage();
+            panel6 = new Panel();
+            dataGridView = new DataGridView();
+            tabPageOther = new TabPage();
+            txtRevision = new TextBox();
             openFileDialog = new OpenFileDialog();
             backgroundWorker = new System.ComponentModel.BackgroundWorker();
-            tabControl1.SuspendLayout();
+            tabctl.SuspendLayout();
             tabPage1.SuspendLayout();
-            panelPage1.SuspendLayout();
+            panel1.SuspendLayout();
             panelHone.SuspendLayout();
             tabPage2.SuspendLayout();
-            panelPage2.SuspendLayout();
+            panel2.SuspendLayout();
             tabPage3.SuspendLayout();
-            panelPabge3.SuspendLayout();
-            tabPage12.SuspendLayout();
-            panel1.SuspendLayout();
-            tabPage22.SuspendLayout();
             panel3.SuspendLayout();
+            tabPage4.SuspendLayout();
+            panel11.SuspendLayout();
+            tabPage5.SuspendLayout();
+            panel33.SuspendLayout();
             flowLayoutPanel1.SuspendLayout();
+            tabPage6.SuspendLayout();
+            panel6.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)dataGridView).BeginInit();
+            tabPageOther.SuspendLayout();
             SuspendLayout();
             // 
-            // tabControl1
+            // tabctl
             // 
-            tabControl1.Controls.Add(tabPage1);
-            tabControl1.Controls.Add(tabPage2);
-            tabControl1.Controls.Add(tabPage3);
-            tabControl1.Controls.Add(tabPage12);
-            tabControl1.Controls.Add(tabPage22);
-            tabControl1.Controls.Add(tabPage53);
-            tabControl1.Dock = DockStyle.Fill;
-            tabControl1.Location = new Point(0, 0);
-            tabControl1.Margin = new Padding(4);
-            tabControl1.Name = "tabControl1";
-            tabControl1.SelectedIndex = 0;
-            tabControl1.Size = new Size(1119, 532);
-            tabControl1.TabIndex = 1;
-            tabControl1.SelectedIndexChanged += tabControl1_SelectedIndexChanged;
+            tabctl.Controls.Add(tabPage1);
+            tabctl.Controls.Add(tabPage2);
+            tabctl.Controls.Add(tabPage3);
+            tabctl.Controls.Add(tabPage4);
+            tabctl.Controls.Add(tabPage5);
+            tabctl.Controls.Add(tabPage6);
+            tabctl.Controls.Add(tabPageOther);
+            tabctl.Dock = DockStyle.Fill;
+            tabctl.Location = new Point(0, 0);
+            tabctl.Margin = new Padding(4);
+            tabctl.Name = "tabctl";
+            tabctl.SelectedIndex = 0;
+            tabctl.Size = new Size(1119, 540);
+            tabctl.TabIndex = 1;
+            tabctl.SelectedIndexChanged += tabctl_SelectedIndexChanged;
             // 
             // tabPage1
             // 
-            tabPage1.Controls.Add(panelPage1);
+            tabPage1.Controls.Add(panel1);
             tabPage1.Location = new Point(4, 26);
             tabPage1.Margin = new Padding(4);
             tabPage1.Name = "tabPage1";
-            tabPage1.Size = new Size(1111, 502);
+            tabPage1.Size = new Size(1111, 510);
             tabPage1.TabIndex = 3;
             tabPage1.Text = "利润统计";
             tabPage1.UseVisualStyleBackColor = true;
             // 
-            // panelPage1
+            // panel1
             // 
-            panelPage1.Controls.Add(panelHone);
-            panelPage1.Controls.Add(txtProfit);
-            panelPage1.Dock = DockStyle.Fill;
-            panelPage1.Location = new Point(0, 0);
-            panelPage1.Name = "panelPage1";
-            panelPage1.Size = new Size(1111, 502);
-            panelPage1.TabIndex = 0;
+            panel1.Controls.Add(panelHone);
+            panel1.Controls.Add(txtProfit);
+            panel1.Dock = DockStyle.Fill;
+            panel1.Location = new Point(0, 0);
+            panel1.Name = "panel1";
+            panel1.Size = new Size(1111, 510);
+            panel1.TabIndex = 0;
             // 
             // panelHone
             // 
             panelHone.Controls.Add(txtNewestProfitDirectory);
             panelHone.Controls.Add(txtWebhool);
             panelHone.Controls.Add(label25);
-            panelHone.Controls.Add(btnUploadStoreTxt);
             panelHone.Controls.Add(txtRoot);
-            panelHone.Controls.Add(btnUploadOrderTxt);
             panelHone.Controls.Add(label26);
             panelHone.Controls.Add(btnCreateStoreTxt);
             panelHone.Controls.Add(label27);
@@ -287,17 +296,6 @@ namespace analyze.core.win
             label25.TabIndex = 2;
             label25.Text = "根目录";
             // 
-            // btnUploadStoreTxt
-            // 
-            btnUploadStoreTxt.Enabled = false;
-            btnUploadStoreTxt.Location = new Point(97, 430);
-            btnUploadStoreTxt.Name = "btnUploadStoreTxt";
-            btnUploadStoreTxt.Size = new Size(90, 23);
-            btnUploadStoreTxt.TabIndex = 46;
-            btnUploadStoreTxt.Text = "上传店铺txt";
-            btnUploadStoreTxt.UseVisualStyleBackColor = true;
-            btnUploadStoreTxt.Click += btnUploadStoreTxt_Click;
-            // 
             // txtRoot
             // 
             txtRoot.Location = new Point(65, 5);
@@ -305,17 +303,6 @@ namespace analyze.core.win
             txtRoot.Size = new Size(251, 23);
             txtRoot.TabIndex = 3;
             txtRoot.Text = "D:\\我的坚果云\\数据采集";
-            // 
-            // btnUploadOrderTxt
-            // 
-            btnUploadOrderTxt.Enabled = false;
-            btnUploadOrderTxt.Location = new Point(96, 401);
-            btnUploadOrderTxt.Name = "btnUploadOrderTxt";
-            btnUploadOrderTxt.Size = new Size(90, 23);
-            btnUploadOrderTxt.TabIndex = 45;
-            btnUploadOrderTxt.Text = "上传订单txt";
-            btnUploadOrderTxt.UseVisualStyleBackColor = true;
-            btnUploadOrderTxt.Click += btnUploadOrderTxt_Click;
             // 
             // label26
             // 
@@ -471,6 +458,7 @@ namespace analyze.core.win
             // 
             // button9
             // 
+            button9.Enabled = false;
             button9.Location = new Point(322, 173);
             button9.Name = "button9";
             button9.Size = new Size(25, 23);
@@ -611,6 +599,7 @@ namespace analyze.core.win
             // 
             // button8
             // 
+            button8.Enabled = false;
             button8.Location = new Point(322, 149);
             button8.Name = "button8";
             button8.Size = new Size(25, 23);
@@ -620,6 +609,7 @@ namespace analyze.core.win
             // 
             // button3
             // 
+            button3.Enabled = false;
             button3.Location = new Point(322, 29);
             button3.Name = "button3";
             button3.Size = new Size(25, 23);
@@ -629,6 +619,7 @@ namespace analyze.core.win
             // 
             // button7
             // 
+            button7.Enabled = false;
             button7.Location = new Point(322, 125);
             button7.Name = "button7";
             button7.Size = new Size(25, 23);
@@ -638,6 +629,7 @@ namespace analyze.core.win
             // 
             // button4
             // 
+            button4.Enabled = false;
             button4.Location = new Point(322, 53);
             button4.Name = "button4";
             button4.Size = new Size(25, 23);
@@ -647,6 +639,7 @@ namespace analyze.core.win
             // 
             // button6
             // 
+            button6.Enabled = false;
             button6.Location = new Point(322, 101);
             button6.Name = "button6";
             button6.Size = new Size(25, 23);
@@ -656,6 +649,7 @@ namespace analyze.core.win
             // 
             // button5
             // 
+            button5.Enabled = false;
             button5.Location = new Point(322, 77);
             button5.Name = "button5";
             button5.Size = new Size(25, 23);
@@ -672,50 +666,86 @@ namespace analyze.core.win
             txtProfit.Name = "txtProfit";
             txtProfit.ReadOnly = true;
             txtProfit.ScrollBars = ScrollBars.Both;
-            txtProfit.Size = new Size(756, 502);
+            txtProfit.Size = new Size(756, 510);
             txtProfit.TabIndex = 16;
             txtProfit.WordWrap = false;
             // 
             // tabPage2
             // 
-            tabPage2.Controls.Add(panelPage2);
+            tabPage2.Controls.Add(panel2);
             tabPage2.Location = new Point(4, 26);
             tabPage2.Margin = new Padding(4);
             tabPage2.Name = "tabPage2";
-            tabPage2.Size = new Size(1111, 502);
+            tabPage2.Size = new Size(1111, 510);
             tabPage2.TabIndex = 2;
             tabPage2.Text = "扣款";
             tabPage2.UseVisualStyleBackColor = true;
             // 
-            // panelPage2
+            // panel2
             // 
-            panelPage2.Controls.Add(txtOrderLog);
-            panelPage2.Controls.Add(btnDeduction);
-            panelPage2.Controls.Add(txtOrder);
-            panelPage2.Dock = DockStyle.Fill;
-            panelPage2.Location = new Point(0, 0);
-            panelPage2.Margin = new Padding(4);
-            panelPage2.Name = "panelPage2";
-            panelPage2.Size = new Size(1111, 502);
-            panelPage2.TabIndex = 0;
+            panel2.Controls.Add(btnDeductionShip);
+            panel2.Controls.Add(btnDeductionClean);
+            panel2.Controls.Add(btnShip);
+            panel2.Controls.Add(txtOrderLog);
+            panel2.Controls.Add(btnDeduction);
+            panel2.Controls.Add(txtOrder);
+            panel2.Dock = DockStyle.Fill;
+            panel2.Location = new Point(0, 0);
+            panel2.Margin = new Padding(4);
+            panel2.Name = "panel2";
+            panel2.Size = new Size(1111, 510);
+            panel2.TabIndex = 0;
+            // 
+            // btnDeductionShip
+            // 
+            btnDeductionShip.Location = new Point(823, 482);
+            btnDeductionShip.Margin = new Padding(4);
+            btnDeductionShip.Name = "btnDeductionShip";
+            btnDeductionShip.Size = new Size(210, 23);
+            btnDeductionShip.TabIndex = 5;
+            btnDeductionShip.Text = "扣款并标发";
+            btnDeductionShip.UseVisualStyleBackColor = true;
+            btnDeductionShip.Click += btnDeductionShip_Click;
+            // 
+            // btnDeductionClean
+            // 
+            btnDeductionClean.Location = new Point(1033, 482);
+            btnDeductionClean.Name = "btnDeductionClean";
+            btnDeductionClean.Size = new Size(75, 23);
+            btnDeductionClean.TabIndex = 4;
+            btnDeductionClean.Text = "清除";
+            btnDeductionClean.UseVisualStyleBackColor = true;
+            btnDeductionClean.Click += btnDeductionClean_Click;
+            // 
+            // btnShip
+            // 
+            btnShip.Location = new Point(977, 456);
+            btnShip.Margin = new Padding(4);
+            btnShip.Name = "btnShip";
+            btnShip.Size = new Size(129, 23);
+            btnShip.TabIndex = 3;
+            btnShip.Text = "标发";
+            btnShip.UseVisualStyleBackColor = true;
+            btnShip.Click += btnShip_Click;
             // 
             // txtOrderLog
             // 
-            txtOrderLog.Location = new Point(4, 4);
+            txtOrderLog.Dock = DockStyle.Left;
+            txtOrderLog.Location = new Point(0, 0);
             txtOrderLog.Margin = new Padding(4);
             txtOrderLog.Multiline = true;
             txtOrderLog.Name = "txtOrderLog";
             txtOrderLog.ReadOnly = true;
             txtOrderLog.ScrollBars = ScrollBars.Vertical;
-            txtOrderLog.Size = new Size(815, 494);
+            txtOrderLog.Size = new Size(815, 510);
             txtOrderLog.TabIndex = 2;
             // 
             // btnDeduction
             // 
-            btnDeduction.Location = new Point(823, 465);
+            btnDeduction.Location = new Point(823, 456);
             btnDeduction.Margin = new Padding(4);
             btnDeduction.Name = "btnDeduction";
-            btnDeduction.Size = new Size(284, 33);
+            btnDeduction.Size = new Size(146, 23);
             btnDeduction.TabIndex = 1;
             btnDeduction.Text = "自动扣款";
             btnDeduction.UseVisualStyleBackColor = true;
@@ -727,34 +757,35 @@ namespace analyze.core.win
             txtOrder.Margin = new Padding(4);
             txtOrder.Multiline = true;
             txtOrder.Name = "txtOrder";
-            txtOrder.ScrollBars = ScrollBars.Vertical;
-            txtOrder.Size = new Size(288, 457);
+            txtOrder.ScrollBars = ScrollBars.Horizontal;
+            txtOrder.Size = new Size(288, 448);
             txtOrder.TabIndex = 0;
+            txtOrder.WordWrap = false;
             // 
             // tabPage3
             // 
-            tabPage3.Controls.Add(panelPabge3);
+            tabPage3.Controls.Add(panel3);
             tabPage3.Location = new Point(4, 26);
             tabPage3.Name = "tabPage3";
-            tabPage3.Size = new Size(1111, 502);
+            tabPage3.Size = new Size(1111, 510);
             tabPage3.TabIndex = 5;
-            tabPage3.Text = "采购进度";
+            tabPage3.Text = "检测IP";
             tabPage3.UseVisualStyleBackColor = true;
             // 
-            // panelPabge3
+            // panel3
             // 
-            panelPabge3.Controls.Add(txtFous);
-            panelPabge3.Controls.Add(btnGetIpPosition);
-            panelPabge3.Controls.Add(btnGetIP);
-            panelPabge3.Controls.Add(btnRefush);
-            panelPabge3.Controls.Add(btnCheck);
-            panelPabge3.Controls.Add(txtUserList);
-            panelPabge3.Controls.Add(txtIpShow);
-            panelPabge3.Dock = DockStyle.Fill;
-            panelPabge3.Location = new Point(0, 0);
-            panelPabge3.Name = "panelPabge3";
-            panelPabge3.Size = new Size(1111, 502);
-            panelPabge3.TabIndex = 0;
+            panel3.Controls.Add(txtFous);
+            panel3.Controls.Add(btnGetIpPosition);
+            panel3.Controls.Add(btnGetIP);
+            panel3.Controls.Add(btnRefush);
+            panel3.Controls.Add(btnCheck);
+            panel3.Controls.Add(txtUserList);
+            panel3.Controls.Add(txtIpShow);
+            panel3.Dock = DockStyle.Fill;
+            panel3.Location = new Point(0, 0);
+            panel3.Name = "panel3";
+            panel3.Size = new Size(1111, 510);
+            panel3.TabIndex = 0;
             // 
             // txtFous
             // 
@@ -814,90 +845,92 @@ namespace analyze.core.win
             // 
             // txtIpShow
             // 
-            txtIpShow.Location = new Point(3, 3);
+            txtIpShow.Dock = DockStyle.Left;
+            txtIpShow.Location = new Point(0, 0);
             txtIpShow.Multiline = true;
             txtIpShow.Name = "txtIpShow";
             txtIpShow.ReadOnly = true;
-            txtIpShow.Size = new Size(776, 496);
+            txtIpShow.Size = new Size(776, 510);
             txtIpShow.TabIndex = 0;
             // 
-            // tabPage12
+            // tabPage4
             // 
-            tabPage12.Controls.Add(panel2);
-            tabPage12.Controls.Add(panel1);
-            tabPage12.Location = new Point(4, 26);
-            tabPage12.Margin = new Padding(4);
-            tabPage12.Name = "tabPage12";
-            tabPage12.Padding = new Padding(4);
-            tabPage12.Size = new Size(1111, 502);
-            tabPage12.TabIndex = 0;
-            tabPage12.Text = "生成面单";
-            tabPage12.UseVisualStyleBackColor = true;
+            tabPage4.Controls.Add(panel22);
+            tabPage4.Controls.Add(panel11);
+            tabPage4.Location = new Point(4, 26);
+            tabPage4.Margin = new Padding(4);
+            tabPage4.Name = "tabPage4";
+            tabPage4.Padding = new Padding(4);
+            tabPage4.Size = new Size(1111, 510);
+            tabPage4.TabIndex = 0;
+            tabPage4.Text = "生成面单";
+            tabPage4.UseVisualStyleBackColor = true;
             // 
-            // panel2
+            // panel22
             // 
-            panel2.Location = new Point(442, 4);
-            panel2.Margin = new Padding(4);
-            panel2.Name = "panel2";
-            panel2.Size = new Size(557, 616);
-            panel2.TabIndex = 8;
+            panel22.Location = new Point(442, 4);
+            panel22.Margin = new Padding(4);
+            panel22.Name = "panel22";
+            panel22.Size = new Size(557, 507);
+            panel22.TabIndex = 8;
             // 
-            // panel1
+            // panel11
             // 
-            panel1.Controls.Add(label18);
-            panel1.Controls.Add(textBox18);
-            panel1.Controls.Add(shipment_id);
-            panel1.Controls.Add(label17);
-            panel1.Controls.Add(reference);
-            panel1.Controls.Add(textBox16);
-            panel1.Controls.Add(shipper);
-            panel1.Controls.Add(label16);
-            panel1.Controls.Add(recipient);
-            panel1.Controls.Add(textBox17);
-            panel1.Controls.Add(label3);
-            panel1.Controls.Add(weight);
-            panel1.Controls.Add(delivery_date);
-            panel1.Controls.Add(ship_date);
-            panel1.Controls.Add(service_type);
-            panel1.Controls.Add(delivery_location);
-            panel1.Controls.Add(signed_fo_by);
-            panel1.Controls.Add(delivered_to);
-            panel1.Controls.Add(status);
-            panel1.Controls.Add(tracking_number);
-            panel1.Controls.Add(carrier_code);
-            panel1.Controls.Add(label1);
-            panel1.Controls.Add(label15);
-            panel1.Controls.Add(label2);
-            panel1.Controls.Add(label14);
-            panel1.Controls.Add(label13);
-            panel1.Controls.Add(label4);
-            panel1.Controls.Add(label12);
-            panel1.Controls.Add(label5);
-            panel1.Controls.Add(label11);
-            panel1.Controls.Add(label6);
-            panel1.Controls.Add(label10);
-            panel1.Controls.Add(label7);
-            panel1.Controls.Add(label9);
-            panel1.Controls.Add(label8);
-            panel1.Location = new Point(4, 4);
-            panel1.Margin = new Padding(4);
-            panel1.Name = "panel1";
-            panel1.Size = new Size(435, 616);
-            panel1.TabIndex = 7;
+            panel11.Controls.Add(label18);
+            panel11.Controls.Add(textBox18);
+            panel11.Controls.Add(shipment_id);
+            panel11.Controls.Add(label17);
+            panel11.Controls.Add(reference);
+            panel11.Controls.Add(textBox16);
+            panel11.Controls.Add(shipper);
+            panel11.Controls.Add(label16);
+            panel11.Controls.Add(recipient);
+            panel11.Controls.Add(textBox17);
+            panel11.Controls.Add(label3);
+            panel11.Controls.Add(weight);
+            panel11.Controls.Add(delivery_date);
+            panel11.Controls.Add(ship_date);
+            panel11.Controls.Add(service_type);
+            panel11.Controls.Add(delivery_location);
+            panel11.Controls.Add(signed_fo_by);
+            panel11.Controls.Add(delivered_to);
+            panel11.Controls.Add(status);
+            panel11.Controls.Add(tracking_number);
+            panel11.Controls.Add(carrier_code);
+            panel11.Controls.Add(label1);
+            panel11.Controls.Add(label15);
+            panel11.Controls.Add(label2);
+            panel11.Controls.Add(label14);
+            panel11.Controls.Add(label13);
+            panel11.Controls.Add(label4);
+            panel11.Controls.Add(label12);
+            panel11.Controls.Add(label5);
+            panel11.Controls.Add(label11);
+            panel11.Controls.Add(label6);
+            panel11.Controls.Add(label10);
+            panel11.Controls.Add(label7);
+            panel11.Controls.Add(label9);
+            panel11.Controls.Add(label8);
+            panel11.Location = new Point(4, 4);
+            panel11.Margin = new Padding(4);
+            panel11.Name = "panel11";
+            panel11.Size = new Size(435, 507);
+            panel11.TabIndex = 7;
             // 
             // label18
             // 
             label18.AutoSize = true;
-            label18.Location = new Point(405, 326);
+            label18.Location = new Point(405, 261);
             label18.Margin = new Padding(4, 0, 4, 0);
             label18.Name = "label18";
             label18.Size = new Size(25, 17);
             label18.TabIndex = 21;
             label18.Text = "KG";
+            label18.Click += label18_Click;
             // 
             // textBox18
             // 
-            textBox18.Location = new Point(225, 534);
+            textBox18.Location = new Point(225, 442);
             textBox18.Margin = new Padding(4);
             textBox18.Name = "textBox18";
             textBox18.Size = new Size(199, 23);
@@ -905,7 +938,7 @@ namespace analyze.core.win
             // 
             // shipment_id
             // 
-            shipment_id.Location = new Point(225, 463);
+            shipment_id.Location = new Point(225, 380);
             shipment_id.Margin = new Padding(4);
             shipment_id.Name = "shipment_id";
             shipment_id.Size = new Size(199, 23);
@@ -914,7 +947,7 @@ namespace analyze.core.win
             // label17
             // 
             label17.AutoSize = true;
-            label17.Location = new Point(72, 538);
+            label17.Location = new Point(72, 442);
             label17.Margin = new Padding(4, 0, 4, 0);
             label17.Name = "label17";
             label17.Size = new Size(133, 17);
@@ -923,7 +956,7 @@ namespace analyze.core.win
             // 
             // reference
             // 
-            reference.Location = new Point(225, 428);
+            reference.Location = new Point(225, 349);
             reference.Margin = new Padding(4);
             reference.Name = "reference";
             reference.Size = new Size(199, 23);
@@ -932,7 +965,7 @@ namespace analyze.core.win
             // 
             // textBox16
             // 
-            textBox16.Location = new Point(225, 572);
+            textBox16.Location = new Point(225, 473);
             textBox16.Margin = new Padding(4);
             textBox16.Name = "textBox16";
             textBox16.Size = new Size(199, 23);
@@ -940,7 +973,7 @@ namespace analyze.core.win
             // 
             // shipper
             // 
-            shipper.Location = new Point(225, 392);
+            shipper.Location = new Point(225, 318);
             shipper.Margin = new Padding(4);
             shipper.Name = "shipper";
             shipper.Size = new Size(199, 23);
@@ -949,7 +982,7 @@ namespace analyze.core.win
             // label16
             // 
             label16.AutoSize = true;
-            label16.Location = new Point(100, 577);
+            label16.Location = new Point(102, 473);
             label16.Margin = new Padding(4, 0, 4, 0);
             label16.Name = "label16";
             label16.Size = new Size(103, 17);
@@ -958,7 +991,7 @@ namespace analyze.core.win
             // 
             // recipient
             // 
-            recipient.Location = new Point(225, 357);
+            recipient.Location = new Point(225, 287);
             recipient.Margin = new Padding(4);
             recipient.Name = "recipient";
             recipient.Size = new Size(199, 23);
@@ -966,7 +999,7 @@ namespace analyze.core.win
             // 
             // textBox17
             // 
-            textBox17.Location = new Point(225, 499);
+            textBox17.Location = new Point(225, 411);
             textBox17.Margin = new Padding(4);
             textBox17.Name = "textBox17";
             textBox17.Size = new Size(199, 23);
@@ -975,7 +1008,7 @@ namespace analyze.core.win
             // label3
             // 
             label3.AutoSize = true;
-            label3.Location = new Point(37, 503);
+            label3.Location = new Point(37, 411);
             label3.Margin = new Padding(4, 0, 4, 0);
             label3.Name = "label3";
             label3.Size = new Size(163, 17);
@@ -984,7 +1017,7 @@ namespace analyze.core.win
             // 
             // weight
             // 
-            weight.Location = new Point(225, 322);
+            weight.Location = new Point(225, 255);
             weight.Margin = new Padding(4);
             weight.Name = "weight";
             weight.Size = new Size(172, 23);
@@ -992,7 +1025,7 @@ namespace analyze.core.win
             // 
             // delivery_date
             // 
-            delivery_date.Location = new Point(225, 286);
+            delivery_date.Location = new Point(225, 223);
             delivery_date.Margin = new Padding(4);
             delivery_date.Name = "delivery_date";
             delivery_date.Size = new Size(199, 23);
@@ -1000,7 +1033,7 @@ namespace analyze.core.win
             // 
             // ship_date
             // 
-            ship_date.Location = new Point(225, 251);
+            ship_date.Location = new Point(225, 192);
             ship_date.Margin = new Padding(4);
             ship_date.Name = "ship_date";
             ship_date.Size = new Size(199, 23);
@@ -1008,7 +1041,7 @@ namespace analyze.core.win
             // 
             // service_type
             // 
-            service_type.Location = new Point(225, 215);
+            service_type.Location = new Point(225, 161);
             service_type.Margin = new Padding(4);
             service_type.Name = "service_type";
             service_type.Size = new Size(199, 23);
@@ -1017,7 +1050,7 @@ namespace analyze.core.win
             // 
             // delivery_location
             // 
-            delivery_location.Location = new Point(225, 180);
+            delivery_location.Location = new Point(225, 130);
             delivery_location.Margin = new Padding(4);
             delivery_location.Name = "delivery_location";
             delivery_location.Size = new Size(199, 23);
@@ -1025,7 +1058,7 @@ namespace analyze.core.win
             // 
             // signed_fo_by
             // 
-            signed_fo_by.Location = new Point(225, 144);
+            signed_fo_by.Location = new Point(225, 110);
             signed_fo_by.Margin = new Padding(4);
             signed_fo_by.Name = "signed_fo_by";
             signed_fo_by.Size = new Size(199, 23);
@@ -1034,7 +1067,7 @@ namespace analyze.core.win
             // 
             // delivered_to
             // 
-            delivered_to.Location = new Point(225, 109);
+            delivered_to.Location = new Point(225, 90);
             delivered_to.Margin = new Padding(4);
             delivered_to.Name = "delivered_to";
             delivered_to.Size = new Size(199, 23);
@@ -1042,7 +1075,7 @@ namespace analyze.core.win
             // 
             // status
             // 
-            status.Location = new Point(225, 75);
+            status.Location = new Point(225, 59);
             status.Margin = new Padding(4);
             status.Name = "status";
             status.Size = new Size(199, 23);
@@ -1051,7 +1084,7 @@ namespace analyze.core.win
             // 
             // tracking_number
             // 
-            tracking_number.Location = new Point(225, 40);
+            tracking_number.Location = new Point(225, 28);
             tracking_number.Margin = new Padding(4);
             tracking_number.Name = "tracking_number";
             tracking_number.Size = new Size(199, 23);
@@ -1078,7 +1111,7 @@ namespace analyze.core.win
             // label15
             // 
             label15.AutoSize = true;
-            label15.Location = new Point(51, 468);
+            label15.Location = new Point(51, 357);
             label15.Margin = new Padding(4, 0, 4, 0);
             label15.Name = "label15";
             label15.Size = new Size(147, 17);
@@ -1098,7 +1131,7 @@ namespace analyze.core.win
             // label14
             // 
             label14.AutoSize = true;
-            label14.Location = new Point(65, 432);
+            label14.Location = new Point(66, 340);
             label14.Margin = new Padding(4, 0, 4, 0);
             label14.Name = "label14";
             label14.Size = new Size(134, 17);
@@ -1108,7 +1141,7 @@ namespace analyze.core.win
             // label13
             // 
             label13.AutoSize = true;
-            label13.Location = new Point(93, 397);
+            label13.Location = new Point(79, 310);
             label13.Margin = new Padding(4, 0, 4, 0);
             label13.Name = "label13";
             label13.Size = new Size(109, 17);
@@ -1128,7 +1161,7 @@ namespace analyze.core.win
             // label12
             // 
             label12.AutoSize = true;
-            label12.Location = new Point(79, 361);
+            label12.Location = new Point(79, 293);
             label12.Margin = new Padding(4, 0, 4, 0);
             label12.Name = "label12";
             label12.Size = new Size(117, 17);
@@ -1138,7 +1171,7 @@ namespace analyze.core.win
             // label5
             // 
             label5.AutoSize = true;
-            label5.Location = new Point(30, 113);
+            label5.Location = new Point(32, 96);
             label5.Margin = new Padding(4, 0, 4, 0);
             label5.Name = "label5";
             label5.Size = new Size(162, 17);
@@ -1148,7 +1181,7 @@ namespace analyze.core.win
             // label11
             // 
             label11.AutoSize = true;
-            label11.Location = new Point(114, 326);
+            label11.Location = new Point(112, 263);
             label11.Margin = new Padding(4, 0, 4, 0);
             label11.Name = "label11";
             label11.Size = new Size(93, 17);
@@ -1158,7 +1191,7 @@ namespace analyze.core.win
             // label6
             // 
             label6.AutoSize = true;
-            label6.Location = new Point(51, 149);
+            label6.Location = new Point(53, 116);
             label6.Margin = new Padding(4, 0, 4, 0);
             label6.Name = "label6";
             label6.Size = new Size(143, 17);
@@ -1168,7 +1201,7 @@ namespace analyze.core.win
             // label10
             // 
             label10.AutoSize = true;
-            label10.Location = new Point(37, 290);
+            label10.Location = new Point(42, 246);
             label10.Margin = new Padding(4, 0, 4, 0);
             label10.Name = "label10";
             label10.Size = new Size(152, 17);
@@ -1178,7 +1211,7 @@ namespace analyze.core.win
             // label7
             // 
             label7.AutoSize = true;
-            label7.Location = new Point(9, 184);
+            label7.Location = new Point(5, 146);
             label7.Margin = new Padding(4, 0, 4, 0);
             label7.Name = "label7";
             label7.Size = new Size(175, 17);
@@ -1188,7 +1221,7 @@ namespace analyze.core.win
             // label9
             // 
             label9.AutoSize = true;
-            label9.Location = new Point(65, 255);
+            label9.Location = new Point(67, 212);
             label9.Margin = new Padding(4, 0, 4, 0);
             label9.Name = "label9";
             label9.Size = new Size(131, 17);
@@ -1198,55 +1231,56 @@ namespace analyze.core.win
             // label8
             // 
             label8.AutoSize = true;
-            label8.Location = new Point(44, 220);
+            label8.Location = new Point(48, 177);
             label8.Margin = new Padding(4, 0, 4, 0);
             label8.Name = "label8";
             label8.Size = new Size(146, 17);
             label8.TabIndex = 0;
             label8.Text = "服务类型(Service type)：";
             // 
-            // tabPage22
+            // tabPage5
             // 
-            tabPage22.Controls.Add(panel3);
-            tabPage22.Location = new Point(4, 26);
-            tabPage22.Margin = new Padding(4);
-            tabPage22.Name = "tabPage22";
-            tabPage22.Padding = new Padding(4);
-            tabPage22.Size = new Size(1111, 502);
-            tabPage22.TabIndex = 1;
-            tabPage22.Text = "自动回复";
-            tabPage22.UseVisualStyleBackColor = true;
+            tabPage5.Controls.Add(panel33);
+            tabPage5.Location = new Point(4, 26);
+            tabPage5.Margin = new Padding(4);
+            tabPage5.Name = "tabPage5";
+            tabPage5.Padding = new Padding(4);
+            tabPage5.Size = new Size(1111, 510);
+            tabPage5.TabIndex = 1;
+            tabPage5.Text = "自动回复";
+            tabPage5.UseVisualStyleBackColor = true;
             // 
-            // panel3
+            // panel33
             // 
-            panel3.Controls.Add(label24);
-            panel3.Controls.Add(tbDate);
-            panel3.Controls.Add(txt);
-            panel3.Controls.Add(txtThree);
-            panel3.Controls.Add(txtTwo);
-            panel3.Controls.Add(label23);
-            panel3.Controls.Add(tbInquire);
-            panel3.Controls.Add(button1);
-            panel3.Controls.Add(tbLastLegCarrier);
-            panel3.Controls.Add(label22);
-            panel3.Controls.Add(tbLastLeg);
-            panel3.Controls.Add(tbFirstLeg);
-            panel3.Controls.Add(flowLayoutPanel1);
-            panel3.Controls.Add(tbFirstLegCarrier);
-            panel3.Controls.Add(txtOne);
-            panel3.Controls.Add(label21);
-            panel3.Controls.Add(label19);
-            panel3.Controls.Add(label20);
-            panel3.Location = new Point(4, 4);
-            panel3.Margin = new Padding(4);
-            panel3.Name = "panel3";
-            panel3.Size = new Size(995, 803);
-            panel3.TabIndex = 15;
+            panel33.Controls.Add(label24);
+            panel33.Controls.Add(tbDate);
+            panel33.Controls.Add(txt);
+            panel33.Controls.Add(txtThree);
+            panel33.Controls.Add(txtTwo);
+            panel33.Controls.Add(label23);
+            panel33.Controls.Add(tbInquire);
+            panel33.Controls.Add(btnCreateAnswer);
+            panel33.Controls.Add(tbLastLegCarrier);
+            panel33.Controls.Add(label22);
+            panel33.Controls.Add(tbLastLeg);
+            panel33.Controls.Add(tbFirstLeg);
+            panel33.Controls.Add(flowLayoutPanel1);
+            panel33.Controls.Add(tbFirstLegCarrier);
+            panel33.Controls.Add(txtOne);
+            panel33.Controls.Add(label21);
+            panel33.Controls.Add(label19);
+            panel33.Controls.Add(label20);
+            panel33.Dock = DockStyle.Fill;
+            panel33.Location = new Point(4, 4);
+            panel33.Margin = new Padding(4);
+            panel33.Name = "panel33";
+            panel33.Size = new Size(1103, 502);
+            panel33.TabIndex = 15;
             // 
             // label24
             // 
             label24.AutoSize = true;
-            label24.Location = new Point(721, 208);
+            label24.Location = new Point(727, 146);
             label24.Margin = new Padding(4, 0, 4, 0);
             label24.Name = "label24";
             label24.Size = new Size(56, 17);
@@ -1255,7 +1289,7 @@ namespace analyze.core.win
             // 
             // tbDate
             // 
-            tbDate.Location = new Point(791, 204);
+            tbDate.Location = new Point(791, 143);
             tbDate.Margin = new Padding(4);
             tbDate.Name = "tbDate";
             tbDate.Size = new Size(198, 23);
@@ -1263,16 +1297,17 @@ namespace analyze.core.win
             // 
             // txt
             // 
-            txt.Location = new Point(8, 437);
+            txt.Dock = DockStyle.Bottom;
+            txt.Location = new Point(0, 337);
             txt.Margin = new Padding(4);
             txt.Multiline = true;
             txt.Name = "txt";
-            txt.Size = new Size(982, 176);
+            txt.Size = new Size(1103, 165);
             txt.TabIndex = 23;
             // 
             // txtThree
             // 
-            txtThree.Location = new Point(6, 232);
+            txtThree.Location = new Point(0, 206);
             txtThree.Margin = new Padding(4);
             txtThree.Multiline = true;
             txtThree.Name = "txtThree";
@@ -1282,7 +1317,7 @@ namespace analyze.core.win
             // 
             // txtTwo
             // 
-            txtTwo.Location = new Point(6, 122);
+            txtTwo.Location = new Point(0, 103);
             txtTwo.Margin = new Padding(4);
             txtTwo.Multiline = true;
             txtTwo.Name = "txtTwo";
@@ -1293,35 +1328,36 @@ namespace analyze.core.win
             // label23
             // 
             label23.AutoSize = true;
-            label23.Location = new Point(735, 170);
+            label23.Location = new Point(743, 125);
             label23.Margin = new Padding(4, 0, 4, 0);
             label23.Name = "label23";
             label23.Size = new Size(40, 17);
             label23.TabIndex = 19;
             label23.Text = "查  询";
+            label23.Click += label23_Click;
             // 
             // tbInquire
             // 
-            tbInquire.Location = new Point(790, 166);
+            tbInquire.Location = new Point(790, 117);
             tbInquire.Margin = new Padding(4);
             tbInquire.Name = "tbInquire";
             tbInquire.Size = new Size(198, 23);
             tbInquire.TabIndex = 18;
             // 
-            // button1
+            // btnCreateAnswer
             // 
-            button1.Location = new Point(790, 340);
-            button1.Margin = new Padding(4);
-            button1.Name = "button1";
-            button1.Size = new Size(200, 33);
-            button1.TabIndex = 17;
-            button1.Text = "生成";
-            button1.UseVisualStyleBackColor = true;
-            button1.Click += button1_Click;
+            btnCreateAnswer.Location = new Point(788, 260);
+            btnCreateAnswer.Margin = new Padding(4);
+            btnCreateAnswer.Name = "btnCreateAnswer";
+            btnCreateAnswer.Size = new Size(200, 33);
+            btnCreateAnswer.TabIndex = 17;
+            btnCreateAnswer.Text = "生成";
+            btnCreateAnswer.UseVisualStyleBackColor = true;
+            btnCreateAnswer.Click += btnCreateAnswer_Click;
             // 
             // tbLastLegCarrier
             // 
-            tbLastLegCarrier.Location = new Point(791, 89);
+            tbLastLegCarrier.Location = new Point(791, 65);
             tbLastLegCarrier.Margin = new Padding(4);
             tbLastLegCarrier.Name = "tbLastLegCarrier";
             tbLastLegCarrier.Size = new Size(198, 23);
@@ -1330,7 +1366,7 @@ namespace analyze.core.win
             // label22
             // 
             label22.AutoSize = true;
-            label22.Location = new Point(708, 96);
+            label22.Location = new Point(715, 71);
             label22.Margin = new Padding(4, 0, 4, 0);
             label22.Name = "label22";
             label22.Size = new Size(68, 17);
@@ -1339,7 +1375,7 @@ namespace analyze.core.win
             // 
             // tbLastLeg
             // 
-            tbLastLeg.Location = new Point(791, 128);
+            tbLastLeg.Location = new Point(791, 91);
             tbLastLeg.Margin = new Padding(4);
             tbLastLeg.Name = "tbLastLeg";
             tbLastLeg.Size = new Size(198, 23);
@@ -1347,7 +1383,7 @@ namespace analyze.core.win
             // 
             // tbFirstLeg
             // 
-            tbFirstLeg.Location = new Point(791, 51);
+            tbFirstLeg.Location = new Point(791, 39);
             tbFirstLeg.Margin = new Padding(4);
             tbFirstLeg.Name = "tbFirstLeg";
             tbFirstLeg.Size = new Size(198, 23);
@@ -1359,10 +1395,10 @@ namespace analyze.core.win
             flowLayoutPanel1.Controls.Add(rbTwo);
             flowLayoutPanel1.Controls.Add(rbThree);
             flowLayoutPanel1.FlowDirection = FlowDirection.TopDown;
-            flowLayoutPanel1.Location = new Point(790, 235);
+            flowLayoutPanel1.Location = new Point(790, 169);
             flowLayoutPanel1.Margin = new Padding(4);
             flowLayoutPanel1.Name = "flowLayoutPanel1";
-            flowLayoutPanel1.Size = new Size(198, 97);
+            flowLayoutPanel1.Size = new Size(198, 89);
             flowLayoutPanel1.TabIndex = 12;
             // 
             // rbOne
@@ -1411,7 +1447,7 @@ namespace analyze.core.win
             // 
             // txtOne
             // 
-            txtOne.Location = new Point(6, 11);
+            txtOne.Location = new Point(0, 0);
             txtOne.Margin = new Padding(4);
             txtOne.Multiline = true;
             txtOne.Name = "txtOne";
@@ -1422,7 +1458,7 @@ namespace analyze.core.win
             // label21
             // 
             label21.AutoSize = true;
-            label21.Location = new Point(708, 17);
+            label21.Location = new Point(715, 16);
             label21.Margin = new Padding(4, 0, 4, 0);
             label21.Name = "label21";
             label21.Size = new Size(68, 17);
@@ -1432,7 +1468,7 @@ namespace analyze.core.win
             // label19
             // 
             label19.AutoSize = true;
-            label19.Location = new Point(736, 57);
+            label19.Location = new Point(743, 42);
             label19.Margin = new Padding(4, 0, 4, 0);
             label19.Name = "label19";
             label19.Size = new Size(40, 17);
@@ -1442,22 +1478,72 @@ namespace analyze.core.win
             // label20
             // 
             label20.AutoSize = true;
-            label20.Location = new Point(736, 133);
+            label20.Location = new Point(743, 97);
             label20.Margin = new Padding(4, 0, 4, 0);
             label20.Name = "label20";
             label20.Size = new Size(40, 17);
             label20.TabIndex = 9;
             label20.Text = "尾  程";
             // 
-            // tabPage53
+            // tabPage6
             // 
-            tabPage53.Location = new Point(4, 26);
-            tabPage53.Margin = new Padding(4);
-            tabPage53.Name = "tabPage53";
-            tabPage53.Size = new Size(1111, 502);
-            tabPage53.TabIndex = 4;
-            tabPage53.Text = "tabPage5";
-            tabPage53.UseVisualStyleBackColor = true;
+            tabPage6.Controls.Add(panel6);
+            tabPage6.Location = new Point(4, 26);
+            tabPage6.Name = "tabPage6";
+            tabPage6.Size = new Size(1111, 510);
+            tabPage6.TabIndex = 6;
+            tabPage6.Text = "采购进度";
+            tabPage6.UseVisualStyleBackColor = true;
+            // 
+            // panel6
+            // 
+            panel6.Controls.Add(dataGridView);
+            panel6.Dock = DockStyle.Fill;
+            panel6.Location = new Point(0, 0);
+            panel6.Name = "panel6";
+            panel6.Size = new Size(1111, 510);
+            panel6.TabIndex = 0;
+            // 
+            // dataGridView
+            // 
+            dataGridView.AllowUserToAddRows = false;
+            dataGridView.AllowUserToDeleteRows = false;
+            dataGridView.AllowUserToResizeColumns = false;
+            dataGridView.AllowUserToResizeRows = false;
+            dataGridView.BackgroundColor = SystemColors.Control;
+            dataGridView.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            dataGridView.Dock = DockStyle.Top;
+            dataGridView.GridColor = SystemColors.ControlDark;
+            dataGridView.Location = new Point(0, 0);
+            dataGridView.Name = "dataGridView";
+            dataGridView.ReadOnly = true;
+            dataGridView.RightToLeft = RightToLeft.No;
+            dataGridView.RowHeadersBorderStyle = DataGridViewHeaderBorderStyle.Sunken;
+            dataGridView.RowHeadersVisible = false;
+            dataGridView.Size = new Size(1111, 230);
+            dataGridView.TabIndex = 0;
+            // 
+            // tabPageOther
+            // 
+            tabPageOther.Controls.Add(txtRevision);
+            tabPageOther.Location = new Point(4, 26);
+            tabPageOther.Margin = new Padding(4);
+            tabPageOther.Name = "tabPageOther";
+            tabPageOther.Size = new Size(1111, 510);
+            tabPageOther.TabIndex = 4;
+            tabPageOther.Text = "修订";
+            tabPageOther.UseVisualStyleBackColor = true;
+            // 
+            // txtRevision
+            // 
+            txtRevision.Dock = DockStyle.Fill;
+            txtRevision.Location = new Point(0, 0);
+            txtRevision.Multiline = true;
+            txtRevision.Name = "txtRevision";
+            txtRevision.ReadOnly = true;
+            txtRevision.ScrollBars = ScrollBars.Vertical;
+            txtRevision.Size = new Size(1111, 510);
+            txtRevision.TabIndex = 0;
             // 
             // openFileDialog
             // 
@@ -1467,43 +1553,49 @@ namespace analyze.core.win
             // 
             AutoScaleDimensions = new SizeF(7F, 17F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1119, 532);
-            Controls.Add(tabControl1);
+            ClientSize = new Size(1119, 540);
+            Controls.Add(tabctl);
             FormBorderStyle = FormBorderStyle.FixedDialog;
+            Icon = (Icon)resources.GetObject("$this.Icon");
             Margin = new Padding(4);
             MaximizeBox = false;
             MinimizeBox = false;
             Name = "MainForm";
-            Text = "Form1";
+            Text = "寰球易贸 GlobalTradeEZ";
             Load += Form_Load;
-            tabControl1.ResumeLayout(false);
+            tabctl.ResumeLayout(false);
             tabPage1.ResumeLayout(false);
-            panelPage1.ResumeLayout(false);
-            panelPage1.PerformLayout();
+            panel1.ResumeLayout(false);
+            panel1.PerformLayout();
             panelHone.ResumeLayout(false);
             panelHone.PerformLayout();
             tabPage2.ResumeLayout(false);
-            panelPage2.ResumeLayout(false);
-            panelPage2.PerformLayout();
+            panel2.ResumeLayout(false);
+            panel2.PerformLayout();
             tabPage3.ResumeLayout(false);
-            panelPabge3.ResumeLayout(false);
-            panelPabge3.PerformLayout();
-            tabPage12.ResumeLayout(false);
-            panel1.ResumeLayout(false);
-            panel1.PerformLayout();
-            tabPage22.ResumeLayout(false);
             panel3.ResumeLayout(false);
             panel3.PerformLayout();
+            tabPage4.ResumeLayout(false);
+            panel11.ResumeLayout(false);
+            panel11.PerformLayout();
+            tabPage5.ResumeLayout(false);
+            panel33.ResumeLayout(false);
+            panel33.PerformLayout();
             flowLayoutPanel1.ResumeLayout(false);
             flowLayoutPanel1.PerformLayout();
+            tabPage6.ResumeLayout(false);
+            panel6.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)dataGridView).EndInit();
+            tabPageOther.ResumeLayout(false);
+            tabPageOther.PerformLayout();
             ResumeLayout(false);
         }
 
         #endregion
 
-        private System.Windows.Forms.TabControl tabControl1;
-        private System.Windows.Forms.TabPage tabPage12;
-        private System.Windows.Forms.TabPage tabPage22;
+        private System.Windows.Forms.TabControl tabctl;
+        private System.Windows.Forms.TabPage tabPage4;
+        private System.Windows.Forms.TabPage tabPage5;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label5;
@@ -1514,7 +1606,7 @@ namespace analyze.core.win
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.Label label7;
-        private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.Panel panel11;
         private System.Windows.Forms.Label label15;
         private System.Windows.Forms.Label label14;
         private System.Windows.Forms.Label label13;
@@ -1532,7 +1624,7 @@ namespace analyze.core.win
         private System.Windows.Forms.TextBox shipper;
         private System.Windows.Forms.TextBox recipient;
         private System.Windows.Forms.TextBox weight;
-        private System.Windows.Forms.Panel panel2;
+        private System.Windows.Forms.Panel panel22;
         private System.Windows.Forms.TextBox textBox17;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.TextBox shipment_id;
@@ -1548,7 +1640,7 @@ namespace analyze.core.win
         private System.Windows.Forms.Label label21;
         private System.Windows.Forms.Label label20;
         private System.Windows.Forms.RadioButton rbTwo;
-        private System.Windows.Forms.Panel panel3;
+        private System.Windows.Forms.Panel panel33;
         private System.Windows.Forms.TextBox tbLastLeg;
         private System.Windows.Forms.TextBox tbFirstLeg;
         private System.Windows.Forms.TextBox txt;
@@ -1556,7 +1648,7 @@ namespace analyze.core.win
         private System.Windows.Forms.TextBox txtTwo;
         private System.Windows.Forms.Label label23;
         private System.Windows.Forms.TextBox tbInquire;
-        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button btnCreateAnswer;
         private System.Windows.Forms.TextBox tbLastLegCarrier;
         private System.Windows.Forms.Label label22;
         private System.Windows.Forms.RadioButton rbOne;
@@ -1565,12 +1657,12 @@ namespace analyze.core.win
         private System.Windows.Forms.TextBox tbDate;
         private System.Windows.Forms.TabPage tabPage2;
         private System.Windows.Forms.TabPage tabPage1;
-        private System.Windows.Forms.TabPage tabPage53;
-        private System.Windows.Forms.Panel panelPage2;
+        private System.Windows.Forms.TabPage tabPageOther;
+        private System.Windows.Forms.Panel panel2;
         private System.Windows.Forms.Button btnDeduction;
         private System.Windows.Forms.TextBox txtOrder;
         private TextBox txtOrderLog;
-        private Panel panelPage1;
+        private Panel panel1;
         private Label label25;
         private TextBox txtProfit;
         private TextBox txtNewestOrderDirectory;
@@ -1612,7 +1704,7 @@ namespace analyze.core.win
         private Button brnShowRefund;
         private Button btnCreateRefund;
         private TabPage tabPage3;
-        private Panel panelPabge3;
+        private Panel panel3;
         private Label label33;
         private Button btnShowPurchase;
         private Button btnCheck;
@@ -1623,12 +1715,17 @@ namespace analyze.core.win
         private Button btnGetIP;
         private Button btnRefush;
         private Label label34;
-        private Button btnUploadStoreTxt;
-        private Button btnUploadOrderTxt;
         private Button btnCreateStoreTxt;
         private Button btnCreateOrderTxt;
         private TextBox txtWebhool;
         private Panel panelHone;
+        private TextBox txtRevision;
+        private Button btnShip;
+        private Button btnDeductionClean;
+        private Button btnDeductionShip;
+        private TabPage tabPage6;
+        private Panel panel6;
+        private DataGridView dataGridView;
     }
 }
 

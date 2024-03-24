@@ -1,4 +1,5 @@
-﻿using System;
+﻿using analyze.core.Models.Daily;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,5 +13,8 @@ namespace analyze.core.Models.Sheet
         public IList<ShopOrder> ShopOrderList { get; set; }
         public IList<ShopLend> ShopLendList { get; set; }
         public IList<ShopRefund> ShopRefundList { get; set; }
+
+        public IList<DailyDetail> DailyDetailsList { get; set; }
+
     }
 }

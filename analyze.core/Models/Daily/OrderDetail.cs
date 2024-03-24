@@ -2,6 +2,13 @@
 
 namespace analyze.core.Models.Daily
 {
+    public enum OrderShipsFromTypes
+    {
+        UnitedStates,
+        Brazil,
+        None
+    }
+
     public class OrderDetail
     {
         public string OrderId { get; set; }
@@ -16,6 +23,8 @@ namespace analyze.core.Models.Daily
         public string  Status { get; set; }
         public string LastTime { get; set; }
 
+        public OrderShipsFromTypes ShipsFrom { get; set; }
+        public bool IsAssess { get; set; }
 
 
     }

@@ -35,7 +35,7 @@ namespace analyze.core.test
                 DateTime s = DateTime.Parse("2023-07");
                 for (int i = 0; (s = s.AddMonths(1)) < DateTime.Now.AddMonths(-1); i++)
                 {
-                    analyzer.CollectShopRecords("公司23cn1077984038qwgae百舸群创aa");
+                    analyzer.StartCollect("公司23cn1077984038qwgae百舸群创aa");
                     ShopRecord[] shopRecords = analyzer.GetShopRecords("公司23cn1077984038qwgae百舸群创aa");
                     foreach (var shopRecord in shopRecords)
                     {
