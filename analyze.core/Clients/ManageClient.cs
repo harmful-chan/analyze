@@ -20,6 +20,10 @@ namespace analyze.core.Clients
         public Dictionary<string, Dictionary<string, string>> dicc = new Dictionary<string, Dictionary<string, string>>();
         CookieContainer cookies = new CookieContainer();
 
+        public bool IsLoginAdmin { get; private set; } = false;
+        public string CurrentClientID { get; private set; }
+
+
         private string Request(string method, string url,string body = "")
         {
             string backMsg;
@@ -148,10 +152,34 @@ namespace analyze.core.Clients
             }
         }
 
-        public  void LoginAdmin()
+        public void LoginAdmin()
         {
-            //登录后台
-            Request("POST", "https://gzbf-admin.goodhmy.com/default/index/login", "userName=globaltradeez&userPass=gzbf_aaabbb123456");
+            if (!IsLoginAdmin)
+            {
+                //登录后台
+                Request("POST", "https://gzbf-admin.goodhmy.com/default/index/login", "userName=globaltradeez&userPass=gzbf_aaabbb123456");
+                IsLoginAdmin = true;
+            }
+        }
+
+        public void LoginUser(string company_code)
+        {
+            if (!string.IsNullOrWhiteSpace(company_code) && !company_code.Equals(CurrentClientID))
+            {
+                // 获取登录链接
+                string raw = Request("POST", "https://gzbf-admin.goodhmy.com/customer/distributor/get-login-sass-url/", $"company_code={company_code}&site_code=all_platform");
+                JObject jo = (JObject)JsonConvert.DeserializeObject(raw);
+
+                //登录saas
+                string url = jo["data"].ToString();
+                raw = Request("GET", url);
+
+
+                //登录用户
+                string code = url.Substring(url.LastIndexOf("=") + 1);
+                raw = Request("GET", @"https://gzbf-shop.goodhmy.com/login.html?code=" + code + @"&redirect_url=https://erp.globaltradeez.com");
+                CurrentClientID = company_code;
+            }
         }
 
         public async Task<User[]> ListUsersAsync(string clientId = "")
@@ -173,6 +201,7 @@ namespace analyze.core.Clients
             User[] users = JsonConvert.DeserializeObject<User[]>(rows);
             return users;
         }
+
         public User[] ListUsers(string clientId = "")
         {
             int page = 0, page_size = 20, total = 0;
@@ -193,23 +222,7 @@ namespace analyze.core.Clients
             return users;
         }
 
-        public string LoginUser(string company_code)
-        {
 
-            // 获取登录链接
-            string raw = Request("POST", "https://gzbf-admin.goodhmy.com/customer/distributor/get-login-sass-url/", $"company_code={company_code}&site_code=all_platform");
-            JObject jo = (JObject)JsonConvert.DeserializeObject(raw);
-
-            //登录saas
-            string url = jo["data"].ToString();
-            raw = Request("GET", url);
-
-
-            //登录用户
-            string code = url.Substring(url.LastIndexOf("=") + 1);
-            raw = Request("GET", @"https://gzbf-shop.goodhmy.com/login.html?code=" + code + @"&redirect_url=https://erp.globaltradeez.com");
-            return raw;
-        }
 
         public Order[] ListOrder(params string[] orders)
         {

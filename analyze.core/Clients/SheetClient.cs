@@ -2,8 +2,10 @@
 using analyze.core.Models.Sheet;
 using analyze.core.Outputs;
 using IPinfo.Models;
+using NPOI.HSSF.UserModel;
 using NPOI.SS.Formula.Functions;
 using NPOI.SS.UserModel;
+using NPOI.XWPF.UserModel;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -13,6 +15,7 @@ using System.Linq;
 using System.Reflection;                
 using System.Text;
 using System.Text.RegularExpressions;
+using ICell = NPOI.SS.UserModel.ICell;
 
 namespace analyze.core.Clients
 {
@@ -60,50 +63,80 @@ namespace analyze.core.Clients
                             }
 
                             PurchaseOrder to = new PurchaseOrder();
-                            string A1 = row.GetCell(0)?.ToString();
-                            string B1 = row.GetCell(1)?.ToString();
+                            
                             // 去除表格 us A1空 B1=操作人
-                            if (string.IsNullOrWhiteSpace(A1) && "操作人".Equals(B1) || "序号".Equals(A1) && "日期".Equals(B1))
-                            {
-                                continue;
-                            }
-                            // 去除表格 br A1=序号 B1=提单日期
-                            if (string.IsNullOrWhiteSpace(A1) || "序号".Equals(A1) && "提单日期".Equals(B1))
-                            {
-                                continue;
-                            }
+
+
 
 
                             if (row != null && type == 1)  // 类型1巴西单
                             {
-                                to.Country = "BR";
-                                to.OrderId = row.GetCell(6)?.ToString();
-                                to.Status = row.GetCell(22)?.ToString();
-                                string v = row.GetCell(21)?.ToString();
-                                to.IsUpdate = string.IsNullOrWhiteSpace(v) ? false : "已更新".Equals(v);
-                                to.Buyer = row.GetCell(16)?.ToString();
-
-                                ICell cell = row.GetCell(1);
-
-                                if(cell!=null)
+                                string A1 = row.GetCell(0)?.ToString();
+                                string B1 = row.GetCell(1)?.ToString();
+                                string C1 = row.GetCell(2)?.ToString();
+                                string D1 = row.GetCell(3)?.ToString();
+                                string E1 = row.GetCell(4)?.ToString();
+                                // 去除表格 br A1=序号 B1=提单日期
+                                if (string.IsNullOrWhiteSpace(C1) || "下单时间".Equals(A1) && "剩余".Equals(B1))
                                 {
-                                  
-                                    DateTime t1;
-                                    //DateTime.TryParseExact(row.GetCell(1).ToString()?.ToString(), "yyyy/MM/dd", new CultureInfo("zh-cn"), DateTimeStyles.None, out t1);
-                                    DateTime.TryParse(row.GetCell(1).ToString(),  out t1);
-                                    to.SubmissionDate = t1;
+                                    continue;
+                                }
+
+
+
+
+                                
+                                to.Country = "BR";
+                                if (row.GetCell(0)?.CellType == CellType.Numeric && HSSFDateUtil.IsCellDateFormatted(row.GetCell(0)))
+                                {
+                                    to.OrderDate = (DateTime)(row.GetCell(0)?.DateCellValue);
+                                }
+
+                                if (row.GetCell(1)?.CellType == CellType.Numeric)
+                                {
+                                    
+                                    to.OrderOverdue = (int)row.GetCell(1).NumericCellValue;
                                 }
                                 else
                                 {
-                                    to.SubmissionDate = DateTime.MinValue;  
+                                    to.OrderOverdue = -1;
                                 }
 
                                 
-                                to.Index = row.GetCell(0)?.ToString();
+                                if (row.GetCell(3)?.CellType == CellType.Numeric && HSSFDateUtil.IsCellDateFormatted(row.GetCell(3)))
+                                {
+                                    to.SubmissionDate = (DateTime)(row.GetCell(3)?.DateCellValue);
+                                }
+
+
+                                if (row.GetCell(4)?.CellType == CellType.Numeric)
+                                {
+
+                                    to.SubmissionOverdue = (int)row.GetCell(4).NumericCellValue;
+                                }
+                                else
+                                {
+                                    to.SubmissionOverdue = -1;
+                                }
+
+                                to.OrderId = row.GetCell(8)?.ToString();
+                                to.Status = row.GetCell(24)?.ToString();
+                                string v = row.GetCell(23)?.ToString();
+                                to.IsUpdate = string.IsNullOrWhiteSpace(v) ? false : "已更新".Equals(v);
+                                to.Buyer = row.GetCell(18)?.ToString();
+
+                                to.Index = C1;
                                 os.Add(to);
                             }
                             else if (row != null && type == 2)  // 类型2美国单
                             {
+                                string A1 = row.GetCell(0)?.ToString();
+                                string B1 = row.GetCell(1)?.ToString();
+                                if (string.IsNullOrWhiteSpace(A1) && "操作人".Equals(B1) || "序号".Equals(A1) && "日期".Equals(B1))
+                                {
+                                    continue;
+                                }
+
                                 to.Country = "US";
                                 to.OrderId = row.GetCell(5)?.ToString();
                                 to.Status = row.GetCell(23)?.ToString();
@@ -969,7 +1002,7 @@ namespace analyze.core.Clients
             string[] fs = Directory.GetFiles(Path.GetDirectoryName(fullPath));
 
             fs = fs.Where(s => 
-            Path.GetFileName(s).Contains(Path.GetFileNameWithoutExtension(fileName))
+            Path.GetFileName(s).StartsWith(Path.GetFileNameWithoutExtension(fileName))
             && !Path.GetFileName(s).StartsWith("~")).ToArray();
             Array.Sort(fs);
             return fs;

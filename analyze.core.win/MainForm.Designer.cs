@@ -80,12 +80,18 @@ namespace analyze.core.win
             txtProfit = new TextBox();
             tabPage2 = new TabPage();
             panel2 = new Panel();
-            btnDeductionShip = new Button();
-            btnDeductionClean = new Button();
-            btnShip = new Button();
-            txtOrderLog = new TextBox();
+            groupBox1 = new GroupBox();
+            txtDeductShipDeclare = new TextBox();
+            lbDeductShipDeclareResult = new Label();
+            lbDeductShipDeclareCount = new Label();
+            btnDeclare = new Button();
             btnDeduction = new Button();
-            txtOrder = new TextBox();
+            btnDeductShipDeclare = new Button();
+            btnShip = new Button();
+            btnDeductionClean = new Button();
+            btnDeductShip = new Button();
+            txtDeductShipDeclareResult = new TextBox();
+            txtOrderLog = new TextBox();
             tabPage3 = new TabPage();
             panel3 = new Panel();
             txtFous = new TextBox();
@@ -158,17 +164,21 @@ namespace analyze.core.win
             label20 = new Label();
             tabPage6 = new TabPage();
             panel6 = new Panel();
-            dataGridView = new DataGridView();
+            button1 = new Button();
+            flowLayoutPanel2 = new FlowLayoutPanel();
+            progressBar1 = new ProgressBar();
             tabPageOther = new TabPage();
             txtRevision = new TextBox();
             openFileDialog = new OpenFileDialog();
             backgroundWorker = new System.ComponentModel.BackgroundWorker();
+            progressBarControl1 = new ProgressBarControl();
             tabctl.SuspendLayout();
             tabPage1.SuspendLayout();
             panel1.SuspendLayout();
             panelHone.SuspendLayout();
             tabPage2.SuspendLayout();
             panel2.SuspendLayout();
+            groupBox1.SuspendLayout();
             tabPage3.SuspendLayout();
             panel3.SuspendLayout();
             tabPage4.SuspendLayout();
@@ -178,7 +188,7 @@ namespace analyze.core.win
             flowLayoutPanel1.SuspendLayout();
             tabPage6.SuspendLayout();
             panel6.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)dataGridView).BeginInit();
+            flowLayoutPanel2.SuspendLayout();
             tabPageOther.SuspendLayout();
             SuspendLayout();
             // 
@@ -683,12 +693,9 @@ namespace analyze.core.win
             // 
             // panel2
             // 
-            panel2.Controls.Add(btnDeductionShip);
-            panel2.Controls.Add(btnDeductionClean);
-            panel2.Controls.Add(btnShip);
+            panel2.Controls.Add(groupBox1);
+            panel2.Controls.Add(txtDeductShipDeclareResult);
             panel2.Controls.Add(txtOrderLog);
-            panel2.Controls.Add(btnDeduction);
-            panel2.Controls.Add(txtOrder);
             panel2.Dock = DockStyle.Fill;
             panel2.Location = new Point(0, 0);
             panel2.Margin = new Padding(4);
@@ -696,37 +703,127 @@ namespace analyze.core.win
             panel2.Size = new Size(1111, 510);
             panel2.TabIndex = 0;
             // 
-            // btnDeductionShip
+            // groupBox1
             // 
-            btnDeductionShip.Location = new Point(823, 482);
-            btnDeductionShip.Margin = new Padding(4);
-            btnDeductionShip.Name = "btnDeductionShip";
-            btnDeductionShip.Size = new Size(210, 23);
-            btnDeductionShip.TabIndex = 5;
-            btnDeductionShip.Text = "扣款并标发";
-            btnDeductionShip.UseVisualStyleBackColor = true;
-            btnDeductionShip.Click += btnDeductionShip_Click;
+            groupBox1.Controls.Add(txtDeductShipDeclare);
+            groupBox1.Controls.Add(lbDeductShipDeclareResult);
+            groupBox1.Controls.Add(lbDeductShipDeclareCount);
+            groupBox1.Controls.Add(btnDeclare);
+            groupBox1.Controls.Add(btnDeduction);
+            groupBox1.Controls.Add(btnDeductShipDeclare);
+            groupBox1.Controls.Add(btnShip);
+            groupBox1.Controls.Add(btnDeductionClean);
+            groupBox1.Controls.Add(btnDeductShip);
+            groupBox1.Location = new Point(844, 3);
+            groupBox1.Name = "groupBox1";
+            groupBox1.Size = new Size(264, 373);
+            groupBox1.TabIndex = 11;
+            groupBox1.TabStop = false;
+            groupBox1.Text = "输入";
+            // 
+            // txtDeductShipDeclare
+            // 
+            txtDeductShipDeclare.Dock = DockStyle.Top;
+            txtDeductShipDeclare.Location = new Point(3, 19);
+            txtDeductShipDeclare.Margin = new Padding(4);
+            txtDeductShipDeclare.Multiline = true;
+            txtDeductShipDeclare.Name = "txtDeductShipDeclare";
+            txtDeductShipDeclare.ScrollBars = ScrollBars.Both;
+            txtDeductShipDeclare.Size = new Size(258, 266);
+            txtDeductShipDeclare.TabIndex = 0;
+            txtDeductShipDeclare.WordWrap = false;
+            txtDeductShipDeclare.TextChanged += txtDeductShipDeclare_TextChanged;
+            // 
+            // lbDeductShipDeclareResult
+            // 
+            lbDeductShipDeclareResult.AutoSize = true;
+            lbDeductShipDeclareResult.Location = new Point(90, 346);
+            lbDeductShipDeclareResult.Name = "lbDeductShipDeclareResult";
+            lbDeductShipDeclareResult.Size = new Size(44, 17);
+            lbDeductShipDeclareResult.TabIndex = 9;
+            lbDeductShipDeclareResult.Text = "数量：";
+            // 
+            // lbDeductShipDeclareCount
+            // 
+            lbDeductShipDeclareCount.AutoSize = true;
+            lbDeductShipDeclareCount.Location = new Point(6, 346);
+            lbDeductShipDeclareCount.Name = "lbDeductShipDeclareCount";
+            lbDeductShipDeclareCount.Size = new Size(44, 17);
+            lbDeductShipDeclareCount.TabIndex = 10;
+            lbDeductShipDeclareCount.Text = "总数：";
+            // 
+            // btnDeclare
+            // 
+            btnDeclare.Location = new Point(180, 293);
+            btnDeclare.Margin = new Padding(4);
+            btnDeclare.Name = "btnDeclare";
+            btnDeclare.Size = new Size(81, 23);
+            btnDeclare.TabIndex = 5;
+            btnDeclare.Text = "标发";
+            btnDeclare.UseVisualStyleBackColor = true;
+            btnDeclare.Click += btnDeclare_Click;
+            // 
+            // btnDeduction
+            // 
+            btnDeduction.Location = new Point(4, 293);
+            btnDeduction.Margin = new Padding(4);
+            btnDeduction.Name = "btnDeduction";
+            btnDeduction.Size = new Size(80, 23);
+            btnDeduction.TabIndex = 1;
+            btnDeduction.Text = "扣款";
+            btnDeduction.UseVisualStyleBackColor = true;
+            btnDeduction.Click += btnDeduction_Click;
+            // 
+            // btnDeductShipDeclare
+            // 
+            btnDeductShipDeclare.Location = new Point(92, 320);
+            btnDeductShipDeclare.Name = "btnDeductShipDeclare";
+            btnDeductShipDeclare.Size = new Size(80, 23);
+            btnDeductShipDeclare.TabIndex = 8;
+            btnDeductShipDeclare.Text = "扣款并标发";
+            btnDeductShipDeclare.UseVisualStyleBackColor = true;
+            btnDeductShipDeclare.Click += btnDeductShipDeclare_Click;
+            // 
+            // btnShip
+            // 
+            btnShip.Location = new Point(92, 293);
+            btnShip.Margin = new Padding(4);
+            btnShip.Name = "btnShip";
+            btnShip.Size = new Size(80, 23);
+            btnShip.TabIndex = 3;
+            btnShip.Text = "发货";
+            btnShip.UseVisualStyleBackColor = true;
+            btnShip.Click += btnShip_Click;
             // 
             // btnDeductionClean
             // 
-            btnDeductionClean.Location = new Point(1033, 482);
+            btnDeductionClean.Location = new Point(181, 320);
             btnDeductionClean.Name = "btnDeductionClean";
-            btnDeductionClean.Size = new Size(75, 23);
+            btnDeductionClean.Size = new Size(80, 23);
             btnDeductionClean.TabIndex = 4;
             btnDeductionClean.Text = "清除";
             btnDeductionClean.UseVisualStyleBackColor = true;
             btnDeductionClean.Click += btnDeductionClean_Click;
             // 
-            // btnShip
+            // btnDeductShip
             // 
-            btnShip.Location = new Point(977, 456);
-            btnShip.Margin = new Padding(4);
-            btnShip.Name = "btnShip";
-            btnShip.Size = new Size(129, 23);
-            btnShip.TabIndex = 3;
-            btnShip.Text = "标发";
-            btnShip.UseVisualStyleBackColor = true;
-            btnShip.Click += btnShip_Click;
+            btnDeductShip.Location = new Point(4, 320);
+            btnDeductShip.Name = "btnDeductShip";
+            btnDeductShip.Size = new Size(80, 23);
+            btnDeductShip.TabIndex = 6;
+            btnDeductShip.Text = "扣款并发货";
+            btnDeductShip.UseVisualStyleBackColor = true;
+            btnDeductShip.Click += btnDeductShip_Click;
+            // 
+            // txtDeductShipDeclareResult
+            // 
+            txtDeductShipDeclareResult.Location = new Point(844, 382);
+            txtDeductShipDeclareResult.Multiline = true;
+            txtDeductShipDeclareResult.Name = "txtDeductShipDeclareResult";
+            txtDeductShipDeclareResult.ScrollBars = ScrollBars.Both;
+            txtDeductShipDeclareResult.Size = new Size(264, 125);
+            txtDeductShipDeclareResult.TabIndex = 7;
+            txtDeductShipDeclareResult.WordWrap = false;
             // 
             // txtOrderLog
             // 
@@ -737,30 +834,8 @@ namespace analyze.core.win
             txtOrderLog.Name = "txtOrderLog";
             txtOrderLog.ReadOnly = true;
             txtOrderLog.ScrollBars = ScrollBars.Vertical;
-            txtOrderLog.Size = new Size(815, 510);
+            txtOrderLog.Size = new Size(841, 510);
             txtOrderLog.TabIndex = 2;
-            // 
-            // btnDeduction
-            // 
-            btnDeduction.Location = new Point(823, 456);
-            btnDeduction.Margin = new Padding(4);
-            btnDeduction.Name = "btnDeduction";
-            btnDeduction.Size = new Size(146, 23);
-            btnDeduction.TabIndex = 1;
-            btnDeduction.Text = "自动扣款";
-            btnDeduction.UseVisualStyleBackColor = true;
-            btnDeduction.Click += btnDeduction_Click;
-            // 
-            // txtOrder
-            // 
-            txtOrder.Location = new Point(823, 0);
-            txtOrder.Margin = new Padding(4);
-            txtOrder.Multiline = true;
-            txtOrder.Name = "txtOrder";
-            txtOrder.ScrollBars = ScrollBars.Horizontal;
-            txtOrder.Size = new Size(288, 448);
-            txtOrder.TabIndex = 0;
-            txtOrder.WordWrap = false;
             // 
             // tabPage3
             // 
@@ -1497,31 +1572,44 @@ namespace analyze.core.win
             // 
             // panel6
             // 
-            panel6.Controls.Add(dataGridView);
+            panel6.Controls.Add(button1);
+            panel6.Controls.Add(flowLayoutPanel2);
             panel6.Dock = DockStyle.Fill;
             panel6.Location = new Point(0, 0);
             panel6.Name = "panel6";
             panel6.Size = new Size(1111, 510);
             panel6.TabIndex = 0;
             // 
-            // dataGridView
+            // button1
             // 
-            dataGridView.AllowUserToAddRows = false;
-            dataGridView.AllowUserToDeleteRows = false;
-            dataGridView.AllowUserToResizeColumns = false;
-            dataGridView.AllowUserToResizeRows = false;
-            dataGridView.BackgroundColor = SystemColors.Control;
-            dataGridView.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridView.Dock = DockStyle.Top;
-            dataGridView.GridColor = SystemColors.ControlDark;
-            dataGridView.Location = new Point(0, 0);
-            dataGridView.Name = "dataGridView";
-            dataGridView.ReadOnly = true;
-            dataGridView.RightToLeft = RightToLeft.No;
-            dataGridView.RowHeadersBorderStyle = DataGridViewHeaderBorderStyle.Sunken;
-            dataGridView.RowHeadersVisible = false;
-            dataGridView.Size = new Size(1111, 230);
-            dataGridView.TabIndex = 0;
+            button1.Location = new Point(0, 327);
+            button1.Name = "button1";
+            button1.Size = new Size(75, 23);
+            button1.TabIndex = 1;
+            button1.Text = "button1";
+            button1.UseVisualStyleBackColor = true;
+            button1.Click += button1_Click;
+            // 
+            // flowLayoutPanel2
+            // 
+            flowLayoutPanel2.AutoScroll = true;
+            flowLayoutPanel2.Controls.Add(progressBar1);
+            flowLayoutPanel2.Controls.Add(progressBarControl1);
+            flowLayoutPanel2.Dock = DockStyle.Top;
+            flowLayoutPanel2.FlowDirection = FlowDirection.TopDown;
+            flowLayoutPanel2.Location = new Point(0, 0);
+            flowLayoutPanel2.Name = "flowLayoutPanel2";
+            flowLayoutPanel2.Size = new Size(1111, 321);
+            flowLayoutPanel2.TabIndex = 0;
+            flowLayoutPanel2.WrapContents = false;
+            // 
+            // progressBar1
+            // 
+            progressBar1.Location = new Point(3, 3);
+            progressBar1.Name = "progressBar1";
+            progressBar1.Size = new Size(100, 23);
+            progressBar1.TabIndex = 0;
+            progressBar1.Value = 50;
             // 
             // tabPageOther
             // 
@@ -1549,6 +1637,16 @@ namespace analyze.core.win
             // 
             openFileDialog.FileName = "openFileDialog";
             // 
+            // progressBarControl1
+            // 
+            progressBarControl1.Location = new Point(3, 32);
+            progressBarControl1.Name = "progressBarControl1";
+            progressBarControl1.pBackgroundColor = Color.FromArgb(217, 218, 219);
+            progressBarControl1.pForegroundColor = Color.Green;
+            progressBarControl1.Size = new Size(150, 25);
+            progressBarControl1.TabIndex = 1;
+            progressBarControl1.Val = 0;
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 17F);
@@ -1572,6 +1670,8 @@ namespace analyze.core.win
             tabPage2.ResumeLayout(false);
             panel2.ResumeLayout(false);
             panel2.PerformLayout();
+            groupBox1.ResumeLayout(false);
+            groupBox1.PerformLayout();
             tabPage3.ResumeLayout(false);
             panel3.ResumeLayout(false);
             panel3.PerformLayout();
@@ -1585,7 +1685,7 @@ namespace analyze.core.win
             flowLayoutPanel1.PerformLayout();
             tabPage6.ResumeLayout(false);
             panel6.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)dataGridView).EndInit();
+            flowLayoutPanel2.ResumeLayout(false);
             tabPageOther.ResumeLayout(false);
             tabPageOther.PerformLayout();
             ResumeLayout(false);
@@ -1660,7 +1760,7 @@ namespace analyze.core.win
         private System.Windows.Forms.TabPage tabPageOther;
         private System.Windows.Forms.Panel panel2;
         private System.Windows.Forms.Button btnDeduction;
-        private System.Windows.Forms.TextBox txtOrder;
+        private System.Windows.Forms.TextBox txtDeductShipDeclare;
         private TextBox txtOrderLog;
         private Panel panel1;
         private Label label25;
@@ -1722,10 +1822,19 @@ namespace analyze.core.win
         private TextBox txtRevision;
         private Button btnShip;
         private Button btnDeductionClean;
-        private Button btnDeductionShip;
+        private Button btnDeclare;
         private TabPage tabPage6;
         private Panel panel6;
-        private DataGridView dataGridView;
+        private Button btnDeductShip;
+        private TextBox txtDeductShipDeclareResult;
+        private Button btnDeductShipDeclare;
+        private Label lbDeductShipDeclareResult;
+        private Label lbDeductShipDeclareCount;
+        private GroupBox groupBox1;
+        private FlowLayoutPanel flowLayoutPanel2;
+        private Button button1;
+        private ProgressBar progressBar1;
+        private ProgressBarControl progressBarControl1;
     }
 }
 

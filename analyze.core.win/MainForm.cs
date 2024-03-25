@@ -1,5 +1,7 @@
 ﻿using analyze.core.Clients;
 using analyze.core.Models.Daily;
+using analyze.core.Models.Manage;
+using analyze.core.Models.Purchase;
 using analyze.core.Models.Rola;
 using analyze.core.Models.Sheet;
 using analyze.core.Options;
@@ -14,6 +16,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -25,9 +28,9 @@ namespace analyze.core.win
 
         public bool AllowSelect { get; set; } = true;
 
-        public string TempDir 
-        { 
-            get 
+        public string TempDir
+        {
+            get
             {
                 string path = Path.Combine(Path.GetTempPath(), "analyze.core.win");
                 if (!Directory.Exists(path))
@@ -35,8 +38,8 @@ namespace analyze.core.win
                     Directory.CreateDirectory(path);
                 }
                 return path;
-            } 
-        
+            }
+
         }
         Analyzer _analyzer = new Analyzer();
 
@@ -54,12 +57,19 @@ namespace analyze.core.win
             tabctl.Selecting += (sender, e) => { e.Cancel = !AllowSelect; };
             InitializePage1();
 
+
+            // 隐藏page
+
+            // this.tabPage2.Parent = null;
+            this.tabPage3.Parent = null;
+            this.tabPage4.Parent = null;
+            this.tabPage5.Parent = null;
         }
         private void InitializeParameter()
         {
             // 版本号
             var assemblyLocation = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
-           // var c = System.Diagnostics.FileVersionInfo.GetVersionInfo(assemblyLocation).FileVersion;
+            // var c = System.Diagnostics.FileVersionInfo.GetVersionInfo(assemblyLocation).FileVersion;
             this.Text = $"{this.Text} [{assemblyLocation}]";
 
 
@@ -124,6 +134,9 @@ namespace analyze.core.win
             // 切换显示 textbox
             _analyzer.Output = new FormOutput(this, this.txtProfit);
 
+            Trace.AutoFlush = true;
+
+            Trace.Listeners.Add(new TextWriterTraceListener("app.log"));
 
             if (Directory.Exists(this.txtRoot.Text) && !IsInitializePage1 && !_analyzer.IsRunning)
             {
@@ -375,53 +388,128 @@ namespace analyze.core.win
             _analyzer.Output = new FormOutput(this, this.txtOrderLog);
         }
 
-        private void btnDeduction_Click(object sender, EventArgs e)
+        private void ForEachShipObject(IEnumerable<ShipObject> shipObjects, Action<ShipObject> action)
         {
-
             if (!_analyzer.IsRunning)
             {
                 BackgroundWorker bk = new BackgroundWorker();
-                bk.DoWork += (sender, e) => 
+                bk.DoWork += (sender, e) =>
                 {
-                    string raw = this.txtOrder.Text;
-                    var list = _analyzer.ReadNeedShip(raw);
-                    _analyzer.Deduction(list);
+                    if (shipObjects.Count() > 0)
+                    {
+                        this.BeginInvoke(new Action(() =>
+                        {
+                            this.txtDeductShipDeclareResult.Clear();
+                            this.lbDeductShipDeclareResult.Text = $"数量：";
+                            this.lbDeductShipDeclareCount.Text = $"总数：{shipObjects.Count()}";
+                            this.groupBox1.Enabled = false;
+
+                        }));
+
+                    }
+                    int i = 1;
+                    foreach (var item in shipObjects)
+                    {
+                        string s = $"{i:00} ";
+                        _analyzer.Output.Write(s);
+                        action(item);
+                        _analyzer.Output.WriteLine();
+
+                        this.BeginInvoke(new Action(() =>
+                        {
+                            this.lbDeductShipDeclareResult.Text = $"数量：{i}";
+                            this.txtOrderLog.SelectionStart = this.txtOrderLog.Text.Length;
+                            this.txtOrderLog.ScrollToCaret();
+                        }));
+
+                        i++;
+                    }
+
+                    this.BeginInvoke(new Action(() =>
+                    {
+                        this.groupBox1.Enabled = true;
+                    }));
                 };
                 bk.RunWorkerAsync();
             }
+        }
+
+        private void btnDeduction_Click(object sender, EventArgs e)
+        {
+            string raw = this.txtDeductShipDeclare.Text;
+            var list = _analyzer.ReadNeedShip(raw);
+            ForEachShipObject(list, (x) =>
+            {
+                x.Step = ShipTypes.Deduct;
+                _analyzer.DeductShipDeclare(x);
+                this.BeginInvoke(new Action(() =>
+                {
+                    this.txtDeductShipDeclareResult.AppendText($"{x.OrderID}\t{x.TradeID}\r\n");
+                }));
+            });
         }
 
         private void btnShip_Click(object sender, EventArgs e)
         {
-            if (!_analyzer.IsRunning)
+
+            string raw = this.txtDeductShipDeclare.Text;
+            var list = _analyzer.ReadNeedShip(raw);
+            ForEachShipObject(list, (x) =>
             {
-                BackgroundWorker bk = new BackgroundWorker();
-                bk.DoWork += (sender, e) =>
+                x.Step = ShipTypes.Ship;
+                _analyzer.DeductShipDeclare(x);
+                this.BeginInvoke(new Action(() =>
                 {
-                    string raw = this.txtOrder.Text;
-                    var list = _analyzer.ReadNeedShip(raw);
-                    _analyzer.MarkShipment(list);
-                };
-                bk.RunWorkerAsync();
-            }
+                    this.txtDeductShipDeclareResult.AppendText($"{x.OrderID} 已发货\r\n");
+                }));
+            });
         }
 
-        private void btnDeductionShip_Click(object sender, EventArgs e)
+        private void btnDeclare_Click(object sender, EventArgs e)
         {
-            if (!_analyzer.IsRunning)
+            string raw = this.txtDeductShipDeclare.Text;
+            var list = _analyzer.ReadNeedShip(raw);
+            ForEachShipObject(list, (x) =>
             {
-                BackgroundWorker bk = new BackgroundWorker();
-                bk.DoWork += (sender, e) =>
+                x.Step = ShipTypes.Declare;
+                _analyzer.DeductShipDeclare(x);
+                this.BeginInvoke(new Action(() =>
                 {
-                    string raw = this.txtOrder.Text;
-                    var list = _analyzer.ReadNeedShip(raw);
-                    _analyzer.Deduction(list);
-                    _analyzer.MarkShipment(list);
-                };
-                bk.RunWorkerAsync();
-            }
+                    this.txtDeductShipDeclareResult.AppendText($"{x.OrderID}\t{x.TrackingNumberOld}\t{x.CarrierOld}\r\n");
+                }));
+            });
         }
 
+
+        private void btnDeductShip_Click(object sender, EventArgs e)
+        {
+            string raw = this.txtDeductShipDeclare.Text;
+            var list = _analyzer.ReadNeedShip(raw);
+            ForEachShipObject(list, (x) =>
+            {
+                x.Step = ShipTypes.DeductAndShip;
+                _analyzer.DeductShipDeclare(x);
+                this.BeginInvoke(new Action(() =>
+                {
+                    this.txtDeductShipDeclareResult.AppendText($"{x.OrderID}\t{x.TradeID}\r\n");
+                }));
+            });
+        }
+        private void btnDeductShipDeclare_Click(object sender, EventArgs e)
+        {
+            string raw = this.txtDeductShipDeclare.Text;
+            var list = _analyzer.ReadNeedShip(raw);
+            ForEachShipObject(list, (x) =>
+            {
+                x.Step = ShipTypes.DeductAndShipAndDeclare;
+                _analyzer.DeductShipDeclare(x);
+                this.BeginInvoke(new Action(() =>
+                {
+                    this.txtDeductShipDeclareResult.AppendText($"{x.OrderID}\t{x.TrackingNumberOld}\t{x.CarrierOld}\t{x.TradeID}\r\n");
+
+                }));
+            });
+        }
         #endregion
 
 
@@ -445,18 +533,11 @@ namespace analyze.core.win
 
         #region page6
 
-
-
-        public Image PressImg()
+        private void InitializePage6()
         {
-            Bitmap bmp = new Bitmap(104, 30); //这里给104是为了左边和右边空出2个像素，剩余的100就是百分比的值
-            Graphics g = Graphics.FromImage(bmp);
-            g.Clear(Color.White); //背景填白色
-                                  //g.FillRectangle(Brushes.Red, 2, 2, this.Press, 26);  //普通效果
-                                  //填充渐变效果
-            //g.FillRectangle(new LinearGradientBrush(new Point(30, 2), new Point(30, 30), Color.Black, Color.Gray), 2, 2, this.Press, 26);
-            return bmp;
+            
         }
+
 
 
         #endregion
@@ -515,6 +596,42 @@ namespace analyze.core.win
             this.txtOrderLog.Clear();
         }
 
- 
+        private void txtDeductShipDeclare_TextChanged(object sender, EventArgs e)
+        {
+            string text = ((TextBox)sender).Text;
+            string[] strings = text.Replace("\t", " ").Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            ((TextBox)sender).Text = string.Join(" ", strings);
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            PurchaseProgress[] pp = _analyzer.GetPurchaseProgress();
+            Gen(pp);
+        }
+        string[] names = ["Leo", "Bob", "Darcy", "Oliver", "Skyla", "Tyler", "Jane", "Liz", ""];
+        private void Gen(PurchaseProgress[] pps)
+        {
+
+            for (int i = 0; i < pps.Length; i++)
+            {
+                FlowLayoutPanel flp = new FlowLayoutPanel();
+                flp.FlowDirection = FlowDirection.LeftToRight;
+                flp.AutoSize = true;
+                flp.WrapContents = false;
+                flp.Controls.Add(new Label() { Text = pps[i].Date.ToString("yyyy-MM-dd"), Width = 100 });
+                for (int j = 0; j < names.Length; j++)
+                {
+                    if (pps[i].Purchase.ContainsKey(names[j]))
+                    {
+                        flp.Controls.Add(new Label() { Text = names[j], Width = 100 });
+                        PurchaseProgressUnit ppu = pps[i].Purchase[names[j]];
+                        flp.Controls.Add(new ProgressBar() {  Width = 100, Value = (int)((ppu.Processing + ppu.Solved) / (double)ppu.Total * 100) , });
+
+                    }
+                }
+                flowLayoutPanel2.Controls.Add(flp);
+            }
+            
+        }
     }
 }

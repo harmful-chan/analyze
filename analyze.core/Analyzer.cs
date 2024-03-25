@@ -11,6 +11,7 @@ using Esprima.Ast;
 using PlaywrightSharp;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -1145,7 +1146,7 @@ namespace analyze.core
                 {
                     sb.ClientID = v[0];
                     sb.OrderID = v[1];
-                    sb.ShipNumber = v[2];
+                    sb.TrackingNumber = v[2];
                     sb.Carrier = v[3];
                 }
                 list.Add(sb);
@@ -1153,139 +1154,104 @@ namespace analyze.core
             return list;
         }
 
-        public void Deduction(IEnumerable<ShipObject> list)
+        public void DeductShipDeclare(ShipObject shipObject)
         {
             ManageClient client = new ManageClient();
             string msg = string.Empty;
             client.LoginAdmin();
             this.IsRunning = true;
-            string oldClientId = "";
-            int i = 1;
-            foreach (var sb in list)
+            var so = shipObject;
+            string clientId = so.ClientID;
+            string orderId = so.OrderID;
+            string ret = null;
+
+            try
             {
-                string clientId = sb.ClientID;
-                string orderId = sb.OrderID;
-                string orderResult = "";
-                string ret = null;
+                // 登录用户
+                msg += _output.Write($"登录用户 ", false);
+                client.LoginUser(clientId);
+                msg += _output.Write($"{clientId} ", false);
 
-                try
+                // 搜索订单号
+                Models.Manage.Order[] orders = client.ListOrder(orderId);
+                msg += _output.Write($"{orders.Length} ", false);
+                Assert(orders.Length == 1);
+
+                Order order = orders.First();
+                so.Id = order.Id;
+
+                if (so.Step == ShipTypes.Deduct || so.Step == ShipTypes.DeductAndShip || so.Step == ShipTypes.DeductAndShipAndDeclare)
                 {
-                    // 登录用户
-                    msg += _output.Write($"{i++:00} 登录用户 ", false);
-                    if (!oldClientId.Equals(clientId))
-                    {
-                        client.LoginUser(clientId);
-                        oldClientId = clientId;
-                    }
-                    msg += _output.Write($"{clientId} ", false);
-                    
-                    // 搜索订单号
-                    Models.Manage.Order[] orders = client.ListOrder(orderId);
-                    msg += _output.Write($"{orders.Length} ", false);
-                    if (orders.Length == 1)  // 搜到1个订单
-                    {
-                        // 扣款
-                        Order order = orders.First();
-                        msg += _output.Write($"{order.OrderId} ", false);
-                        double cost = order.Cost;
-                        msg += _output.Write($"扣除金额：{cost} ", false);
-                        ret = client.Deduction(order);
-                        if ("Success.".Equals(ret))    // 扣款成功
-                        {
-                            // 搜索订单
-                            DebitRecord[] debitRecords = client.ListDebitRecord(clientId);
-                            DebitRecord debitRecord = debitRecords.First();
-                            msg += _output.Write($"{debitRecord.RecordId} {debitRecord.TradeId} {debitRecord.Cost}RMB ", false);
-                            if ((int)debitRecord.Cost == (int)cost)  // 扣款金额相同
-                            {
-                                // 交易号重复则放弃订单
-                                int num = debitRecords.Where(x => x.TradeId.Equals(debitRecord.TradeId)).Count();
-                                if(num == 1)    
-                                {
-                                    // 同意扣款
-                                    
-                                    ret = client.DeductionYes(debitRecord.RecordId);
-                                    msg += _output.Write($"{ret} ", false);
-                                    if ("审核成功".Equals(ret))
-                                    {
-                                        
+                    // 申请扣款
+                    msg += _output.Write($"{order.OrderId} ", false);
+                    double cost = order.Cost;
+                    msg += _output.Write($"扣除金额：{cost} ", false);
+                    ret = client.Deduction(order);
+                    Assert("Success.".Equals(ret));    // 扣款失败
 
-                                        // 同意出纳
-                                        ret = client.DeductionPassed(debitRecord.RecordId);
-                                        msg += _output.Write($"{ret} ", false);
-                                        if ("success".Equals(ret) && order.Status == 1)
-                                        {
-                                            // 订单转已发货
-                                            ret = client.Shipments(order);
-                                            msg += _output.Write($"{ret} ", false);
-                                        }
+                    // 搜索订单
+                    DebitRecord[] debitRecords = client.ListDebitRecord(clientId);
+                    DebitRecord debitRecord = debitRecords.First();
+                    msg += _output.Write($"{debitRecord.RecordId} {debitRecord.TradeId} {debitRecord.Cost}RMB ", false);
+                    Assert((int)debitRecord.Cost == (int)cost);    // 金额不相同
 
-                                    }
-                                }
-                                else  // 存在重复订单
-                                {
-                                    msg += _output.Write($"重复订单", false);
-                                }
-                            }
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _output.WriteLine(ex.Message);
-                }
-                finally
-                {
-                    Save(orderId, msg);
-                    _output.Write($"结束", false);
-                    _output.WriteLine();
-                }
-            }
-            this.IsRunning = false;
-        }
-
-        public void MarkShipment(IEnumerable<ShipObject> list)
-        {
-            ManageClient client = new ManageClient();
-            string msg = string.Empty;
-            string oldClientId = "";
-            client.LoginAdmin();
-            this.IsRunning = true;
-            int i = 1;
-            foreach (var so in list)
-            {
-                // 避免重复登录
-                msg += _output.Write($"{i++:00} 登录用户 ", false);
-                if (!oldClientId.Equals(so.ClientID))
-                {
-                    client.LoginUser(so.ClientID);
-                    oldClientId = so.ClientID;
-                }
-                msg += _output.Write($"{so.ClientID} ", false);
-
-                // 获取标发订单
-                msg += _output.Write("标发订单 ", false);
-                MarkOrder markOrder = client.ListMarkOrders(so.OrderID).FirstOrDefault();
-                msg += _output.Write($"{markOrder.OrderId} {markOrder.Step} ", false);
-
-                // 获取订单
-                msg += _output.Write("发货订单 ", false);
-                Order order = client.ListOrder(so.OrderID).FirstOrDefault();
-                msg += _output.Write($"{order.OrderId} {order.Status} ", false);
-
-                // 标发
-                if (order!=null && markOrder != null && order.OrderId.Equals(markOrder.OrderId))
-                {
-                    msg += _output.Write("标发 ", false);
-                    string ret = client.MarkOrder(order.Id, markOrder.Step, so.Carrier, so.ShipNumber, markOrder.CarrierOld, markOrder.TrackingNumberOld);
+                    so.TradeID = debitRecord.TradeId;
+                    so.DeductionAmount = $"{debitRecord.Cost}RMB";
+                    // 交易号重复则放弃订单
+                    int num = debitRecords.Where(x => x.TradeId.Equals(debitRecord.TradeId)).Count();
+                    Assert(num == 1, "搜索不到订单，或多个订单");    // 不是一个订单
+                                                         // 同意扣款
+                    ret = client.DeductionYes(debitRecord.RecordId);
                     msg += _output.Write($"{ret} ", false);
-                    msg += _output.Write($"{so.ShipNumber} ", false);
+                    Assert("审核成功".Equals(ret));
+
+                    // 同意出纳
+                    ret = client.DeductionPassed(debitRecord.RecordId);
+                    msg += _output.Write($"{ret} ", false);
+                    Assert("success".Equals(ret) && order.Status == 1);
+
                 }
-                _output.WriteLine();
+                if (so.Step == ShipTypes.Ship || so.Step == ShipTypes.DeductAndShip || so.Step == ShipTypes.ShipAndDeclare || so.Step == ShipTypes.DeductAndShipAndDeclare)
+                {
+                    // 订单转已发货
+                    ret = client.Shipments(order);
+                    so.IsDeduction = true;
+                    so.IsShipped = true;
+                    msg += _output.Write($"{ret} ", false);
+                }
+                if (so.Step == ShipTypes.Declare || so.Step == ShipTypes.ShipAndDeclare || so.Step == ShipTypes.DeductAndShipAndDeclare)
+                {
+                    // 获取标发订单
+                    msg += _output.Write("标发状态 ", false);
+                    MarkOrder markOrder = client.ListMarkOrders(so.OrderID).FirstOrDefault();
+                    msg += _output.Write($"{markOrder.OrderId} {markOrder.Step} 订单状态 {order.OrderId} {order.Status} ", false);
+                    
+
+                    // 标发
+                    if (order != null && markOrder != null && order.OrderId.Equals(markOrder.OrderId))
+                    {
+                        msg += _output.Write("标发 ", false);
+                        string mark = client.MarkOrder(order.Id, markOrder.Step, so.Carrier, so.TrackingNumber, markOrder.CarrierOld, markOrder.TrackingNumberOld);
+                        msg += _output.Write($"{mark} ", false);
+                    }
+
+                    msg += _output.Write("跟踪号 ", false);
+                    MarkOrder markOrder1 = client.ListMarkOrders(so.OrderID).FirstOrDefault();
+                    so.TrackingNumberOld = markOrder1.TrackingNumberOld;
+                    so.CarrierOld = markOrder1.CarrierOld;
+                    msg += _output.Write($"{so.TrackingNumberOld} {so.CarrierOld} ", false);
+                }
             }
-
+            catch (Exception ex)
+            {
+                _output.Write(ex.Message +"异常", false);
+            }
+            finally
+            {
+                Save(orderId, msg);
+                _output.Write($"结束", false);
+            }
             this.IsRunning = false;
-
         }
 
 
@@ -1340,7 +1306,7 @@ namespace analyze.core
                     try
                     {
                         _output.Write("登录用户 ", false);
-                        string v = client.LoginUser(clientId);
+                        client.LoginUser(clientId);
                         _output.Write($"{clientId} ", false);
                         Models.Manage.Order[] orders = client.ListOrder(orderId);
                         _output.Write($"{orders.Length} ", false);
@@ -1394,52 +1360,43 @@ namespace analyze.core
         #endregion
 
         #region purchase
-        public PurchaseProgress[] GetPurchaseProgress(params string[] buyers)
+        public PurchaseProgress[] GetPurchaseProgress()
         {
-            var sure = from o in PurchasesOrders where o.Country.Equals("BR") && o.OrderDate != DateTime.MinValue select o;
- 
-            var sureOrder = sure.GroupBy(x => x.OrderDate.Date).OrderBy(y => y.Key).ToArray();
-            var dic = new Dictionary<string, PurchaseProgress>();
-            foreach (var buyer in buyers)
-            {
-                dic[buyer] = new PurchaseProgress();
-                dic[buyer].Progress = new PurchaseProgressUnit[17];
-            }
-            dic["None"] = new PurchaseProgress();
-            dic["None"].Progress = new PurchaseProgressUnit[17];
+            var sure = PurchasesOrders.Where(x => x.Country.Equals("BR") && x.OrderDate != DateTime.MinValue).ToArray();
+            var sureOrder = sure.GroupBy(x => x.OrderDate.Date).OrderBy(y => y.Key);
+            
 
-            int i = 0;
+            List<PurchaseProgress> purs = new List<PurchaseProgress>();
             foreach (var oneDayOrder in sureOrder)
             {
-                if(i < 16)
+                PurchaseProgress purchaseProgress = new PurchaseProgress();
+                purchaseProgress.Date = oneDayOrder.Key.Date;
+                purchaseProgress.Purchase = new Dictionary<string, PurchaseProgressUnit>();
+
+                foreach (var buyerOneDayOrder in oneDayOrder.GroupBy(x => x.Buyer))
                 {
-                    foreach (var buyer in buyers)
-                    {
-                        var oneDayBuyerOrder = oneDayOrder.Where(x => buyer.Equals(x.Buyer));
-                        var processing = oneDayBuyerOrder.Where(e => "已下单".Equals(e.Status));
-                        var solved = oneDayBuyerOrder.Where(e => "已发货".Equals(e.Status));
-                        var cancel = oneDayBuyerOrder.Where(e => "砍单".Equals(e.Status));
-                        var cut = oneDayBuyerOrder.Where(e => "截单".Equals(e.Status));
-                        var pending = oneDayBuyerOrder.Where(e => string.IsNullOrWhiteSpace(e.Status) ||
-                            !e.Status.Equals("已下单") && !e.Status.Equals("已发货") && !e.Status.Equals("砍单") && !e.Status.Equals("截单"));
+                    purchaseProgress.Purchase[buyerOneDayOrder.Key] = new PurchaseProgressUnit();
 
+                    var processing = buyerOneDayOrder.Where(e => "已下单".Equals(e.Status));
+                    var solved = buyerOneDayOrder.Where(e => "已发货".Equals(e.Status));
+                    var cancel = buyerOneDayOrder.Where(e => "砍单".Equals(e.Status));
+                    var cut = buyerOneDayOrder.Where(e => "截单".Equals(e.Status));
+                    var pending = buyerOneDayOrder.Where(e => string.IsNullOrWhiteSpace(e.Status) ||
+                        !e.Status.Equals("已下单") && !e.Status.Equals("已发货") && !e.Status.Equals("砍单") && !e.Status.Equals("截单"));
 
-                        var unit = dic[buyer].Progress[i];
-                        unit.Processing = processing.Count();
-                        unit.Solved = solved.Count();
-                        unit.Cancel = cancel.Count();
-                        unit.Cut = cut.Count();
-                        unit.Pending = pending.Count();
-                        unit.Date = oneDayOrder.Key;
-                        unit.Total = oneDayBuyerOrder.Count();
-                    }
-
-                    i++;
+                    
+                    var unit = purchaseProgress.Purchase[buyerOneDayOrder.Key];
+                    unit.Processing = processing.Count();
+                    unit.Solved = solved.Count();
+                    unit.Cancel = cancel.Count();
+                    unit.Cut = cut.Count();
+                    unit.Pending = pending.Count();
+                    unit.Total = buyerOneDayOrder.Count();
                 }
+                purs.Add(purchaseProgress);
             }
-     
-            _output.Show("I",  "date", "Order", "Pending", "Processing", "Solved", "Cancel", "Cut");
-            return null;
+
+            return purs.DistinctBy(x=>x.Date).ToArray();
 
         }
         #endregion
@@ -1568,7 +1525,7 @@ namespace analyze.core
         public List<Shop> ShopCatalogs = new List<Shop>();
         public List<ShopRecord> ShopRecords = new List<ShopRecord>();
         public List<SubmitOrder> SubmitOrders = new List<SubmitOrder>();
-        public List<PurchaseOrder> PurchasesOrders = new List<PurchaseOrder>();
+        public List<PurchaseOrder> PurchasesOrders { get; private set; } = new List<PurchaseOrder>();
 
 
         public void StartCollect(CollectTypes collectType, string cn=null, DateTime date = default)
@@ -1759,5 +1716,13 @@ namespace analyze.core
         }
 
 
+
+        public void Assert(bool flag, string msg = "")
+        {
+            if (!flag)
+            {
+                throw new Exception(msg);
+            }
+        }
     }
 }

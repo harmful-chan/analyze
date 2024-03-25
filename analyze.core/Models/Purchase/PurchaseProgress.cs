@@ -8,7 +8,6 @@ namespace analyze.core.Models.Purchase
 {
     public class PurchaseProgressUnit
     {
-        public DateTime Date { get; set; }
         public int Total { get; set; }
         public int Processing { get; set;}
         public int Solved { get; set; }
@@ -20,8 +19,8 @@ namespace analyze.core.Models.Purchase
 
     public class PurchaseProgress
     {
-        public string Buyer { get; set; }
-        public PurchaseProgressUnit[] Progress { get; set; }
+        public DateTime Date { get; set; }
+        public Dictionary<string, PurchaseProgressUnit> Purchase { get; set; }
         
     }
 }
