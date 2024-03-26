@@ -1,14 +1,17 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Threading.Tasks;
 
-namespace analyze.core.Clients
+namespace analyze.core.Clients.Webhook
 {
+
     public class WebhookClient
     {
-        public string Webhook(string url, string type,  List<KeyValuePair<string, string>> kvs)
+        public string Webhook(string url, string type, List<KeyValuePair<string, string>> kvs)
         {
             string backMsg;
 
@@ -26,7 +29,7 @@ namespace analyze.core.Clients
                 message += $"{item.Key} {item.Value}\n";
             }
 
-            string param = "{\"msgtype\":\""+ type +"\",\""+ type + "\":{\"content\":\"" + message + "\"}}";
+            string param = "{\"msgtype\":\"" + type + "\",\"" + type + "\":{\"content\":\"" + message + "\"}}";
 
             if (!string.IsNullOrWhiteSpace(param))
             {
@@ -49,6 +52,15 @@ namespace analyze.core.Clients
             responsestream.Dispose();
             return backMsg;
 
+        }
+
+
+        public async Task<OperationResult> SendFileAsync(string key, string filename)
+        {
+            TextType.RobotUrl = $"https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key={key}";
+            FileType.UpLoadFileKey = key;
+            OperationResult operationResult = await FileType.SendFile(filename);
+            return operationResult;
         }
     }
 }

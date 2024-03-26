@@ -977,24 +977,6 @@ namespace analyze.core.Clients
         #endregion
 
 
-        #region Collect
-
-        public string DefaultBrPurchasesFilename { get; set; }
-            = Path.Combine(Path.GetDirectoryName(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName), 
-                "原始数据", $"{DateTime.Now.ToString("yyyy年MM月dd日")}", "巴西采购单.xlsx");
-
-
-
-
-
-        public void CollectOrderRecords(string orderDir, params string[] shopDirPrefixs)
-        {
-
-        }
-
-
-
-        #endregion
 
         public static string[] ReadSortFiles(string fileName)
         {

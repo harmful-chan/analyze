@@ -162,10 +162,6 @@ namespace analyze.core.win
             label21 = new Label();
             label19 = new Label();
             label20 = new Label();
-            tabPage6 = new TabPage();
-            panel6 = new Panel();
-            button1 = new Button();
-            flowLayoutPanel2 = new FlowLayoutPanel();
             tabPageOther = new TabPage();
             txtRevision = new TextBox();
             openFileDialog = new OpenFileDialog();
@@ -184,8 +180,6 @@ namespace analyze.core.win
             tabPage5.SuspendLayout();
             panel33.SuspendLayout();
             flowLayoutPanel1.SuspendLayout();
-            tabPage6.SuspendLayout();
-            panel6.SuspendLayout();
             tabPageOther.SuspendLayout();
             SuspendLayout();
             // 
@@ -196,7 +190,6 @@ namespace analyze.core.win
             tabctl.Controls.Add(tabPage3);
             tabctl.Controls.Add(tabPage4);
             tabctl.Controls.Add(tabPage5);
-            tabctl.Controls.Add(tabPage6);
             tabctl.Controls.Add(tabPageOther);
             tabctl.Dock = DockStyle.Fill;
             tabctl.Location = new Point(0, 0);
@@ -363,9 +356,9 @@ namespace analyze.core.win
             label34.AutoSize = true;
             label34.Location = new Point(4, 381);
             label34.Name = "label34";
-            label34.Size = new Size(328, 17);
+            label34.Size = new Size(338, 17);
             label34.TabIndex = 42;
-            label34.Text = "----------------------------------------------------------------";
+            label34.Text = "------------------------------------------------------------------";
             // 
             // label29
             // 
@@ -381,9 +374,9 @@ namespace analyze.core.win
             label33.AutoSize = true;
             label33.Location = new Point(4, 335);
             label33.Name = "label33";
-            label33.Size = new Size(328, 17);
+            label33.Size = new Size(338, 17);
             label33.TabIndex = 41;
-            label33.Text = "----------------------------------------------------------------";
+            label33.Text = "------------------------------------------------------------------";
             // 
             // label30
             // 
@@ -400,7 +393,7 @@ namespace analyze.core.win
             btnShowPurchase.Name = "btnShowPurchase";
             btnShowPurchase.Size = new Size(90, 23);
             btnShowPurchase.TabIndex = 40;
-            btnShowPurchase.Text = "显采购进度";
+            btnShowPurchase.Text = "生成采购txt";
             btnShowPurchase.UseVisualStyleBackColor = true;
             btnShowPurchase.Click += btnShowPurchase_Click;
             // 
@@ -1557,47 +1550,6 @@ namespace analyze.core.win
             label20.TabIndex = 9;
             label20.Text = "尾  程";
             // 
-            // tabPage6
-            // 
-            tabPage6.Controls.Add(panel6);
-            tabPage6.Location = new Point(4, 26);
-            tabPage6.Name = "tabPage6";
-            tabPage6.Size = new Size(1179, 510);
-            tabPage6.TabIndex = 6;
-            tabPage6.Text = "采购进度";
-            tabPage6.UseVisualStyleBackColor = true;
-            // 
-            // panel6
-            // 
-            panel6.Controls.Add(button1);
-            panel6.Controls.Add(flowLayoutPanel2);
-            panel6.Dock = DockStyle.Fill;
-            panel6.Location = new Point(0, 0);
-            panel6.Name = "panel6";
-            panel6.Size = new Size(1179, 510);
-            panel6.TabIndex = 0;
-            // 
-            // button1
-            // 
-            button1.Location = new Point(65, 443);
-            button1.Name = "button1";
-            button1.Size = new Size(75, 23);
-            button1.TabIndex = 1;
-            button1.Text = "button1";
-            button1.UseVisualStyleBackColor = true;
-            button1.Click += button1_Click;
-            // 
-            // flowLayoutPanel2
-            // 
-            flowLayoutPanel2.AutoScroll = true;
-            flowLayoutPanel2.Dock = DockStyle.Top;
-            flowLayoutPanel2.FlowDirection = FlowDirection.TopDown;
-            flowLayoutPanel2.Location = new Point(0, 0);
-            flowLayoutPanel2.Name = "flowLayoutPanel2";
-            flowLayoutPanel2.Size = new Size(1179, 259);
-            flowLayoutPanel2.TabIndex = 0;
-            flowLayoutPanel2.WrapContents = false;
-            // 
             // tabPageOther
             // 
             tabPageOther.Controls.Add(txtRevision);
@@ -1660,8 +1612,6 @@ namespace analyze.core.win
             panel33.PerformLayout();
             flowLayoutPanel1.ResumeLayout(false);
             flowLayoutPanel1.PerformLayout();
-            tabPage6.ResumeLayout(false);
-            panel6.ResumeLayout(false);
             tabPageOther.ResumeLayout(false);
             tabPageOther.PerformLayout();
             ResumeLayout(false);
@@ -1799,16 +1749,12 @@ namespace analyze.core.win
         private Button btnShip;
         private Button btnDeductionClean;
         private Button btnDeclare;
-        private TabPage tabPage6;
-        private Panel panel6;
         private Button btnDeductShip;
         private TextBox txtDeductShipDeclareResult;
         private Button btnDeductShipDeclare;
         private Label lbDeductShipDeclareResult;
         private Label lbDeductShipDeclareCount;
         private GroupBox groupBox1;
-        private FlowLayoutPanel flowLayoutPanel2;
-        private Button button1;
     }
 }
 

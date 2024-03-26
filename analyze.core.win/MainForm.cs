@@ -1,4 +1,5 @@
 ﻿using analyze.core.Clients;
+using analyze.core.Clients.Webhook;
 using analyze.core.Models.Daily;
 using analyze.core.Models.Manage;
 using analyze.core.Models.Purchase;
@@ -305,9 +306,14 @@ namespace analyze.core.win
             }
         }
 
-        private void btnShowPurchase_Click(object sender, EventArgs e)
+        private async void btnShowPurchase_Click(object sender, EventArgs e)
         {
-            //_analyzer.ShowPurchase();
+            string filename = Path.Combine(_analyzer.NewestTotalDirectory, $"{DateTime.Now.ToString("yyyy年MM月dd")}采购进度.txt");
+            PurchaseProgress[] purchaseProgresses = _analyzer.GetPurchaseProgress();
+            _analyzer.SavePurchaseProgress(purchaseProgresses, filename);
+            _analyzer.Output.WriteLine($"创建 {filename}");
+            OperationResult operationResult = await new WebhookClient().SendFileAsync("8af72f8c-1f27-48b0-832e-dcfb8b7f17d2", filename);
+            _analyzer.Output.WriteLine($"发送 {filename}");
         }
 
         private void btnCreateOrderTxt_Click(object sender, EventArgs e)
@@ -609,38 +615,10 @@ namespace analyze.core.win
             PurchaseProgress[] pp = _analyzer.GetPurchaseProgress();
             Gen(pp);
         }
-        string[] names = ["Leo", "Oliver", "Tyler", "Bob", "Darcy",  "Skyla", "Jane", "Liz", ""];
+        
         private void Gen(PurchaseProgress[] pps)
         {
 
-            for (int i = 0; i < pps.Length; i++)
-            {
-
-     
-                FlowLayoutPanel flp = new FlowLayoutPanel();
-                flp.FlowDirection = FlowDirection.LeftToRight;
-                flp.AutoSize = true;
-                flp.WrapContents = false;
-                flp.Controls.Add(new Label() { Text = pps[pps.Length - i - 1].Date.ToString("yyyy-MM-dd"), Width = 80 });
-                for (int j = 0; j < names.Length; j++)
-                {
-                    if (pps[pps.Length-i-1].Purchase.ContainsKey(names[j]))
-                    {
-                        PurchaseProgressUnit ppu = pps[pps.Length - i - 1].Purchase[names[j]];
-                        if(ppu.Total > 0)
-                        {
-                            Label label1 = new Label() { Text = names[j], Width = 40 , Height = 15};
-
-                            flp.Controls.Add(label1);
-
-                            Label label2 = new Label() { Height = 15 };
-                            label2.Text = $"{ppu.Processing}+{ppu.Solved}/{ppu.Total}={(int)((ppu.Processing + ppu.Solved) / (double)ppu.Total * 100)}%";
-                            flp.Controls.Add(label2);
-                        }
-                    }
-                }
-            flowLayoutPanel2.Controls.Add(flp);
-            }
             
         }
     }

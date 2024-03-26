@@ -1,4 +1,5 @@
 ﻿using analyze.core.Clients;
+using analyze.core.Clients.Webhook;
 using analyze.core.Models.Daily;
 using analyze.core.Models.Manage;
 using analyze.core.Models.Purchase;
@@ -1398,6 +1399,95 @@ namespace analyze.core
 
             return purs.OrderBy(x=>x.Date).ToArray();
 
+        }
+
+        public void SavePurchaseProgress(PurchaseProgress[] purchaseProgresses, string fileName)
+        {
+            string[] names = ["Leo", "Oliver", "Tyler", "Bob", "Darcy", "Skyla", "Jane", "Liz", ""];
+            PurchaseProgress[] pps = purchaseProgresses;
+            string str = "日期 待处理" + "\r\n";
+            str += "(已下单+已发货)/订单总数=发货率 (砍单+截单)/订单总数=失败率" + "\r\n";
+
+            foreach (int day in new int[] { 3, 7, 14, 21, 28, 35 })
+            {
+                int processing = 0;
+                int solved = 0;
+                int cancel = 0;
+                int cut = 0;
+                int total = 0;
+                int pending = 0;
+                for (int i = 0; i < day; i++)
+                {
+                    var purchaseProgress = pps[pps.Length - i - 1];
+                    for (int j = 0; j < names.Length; j++)
+                    {
+
+                        if (!string.IsNullOrWhiteSpace(names[j]) && purchaseProgress.Purchase.ContainsKey(names[j]))
+                        {
+                            var ppu = purchaseProgress.Purchase[names[j]];
+                            processing += ppu.Processing;
+                            solved += ppu.Solved;
+                            cancel += ppu.Cancel;
+                            cut += ppu.Cut;
+                            total += ppu.Total;
+                            pending += ppu.Pending;
+                        }
+                    }
+
+
+                }
+                double count1 = (processing + solved) / (double)total;
+                string count1Str = count1 == 0.0 ? "0   " : count1.ToString("0.00");
+                double count2 = (cancel + cut) / (double)total;
+                string count2Str = count2 == 0.0 ? "0   " : count2.ToString("0.00");
+
+                string msg = $"{pending,4} ({processing,3}+{solved,-3})/{total,-4}={count1Str}".PadRight(15, ' ') + " " + $"({cancel,3}+{cut,-3})/{total,-4}={count2Str}".PadRight(15, ' ');
+                str += $"{day,-2}day {msg}" + "\r\n";
+            }
+            str += "\r\n";
+            str += "\r\n";
+
+
+            // 每个人的成功率
+            for (int j = 0; j < names.Length; j++)
+            {
+                for (int i = 0; i < 60; i++)
+                {
+                    var purchaseProgress = pps[pps.Length - i - 1];
+                    string date = purchaseProgress.Date.ToString("MM-dd");
+                    string txt = date;
+
+
+                    if (purchaseProgress.Purchase.ContainsKey(names[j]))
+                    {
+                        var ppu = purchaseProgress.Purchase[names[j]];
+                        string name = names[j];
+
+
+                        double count1 = (ppu.Processing + ppu.Solved) / (double)ppu.Total;
+                        string count1Str = count1 == 0.0 ? "0   " : count1.ToString("0.00");
+                        double count2 = (ppu.Cancel + ppu.Cut) / (double)ppu.Total;
+                        string count2Str = count2 == 0.0 ? "0   " : count2.ToString("0.00");
+
+
+                        string msg = $"{ppu.Pending,2} ({ppu.Processing,2}+{ppu.Solved,-2})/{ppu.Total,-2}={count1Str}".PadRight(15, ' ') + " " + $"({ppu.Cancel,2}+{ppu.Cut,-2})/{ppu.Total,-2}={count2Str}".PadRight(15, ' ');
+                        txt += $" {name} {msg}";
+                        str += txt + "\r\n";
+                    }
+                    else
+                    {
+                        string name = names[j];
+                        string msg = "".PadRight(20, ' ');
+                        txt += $" {name} {msg}";
+                    }
+                    str += txt + "\r\n";
+
+                }
+
+                str += "\r\n";
+                str += "\r\n";
+            }
+            File.WriteAllText(fileName, str);
         }
         #endregion
 
