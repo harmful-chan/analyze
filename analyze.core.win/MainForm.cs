@@ -16,6 +16,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Globalization;
 using System.Linq;
+using System.Net.NetworkInformation;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -608,28 +609,37 @@ namespace analyze.core.win
             PurchaseProgress[] pp = _analyzer.GetPurchaseProgress();
             Gen(pp);
         }
-        string[] names = ["Leo", "Bob", "Darcy", "Oliver", "Skyla", "Tyler", "Jane", "Liz", ""];
+        string[] names = ["Leo", "Oliver", "Tyler", "Bob", "Darcy",  "Skyla", "Jane", "Liz", ""];
         private void Gen(PurchaseProgress[] pps)
         {
 
             for (int i = 0; i < pps.Length; i++)
             {
+
+     
                 FlowLayoutPanel flp = new FlowLayoutPanel();
                 flp.FlowDirection = FlowDirection.LeftToRight;
                 flp.AutoSize = true;
                 flp.WrapContents = false;
-                flp.Controls.Add(new Label() { Text = pps[i].Date.ToString("yyyy-MM-dd"), Width = 100 });
+                flp.Controls.Add(new Label() { Text = pps[pps.Length - i - 1].Date.ToString("yyyy-MM-dd"), Width = 80 });
                 for (int j = 0; j < names.Length; j++)
                 {
-                    if (pps[i].Purchase.ContainsKey(names[j]))
+                    if (pps[pps.Length-i-1].Purchase.ContainsKey(names[j]))
                     {
-                        flp.Controls.Add(new Label() { Text = names[j], Width = 100 });
-                        PurchaseProgressUnit ppu = pps[i].Purchase[names[j]];
-                        flp.Controls.Add(new ProgressBar() {  Width = 100, Value = (int)((ppu.Processing + ppu.Solved) / (double)ppu.Total * 100) , });
+                        PurchaseProgressUnit ppu = pps[pps.Length - i - 1].Purchase[names[j]];
+                        if(ppu.Total > 0)
+                        {
+                            Label label1 = new Label() { Text = names[j], Width = 40 , Height = 15};
 
+                            flp.Controls.Add(label1);
+
+                            Label label2 = new Label() { Height = 15 };
+                            label2.Text = $"{ppu.Processing}+{ppu.Solved}/{ppu.Total}={(int)((ppu.Processing + ppu.Solved) / (double)ppu.Total * 100)}%";
+                            flp.Controls.Add(label2);
+                        }
                     }
                 }
-                flowLayoutPanel2.Controls.Add(flp);
+            flowLayoutPanel2.Controls.Add(flp);
             }
             
         }

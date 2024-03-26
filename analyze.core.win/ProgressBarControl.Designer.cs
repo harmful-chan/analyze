@@ -36,6 +36,7 @@
             AutoScaleMode = AutoScaleMode.Font;
             Name = "ProgressBarControl";
             Size = new Size(150, 25);
+            Load += ProgressBarControl_Load;
             ResumeLayout(false);
         }
 

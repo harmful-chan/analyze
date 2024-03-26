@@ -1396,7 +1396,7 @@ namespace analyze.core
                 purs.Add(purchaseProgress);
             }
 
-            return purs.DistinctBy(x=>x.Date).ToArray();
+            return purs.OrderBy(x=>x.Date).ToArray();
 
         }
         #endregion

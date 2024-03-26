@@ -166,12 +166,10 @@ namespace analyze.core.win
             panel6 = new Panel();
             button1 = new Button();
             flowLayoutPanel2 = new FlowLayoutPanel();
-            progressBar1 = new ProgressBar();
             tabPageOther = new TabPage();
             txtRevision = new TextBox();
             openFileDialog = new OpenFileDialog();
             backgroundWorker = new System.ComponentModel.BackgroundWorker();
-            progressBarControl1 = new ProgressBarControl();
             tabctl.SuspendLayout();
             tabPage1.SuspendLayout();
             panel1.SuspendLayout();
@@ -188,7 +186,6 @@ namespace analyze.core.win
             flowLayoutPanel1.SuspendLayout();
             tabPage6.SuspendLayout();
             panel6.SuspendLayout();
-            flowLayoutPanel2.SuspendLayout();
             tabPageOther.SuspendLayout();
             SuspendLayout();
             // 
@@ -206,7 +203,7 @@ namespace analyze.core.win
             tabctl.Margin = new Padding(4);
             tabctl.Name = "tabctl";
             tabctl.SelectedIndex = 0;
-            tabctl.Size = new Size(1119, 540);
+            tabctl.Size = new Size(1187, 540);
             tabctl.TabIndex = 1;
             tabctl.SelectedIndexChanged += tabctl_SelectedIndexChanged;
             // 
@@ -216,7 +213,7 @@ namespace analyze.core.win
             tabPage1.Location = new Point(4, 26);
             tabPage1.Margin = new Padding(4);
             tabPage1.Name = "tabPage1";
-            tabPage1.Size = new Size(1111, 510);
+            tabPage1.Size = new Size(1179, 510);
             tabPage1.TabIndex = 3;
             tabPage1.Text = "利润统计";
             tabPage1.UseVisualStyleBackColor = true;
@@ -228,7 +225,7 @@ namespace analyze.core.win
             panel1.Dock = DockStyle.Fill;
             panel1.Location = new Point(0, 0);
             panel1.Name = "panel1";
-            panel1.Size = new Size(1111, 510);
+            panel1.Size = new Size(1179, 510);
             panel1.TabIndex = 0;
             // 
             // panelHone
@@ -276,7 +273,7 @@ namespace analyze.core.win
             panelHone.Controls.Add(button4);
             panelHone.Controls.Add(button6);
             panelHone.Controls.Add(button5);
-            panelHone.Location = new Point(758, 0);
+            panelHone.Location = new Point(826, 5);
             panelHone.Name = "panelHone";
             panelHone.Size = new Size(350, 502);
             panelHone.TabIndex = 48;
@@ -676,7 +673,7 @@ namespace analyze.core.win
             txtProfit.Name = "txtProfit";
             txtProfit.ReadOnly = true;
             txtProfit.ScrollBars = ScrollBars.Both;
-            txtProfit.Size = new Size(756, 510);
+            txtProfit.Size = new Size(820, 510);
             txtProfit.TabIndex = 16;
             txtProfit.WordWrap = false;
             // 
@@ -686,7 +683,7 @@ namespace analyze.core.win
             tabPage2.Location = new Point(4, 26);
             tabPage2.Margin = new Padding(4);
             tabPage2.Name = "tabPage2";
-            tabPage2.Size = new Size(1111, 510);
+            tabPage2.Size = new Size(1179, 510);
             tabPage2.TabIndex = 2;
             tabPage2.Text = "扣款";
             tabPage2.UseVisualStyleBackColor = true;
@@ -700,7 +697,7 @@ namespace analyze.core.win
             panel2.Location = new Point(0, 0);
             panel2.Margin = new Padding(4);
             panel2.Name = "panel2";
-            panel2.Size = new Size(1111, 510);
+            panel2.Size = new Size(1179, 510);
             panel2.TabIndex = 0;
             // 
             // groupBox1
@@ -714,7 +711,7 @@ namespace analyze.core.win
             groupBox1.Controls.Add(btnShip);
             groupBox1.Controls.Add(btnDeductionClean);
             groupBox1.Controls.Add(btnDeductShip);
-            groupBox1.Location = new Point(844, 3);
+            groupBox1.Location = new Point(912, 3);
             groupBox1.Name = "groupBox1";
             groupBox1.Size = new Size(264, 373);
             groupBox1.TabIndex = 11;
@@ -817,7 +814,7 @@ namespace analyze.core.win
             // 
             // txtDeductShipDeclareResult
             // 
-            txtDeductShipDeclareResult.Location = new Point(844, 382);
+            txtDeductShipDeclareResult.Location = new Point(912, 377);
             txtDeductShipDeclareResult.Multiline = true;
             txtDeductShipDeclareResult.Name = "txtDeductShipDeclareResult";
             txtDeductShipDeclareResult.ScrollBars = ScrollBars.Both;
@@ -834,7 +831,7 @@ namespace analyze.core.win
             txtOrderLog.Name = "txtOrderLog";
             txtOrderLog.ReadOnly = true;
             txtOrderLog.ScrollBars = ScrollBars.Vertical;
-            txtOrderLog.Size = new Size(841, 510);
+            txtOrderLog.Size = new Size(905, 510);
             txtOrderLog.TabIndex = 2;
             // 
             // tabPage3
@@ -842,7 +839,7 @@ namespace analyze.core.win
             tabPage3.Controls.Add(panel3);
             tabPage3.Location = new Point(4, 26);
             tabPage3.Name = "tabPage3";
-            tabPage3.Size = new Size(1111, 510);
+            tabPage3.Size = new Size(1179, 510);
             tabPage3.TabIndex = 5;
             tabPage3.Text = "检测IP";
             tabPage3.UseVisualStyleBackColor = true;
@@ -859,7 +856,7 @@ namespace analyze.core.win
             panel3.Dock = DockStyle.Fill;
             panel3.Location = new Point(0, 0);
             panel3.Name = "panel3";
-            panel3.Size = new Size(1111, 510);
+            panel3.Size = new Size(1179, 510);
             panel3.TabIndex = 0;
             // 
             // txtFous
@@ -936,7 +933,7 @@ namespace analyze.core.win
             tabPage4.Margin = new Padding(4);
             tabPage4.Name = "tabPage4";
             tabPage4.Padding = new Padding(4);
-            tabPage4.Size = new Size(1111, 510);
+            tabPage4.Size = new Size(1179, 510);
             tabPage4.TabIndex = 0;
             tabPage4.Text = "生成面单";
             tabPage4.UseVisualStyleBackColor = true;
@@ -1320,7 +1317,7 @@ namespace analyze.core.win
             tabPage5.Margin = new Padding(4);
             tabPage5.Name = "tabPage5";
             tabPage5.Padding = new Padding(4);
-            tabPage5.Size = new Size(1111, 510);
+            tabPage5.Size = new Size(1179, 510);
             tabPage5.TabIndex = 1;
             tabPage5.Text = "自动回复";
             tabPage5.UseVisualStyleBackColor = true;
@@ -1349,7 +1346,7 @@ namespace analyze.core.win
             panel33.Location = new Point(4, 4);
             panel33.Margin = new Padding(4);
             panel33.Name = "panel33";
-            panel33.Size = new Size(1103, 502);
+            panel33.Size = new Size(1171, 502);
             panel33.TabIndex = 15;
             // 
             // label24
@@ -1377,7 +1374,7 @@ namespace analyze.core.win
             txt.Margin = new Padding(4);
             txt.Multiline = true;
             txt.Name = "txt";
-            txt.Size = new Size(1103, 165);
+            txt.Size = new Size(1171, 165);
             txt.TabIndex = 23;
             // 
             // txtThree
@@ -1565,7 +1562,7 @@ namespace analyze.core.win
             tabPage6.Controls.Add(panel6);
             tabPage6.Location = new Point(4, 26);
             tabPage6.Name = "tabPage6";
-            tabPage6.Size = new Size(1111, 510);
+            tabPage6.Size = new Size(1179, 510);
             tabPage6.TabIndex = 6;
             tabPage6.Text = "采购进度";
             tabPage6.UseVisualStyleBackColor = true;
@@ -1577,12 +1574,12 @@ namespace analyze.core.win
             panel6.Dock = DockStyle.Fill;
             panel6.Location = new Point(0, 0);
             panel6.Name = "panel6";
-            panel6.Size = new Size(1111, 510);
+            panel6.Size = new Size(1179, 510);
             panel6.TabIndex = 0;
             // 
             // button1
             // 
-            button1.Location = new Point(0, 327);
+            button1.Location = new Point(65, 443);
             button1.Name = "button1";
             button1.Size = new Size(75, 23);
             button1.TabIndex = 1;
@@ -1593,23 +1590,13 @@ namespace analyze.core.win
             // flowLayoutPanel2
             // 
             flowLayoutPanel2.AutoScroll = true;
-            flowLayoutPanel2.Controls.Add(progressBar1);
-            flowLayoutPanel2.Controls.Add(progressBarControl1);
             flowLayoutPanel2.Dock = DockStyle.Top;
             flowLayoutPanel2.FlowDirection = FlowDirection.TopDown;
             flowLayoutPanel2.Location = new Point(0, 0);
             flowLayoutPanel2.Name = "flowLayoutPanel2";
-            flowLayoutPanel2.Size = new Size(1111, 321);
+            flowLayoutPanel2.Size = new Size(1179, 259);
             flowLayoutPanel2.TabIndex = 0;
             flowLayoutPanel2.WrapContents = false;
-            // 
-            // progressBar1
-            // 
-            progressBar1.Location = new Point(3, 3);
-            progressBar1.Name = "progressBar1";
-            progressBar1.Size = new Size(100, 23);
-            progressBar1.TabIndex = 0;
-            progressBar1.Value = 50;
             // 
             // tabPageOther
             // 
@@ -1617,7 +1604,7 @@ namespace analyze.core.win
             tabPageOther.Location = new Point(4, 26);
             tabPageOther.Margin = new Padding(4);
             tabPageOther.Name = "tabPageOther";
-            tabPageOther.Size = new Size(1111, 510);
+            tabPageOther.Size = new Size(1179, 510);
             tabPageOther.TabIndex = 4;
             tabPageOther.Text = "修订";
             tabPageOther.UseVisualStyleBackColor = true;
@@ -1630,28 +1617,18 @@ namespace analyze.core.win
             txtRevision.Name = "txtRevision";
             txtRevision.ReadOnly = true;
             txtRevision.ScrollBars = ScrollBars.Vertical;
-            txtRevision.Size = new Size(1111, 510);
+            txtRevision.Size = new Size(1179, 510);
             txtRevision.TabIndex = 0;
             // 
             // openFileDialog
             // 
             openFileDialog.FileName = "openFileDialog";
             // 
-            // progressBarControl1
-            // 
-            progressBarControl1.Location = new Point(3, 32);
-            progressBarControl1.Name = "progressBarControl1";
-            progressBarControl1.pBackgroundColor = Color.FromArgb(217, 218, 219);
-            progressBarControl1.pForegroundColor = Color.Green;
-            progressBarControl1.Size = new Size(150, 25);
-            progressBarControl1.TabIndex = 1;
-            progressBarControl1.Val = 0;
-            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 17F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1119, 540);
+            ClientSize = new Size(1187, 540);
             Controls.Add(tabctl);
             FormBorderStyle = FormBorderStyle.FixedDialog;
             Icon = (Icon)resources.GetObject("$this.Icon");
@@ -1685,7 +1662,6 @@ namespace analyze.core.win
             flowLayoutPanel1.PerformLayout();
             tabPage6.ResumeLayout(false);
             panel6.ResumeLayout(false);
-            flowLayoutPanel2.ResumeLayout(false);
             tabPageOther.ResumeLayout(false);
             tabPageOther.PerformLayout();
             ResumeLayout(false);
@@ -1833,8 +1809,6 @@ namespace analyze.core.win
         private GroupBox groupBox1;
         private FlowLayoutPanel flowLayoutPanel2;
         private Button button1;
-        private ProgressBar progressBar1;
-        private ProgressBarControl progressBarControl1;
     }
 }
 

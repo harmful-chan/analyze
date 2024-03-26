@@ -62,14 +62,18 @@ namespace analyze.core.win
         {
             Graphics g = e.Graphics;
             SolidBrush brush = new SolidBrush(PForegroundColor);
-            float percent = val / 100f;
+            float percent = val ;
             Rectangle rect = this.ClientRectangle;
-            rect.Width = (int)((float)rect.Width * percent);
+            rect.Width = (int)(rect.Width * percent);
             rect.Height = this.Height;
             g.FillRectangle(brush, rect);
             brush.Dispose();
             g.Dispose();
         }
 
+        private void ProgressBarControl_Load(object sender, EventArgs e)
+        {
+
+        }
     }
 }
