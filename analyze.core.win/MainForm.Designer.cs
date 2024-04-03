@@ -33,6 +33,8 @@ namespace analyze.core.win
             tabctl = new TabControl();
             tabPage1 = new TabPage();
             panel1 = new Panel();
+            dataGridView1 = new DataGridView();
+            txtProfit = new TextBox();
             panelHone = new Panel();
             txtNewestProfitDirectory = new TextBox();
             txtWebhool = new TextBox();
@@ -77,7 +79,6 @@ namespace analyze.core.win
             button4 = new Button();
             button6 = new Button();
             button5 = new Button();
-            txtProfit = new TextBox();
             tabPage2 = new TabPage();
             panel2 = new Panel();
             groupBox1 = new GroupBox();
@@ -169,6 +170,7 @@ namespace analyze.core.win
             tabctl.SuspendLayout();
             tabPage1.SuspendLayout();
             panel1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)dataGridView1).BeginInit();
             panelHone.SuspendLayout();
             tabPage2.SuspendLayout();
             panel2.SuspendLayout();
@@ -213,13 +215,35 @@ namespace analyze.core.win
             // 
             // panel1
             // 
-            panel1.Controls.Add(panelHone);
+            panel1.Controls.Add(dataGridView1);
             panel1.Controls.Add(txtProfit);
+            panel1.Controls.Add(panelHone);
             panel1.Dock = DockStyle.Fill;
             panel1.Location = new Point(0, 0);
             panel1.Name = "panel1";
             panel1.Size = new Size(1179, 510);
             panel1.TabIndex = 0;
+            // 
+            // dataGridView1
+            // 
+            dataGridView1.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            dataGridView1.Location = new Point(0, 0);
+            dataGridView1.Name = "dataGridView1";
+            dataGridView1.Size = new Size(830, 395);
+            dataGridView1.TabIndex = 49;
+            // 
+            // txtProfit
+            // 
+            txtProfit.Dock = DockStyle.Bottom;
+            txtProfit.Font = new Font("微软雅黑", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            txtProfit.Location = new Point(0, 401);
+            txtProfit.Multiline = true;
+            txtProfit.Name = "txtProfit";
+            txtProfit.ReadOnly = true;
+            txtProfit.ScrollBars = ScrollBars.Both;
+            txtProfit.Size = new Size(830, 109);
+            txtProfit.TabIndex = 16;
+            txtProfit.WordWrap = false;
             // 
             // panelHone
             // 
@@ -266,9 +290,10 @@ namespace analyze.core.win
             panelHone.Controls.Add(button4);
             panelHone.Controls.Add(button6);
             panelHone.Controls.Add(button5);
-            panelHone.Location = new Point(826, 5);
+            panelHone.Dock = DockStyle.Right;
+            panelHone.Location = new Point(830, 0);
             panelHone.Name = "panelHone";
-            panelHone.Size = new Size(350, 502);
+            panelHone.Size = new Size(349, 510);
             panelHone.TabIndex = 48;
             panelHone.Paint += panel4_Paint;
             // 
@@ -414,6 +439,7 @@ namespace analyze.core.win
             btnShowRefundDetail.TabIndex = 39;
             btnShowRefundDetail.Text = "显示退款详情";
             btnShowRefundDetail.UseVisualStyleBackColor = true;
+            btnShowRefundDetail.Click += btnShowRefundDetail_Click;
             // 
             // txtNewestTotalDirectory
             // 
@@ -656,19 +682,6 @@ namespace analyze.core.win
             button5.TabIndex = 25;
             button5.Text = "...";
             button5.UseVisualStyleBackColor = true;
-            // 
-            // txtProfit
-            // 
-            txtProfit.Dock = DockStyle.Left;
-            txtProfit.Font = new Font("微软雅黑", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            txtProfit.Location = new Point(0, 0);
-            txtProfit.Multiline = true;
-            txtProfit.Name = "txtProfit";
-            txtProfit.ReadOnly = true;
-            txtProfit.ScrollBars = ScrollBars.Both;
-            txtProfit.Size = new Size(820, 510);
-            txtProfit.TabIndex = 16;
-            txtProfit.WordWrap = false;
             // 
             // tabPage2
             // 
@@ -1594,6 +1607,7 @@ namespace analyze.core.win
             tabPage1.ResumeLayout(false);
             panel1.ResumeLayout(false);
             panel1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)dataGridView1).EndInit();
             panelHone.ResumeLayout(false);
             panelHone.PerformLayout();
             tabPage2.ResumeLayout(false);
@@ -1755,6 +1769,7 @@ namespace analyze.core.win
         private Label lbDeductShipDeclareResult;
         private Label lbDeductShipDeclareCount;
         private GroupBox groupBox1;
+        private DataGridView dataGridView1;
     }
 }
 

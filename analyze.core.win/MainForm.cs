@@ -5,23 +5,9 @@ using analyze.core.Models.Manage;
 using analyze.core.Models.Purchase;
 using analyze.core.Models.Rola;
 using analyze.core.Models.Sheet;
-using analyze.core.Options;
-using NPOI.HPSF;
-using NPOI.SS.Formula.Functions;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Globalization;
-using System.Linq;
-using System.Net.NetworkInformation;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace analyze.core.win
 {
@@ -195,7 +181,7 @@ namespace analyze.core.win
             DateTime start = DateTime.Parse(dateProfitStart.Value.ToString("yyyy-MM"));
             DateTime end = DateTime.Parse(dateProfitEnd.Value.ToString("yyyy-MM"));
             string company = this.txtCompanyNumber.Text + this.cbCN.Text + this.cbCompany.Text;
-            for (DateTime i = start; i < end; i = i.AddMonths(1))
+            for (DateTime i = start; i <= end; i = i.AddMonths(1))
             {
                 ShopRecord shopRecord = _analyzer.ShopRecords.FirstOrDefault(sr => sr.Shop.CN.Equals(this.cbCN.Text));
                 dic[i.ToString("yyyy-MM")] = shopRecord;
@@ -542,7 +528,7 @@ namespace analyze.core.win
 
         private void InitializePage6()
         {
-            
+
         }
 
 
@@ -615,11 +601,21 @@ namespace analyze.core.win
             PurchaseProgress[] pp = _analyzer.GetPurchaseProgress();
             Gen(pp);
         }
-        
+
         private void Gen(PurchaseProgress[] pps)
         {
 
-            
+
+        }
+
+        private void btnShowRefundDetail_Click(object sender, EventArgs e)
+        {
+            foreach (var item in SureShopRecordDic())
+            {
+                DateTime i = DateTime.Parse(item.Key).Date;
+                _analyzer.FillRefundForOneMonth(i.Year, i.Month, item.Value);
+                _analyzer.ShowOneMonthRefund();
+            }
         }
     }
 }

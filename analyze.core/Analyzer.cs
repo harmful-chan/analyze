@@ -74,6 +74,13 @@ namespace analyze.core
         #region 实例化
         SheetClient _sheetClient = null;
 
+        public SheetClient SheetClient
+        {
+            get { return _sheetClient; }
+            private set { _sheetClient = value; }
+        }
+
+
         private IOutput _output;
 
         public IOutput Output
@@ -1702,7 +1709,7 @@ namespace analyze.core
                         continue;
                     }
                     
-                    string cnn = Shop.Convert(filename).CN;
+                    string cnn = ShopFileInfo.Convert(filename).CN;
                     ShopRecord shopRecord = ShopRecords.Where(s => s.Shop.CN.Equals(cnn)).FirstOrDefault();
                     if (shopRecord.DailyDetailsList == null)
                     {
