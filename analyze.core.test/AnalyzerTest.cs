@@ -19,7 +19,7 @@ namespace analyze.core.test
         public void Setup()
         {
 
-        } 
+        }
 
         //[Test]
         //public void TestOrderLend([Values("order -a lend -r Z:\\数据采集 -l")] string args)
@@ -50,7 +50,7 @@ namespace analyze.core.test
         [Test]
         public void TestRola()
         {
-            RolaClient rola = new  RolaClient();
+            RolaClient rola = new RolaClient();
             Position p = rola.RolaCheck("GB", "England", "London");
             string result = rola.RolaRefresh("BushyNeville_1", p.Country, p.Region, p.City).Result;
             Position result1 = rola.GetPosition("gate8.rola.vip", 2024, "BushyNeville_1", "123").Result;
@@ -64,9 +64,9 @@ namespace analyze.core.test
             DailyOptions o = new DailyOptions();
             Parser.Default.ParseArguments<DailyOptions>(args.Split(' '))
                 .WithParsed(
-                (DailyOptions o1) => 
-                { 
-                    o = o1; 
+                (DailyOptions o1) =>
+                {
+                    o = o1;
                 });
 
             o.FileDir = "D:\\我的坚果云\\数据采集\\每日数据\\2024年03月12日";
@@ -118,38 +118,89 @@ namespace analyze.core.test
             //ShopFileInfo shopFileInfo5 = ShopFileInfo.Convert(dir5);
 
 
-           //string dirs = "D:\\我的坚果云\\数据采集\\利润统计\\2024年02月";
-           //
-           //foreach (string dir in Directory.GetDirectories(dirs))
-           //{
-           //    string[] strings = Directory.GetFiles(dir);
-           //    foreach (string str in strings)
-           //    {
-           //        string name = Path.GetFileName(str);
-           //        string path = Path.GetDirectoryName(str);
-           //        string name1 = name.Substring(0, name.Length - 11);
-           //        string name2 = name.Substring(name.Length - 11);
-           //        // string[] splits = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-           //        //if (splits.Length == 2)
-           //        //{
-           //        //    string name1 = splits[0];
-           //        //    int i;
-           //        //    if (int.TryParse(splits[1].Replace(".xlsx", ""), out i) && i < 4)
-           //        //    {
-           //        //        name1 += "_2024" + $"{i:00}.xlsx";
-           //        //    }
-           //        //    else
-           //        //    {
-           //        //        name1 += "_2023" + $"{i:00}.xlsx";
-           //        //    }
-           //        //
-           //        //
-           //        //    File.Move(str, Path.Combine(path, name1));
-           //        //}
-           //
-           //        File.Move(str, Path.Combine(path, name1 + "_" + name2));
-           //    }
-           //}
+            //string dirs = "D:\\我的坚果云\\数据采集\\利润统计\\2024年02月";
+            //
+            //foreach (string dir in Directory.GetDirectories(dirs))
+            //{
+            //    string[] strings = Directory.GetFiles(dir);
+            //    foreach (string str in strings)
+            //    {
+            //        string name = Path.GetFileName(str);
+            //        string path = Path.GetDirectoryName(str);
+            //        string name1 = name.Substring(0, name.Length - 11);
+            //        string name2 = name.Substring(name.Length - 11);
+            //        // string[] splits = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            //        //if (splits.Length == 2)
+            //        //{
+            //        //    string name1 = splits[0];
+            //        //    int i;
+            //        //    if (int.TryParse(splits[1].Replace(".xlsx", ""), out i) && i < 4)
+            //        //    {
+            //        //        name1 += "_2024" + $"{i:00}.xlsx";
+            //        //    }
+            //        //    else
+            //        //    {
+            //        //        name1 += "_2023" + $"{i:00}.xlsx";
+            //        //    }
+            //        //
+            //        //
+            //        //    File.Move(str, Path.Combine(path, name1));
+            //        //}
+            //
+            //        File.Move(str, Path.Combine(path, name1 + "_" + name2));
+            //    }
+            //}
+
+        }
+
+        [Test]
+        public async Task TestChange1()
+        {
+
+            string[] dirs = Directory.GetDirectories("D:\\我的坚果云\\数据采集\\订单数据\\2024年03月");
+            foreach (string dir in dirs)
+            {
+                string[] filename = Directory.GetFiles(dir);
+                foreach (string file in filename)
+                {
+                    string name = Path.GetFileNameWithoutExtension(file);
+                    string path = Path.GetDirectoryName(file);
+                    string xlsx = Path.GetExtension(file);
+                    string newname = name;
+                    if (name.Contains('_'))
+                    {
+                        string n1 = name.Split('_')[0];
+                        string n2 = name.Split('_')[1];
+                        int i = 0;
+                        ;
+                        if (int.TryParse(n2.Substring(4, 2), out i) && i <= 4)
+                        {
+                            newname = $"{n1}_2024{i:00}";
+                        }
+                        else if (int.TryParse(n2.Substring(4, 2), out i) && i > 4)
+                        {
+                            newname = $"{n1}_2023{i:00}";
+                        }
+                    }
+
+                    string newfilename = Path.Combine(path, newname + xlsx);
+                    if (!File.Exists(newfilename))
+                    {
+                        File.Move(file, newfilename);
+                    }
+                }
+            }
+
+        }
+
+        [Test]
+        public async Task TestPost()
+        {
+
+
+            RolaClient rolaClient = new RolaClient();
+            //KeyValuePair<string, string> result = rolaClient.CheckPost("fr", "44730").Result;
+
 
         }
     }

@@ -9,6 +9,7 @@ using analyze.core.Outputs;
 using analyze.Models.Manage;
 using ConsoleTables;
 using Esprima.Ast;
+using NPOI.HPSF;
 using PlaywrightSharp;
 using System;
 using System.Collections.Generic;
@@ -250,7 +251,12 @@ namespace analyze.core
                 bool flag3 = true;
                 bool flag4 = true;
 
-                ShopOrder[] shopOrders = shop.ShopOrderList.Where(t => t.OrderId.Equals(r.OrderId)).ToArray();
+                ShopOrder shopOrder = shop.ShopOrderList.Where(t => t.OrderId.Equals(r.OrderId)).FirstOrDefault();
+
+                if(shopOrder == null)
+                {
+                    continue;
+                }
                 Models.Sheet.SubmitOrder[] torders = SubmitOrders.Where(t => t.OrderId != null && t.OrderId.Equals(r.OrderId)).ToArray();
                 PurchaseOrder[] porder = PurchasesOrders.Where(t => t.OrderId != null && t.OrderId.Equals(r.OrderId)).ToArray();
                 if (r.Turnover != r.Refund)    // 放款退款不同
@@ -272,14 +278,14 @@ namespace analyze.core
                 }
 
                 string a = r.RefundTime.ToString("yyyy-MM-dd HH:mm:ss");
-                string ot = shopOrders.FirstOrDefault()?.OrderTime.ToString("yyyy-MM-dd HH:mm:ss");
-                string pt = shopOrders.FirstOrDefault()?.PaymentTime.ToString("yyyy-MM-dd HH:mm:ss");
-                string st = shopOrders.FirstOrDefault()?.ShippingTime.ToString("yyyy-MM-dd HH:mm:ss");
-                string rt = shopOrders.FirstOrDefault()?.ReceiptTime.ToString("yyyy-MM-dd HH:mm:ss");
-                if (shopOrders.FirstOrDefault()?.OrderTime == DateTime.MinValue) ot = "";
-                if (shopOrders.FirstOrDefault()?.PaymentTime == DateTime.MinValue) pt = "";
-                if (shopOrders.FirstOrDefault()?.ShippingTime == DateTime.MinValue) st = "";
-                if (shopOrders.FirstOrDefault()?.ReceiptTime == DateTime.MinValue) rt = "";
+                string ot = shopOrder.OrderTime.ToString("yyyy-MM-dd HH:mm:ss");
+                string pt = shopOrder.PaymentTime.ToString("yyyy-MM-dd HH:mm:ss");
+                string st = shopOrder.ShippingTime.ToString("yyyy-MM-dd HH:mm:ss");
+                string rt = shopOrder.ReceiptTime.ToString("yyyy-MM-dd HH:mm:ss");
+                if (shopOrder.OrderTime == DateTime.MinValue) ot = "";
+                if (shopOrder.PaymentTime == DateTime.MinValue) pt = "";
+                if (shopOrder.ShippingTime == DateTime.MinValue) st = "";
+                if (shopOrder.ReceiptTime == DateTime.MinValue) rt = "";
 
                 string str = (flag1 ? "" : "1") + (flag2 ? "" : "2") + (flag3 ? "" : "3") + (flag4 ? "" : "4");
                 if (torders.Length > 0)
@@ -300,8 +306,7 @@ namespace analyze.core
                     r.RefundReason = "未发货退款";
                     if (!string.IsNullOrWhiteSpace(to.TradeId))  // 有交易号，有发货之间 ： 纠纷退款
                     {
-                        ShopOrder so = shopOrders.FirstOrDefault();
-                        if (so.ShippingTime > DateTime.MinValue)    // 有发货
+                        if (shopOrder.ShippingTime > DateTime.MinValue)    // 有发货
                         {
                             r.RefundReason = "纠纷退款";
                         }
@@ -1560,7 +1565,7 @@ namespace analyze.core
 
             // 总表数据
             string[] dirs = Directory.GetDirectories(Path.Combine(root, "总表数据"));
-            Array.Sort(dirs);
+            System.Array.Sort(dirs);
             NewestTotalDirectory = dirs.LastOrDefault();
             SubmitOrderFileName = Path.Combine(NewestTotalDirectory, "订单总表.xlsx");
             UsPruchasRecordFileName = Path.Combine(NewestTotalDirectory, "美国采购单.xlsx");
@@ -1570,19 +1575,19 @@ namespace analyze.core
 
             // 订单数据
             string[] dirs1 = Directory.GetDirectories(Path.Combine(root, "订单数据"));
-            Array.Sort(dirs1);
+            System.Array.Sort(dirs1);
             NewestOrderDirectory = dirs1.LastOrDefault();
             _output.WriteLine($"订单数据 {NewestOrderDirectory}");
 
             // 利润统计
             string[] dirs2 =  Directory.GetDirectories(Path.Combine(root, "利润统计"));
-            Array.Sort(dirs2);
+            System.Array.Sort(dirs2);
             NewestProfitDirectory = dirs2.LastOrDefault();
             _output.WriteLine($"利润统计 {NewestProfitDirectory}");
 
             // 每日数据
             string[] dirs3 = Directory.GetDirectories(Path.Combine(root, "每日数据"));
-            Array.Sort(dirs3);
+            System.Array.Sort(dirs3);
             NewestDailyDirectory = dirs3.LastOrDefault();
             _output.WriteLine($"每日数据 {NewestDailyDirectory}");
             string dateStr = Path.GetFileName(NewestDailyDirectory);
@@ -1591,20 +1596,20 @@ namespace analyze.core
 
             // 索赔记录
             string[] dirs4 = Directory.GetDirectories(Path.Combine(root, "索赔记录"));
-            Array.Sort(dirs4);
+            System.Array.Sort(dirs4);
             NewestReparationDirectory = dirs4.LastOrDefault();
             _output.WriteLine($"索赔记录 {NewestReparationDirectory}");
 
 
             // 索赔记录
             string[] dirs6 = Directory.GetDirectories(Path.Combine(root, "扣款记录"));
-            Array.Sort(dirs6);
+            System.Array.Sort(dirs6);
             NewestDeductionDirectory = dirs6.LastOrDefault();
             _output.WriteLine($"索赔记录 {NewestDeductionDirectory}");
 
             // bin
             string[] dirs5 = Directory.GetFiles(Path.Combine(root, "bin"));
-            Array.Sort(dirs5);
+            System.Array.Sort(dirs5);
             NewestBinFileName = dirs5.LastOrDefault();
             _output.WriteLine($"bin {NewestBinFileName}");
 
@@ -1617,7 +1622,10 @@ namespace analyze.core
             return true;
         }
 
-
+        public void SetResourcesDirectory(string dir)
+        {
+            NewestResourcesDirectory = dir;
+        }
 
         public List<Shop> ShopCatalogs = new List<Shop>();
         public List<ShopRecord> ShopRecords = new List<ShopRecord>();
@@ -1663,7 +1671,8 @@ namespace analyze.core
 
                 foreach (var dir in dirs)
                 {
-                    ShopRecord shopRecord = ShopRecords.Where(sr => sr.Shop.CN.Equals(cn)).FirstOrDefault();
+                    string cnn = ShopFileInfo.Convert(dir).CN;
+                    ShopRecord shopRecord = ShopRecords.Where(sr => sr.Shop.CN.Equals(cnn)).FirstOrDefault();
 
                     if (Directory.Exists(dir) && shopRecord != null)
                     {

@@ -161,61 +161,65 @@ namespace analyze.core.Clients
                 {
                     IWorkbook workbook = WorkbookFactory.Create(fs);
                     _output.Write($"读取 {ss[c]}");
-                    var sheet = workbook.GetSheetAt(0);
-                    if (sheet != null && sheet.LastRowNum + 1 >= 2)
+                    if (workbook.NumberOfSheets > 0)
                     {
-                        for (int i = 1; i < sheet.LastRowNum + 1; i++)
+                        var sheet = workbook.GetSheetAt(0);
+                        if (sheet != null && sheet.LastRowNum + 1 >= 2)
                         {
-                            var row = sheet.GetRow(i);
+                            for (int i = 1; i < sheet.LastRowNum + 1; i++)
+                            {
+                                var row = sheet.GetRow(i);
 
-                            ShopRefund to = new ShopRefund();
+                                ShopRefund to = new ShopRefund();
 
-                            to.OrderId = row.GetCell(0)?.ToString();
-                            to.ProductId = row.GetCell(1)?.ToString();
-                            to.ProductName = row.GetCell(2)?.ToString();
-                            to.SUK = row.GetCell(3)?.ToString();
-                            to.ProductCode = row.GetCell(4)?.ToString();
+                                to.OrderId = row.GetCell(0)?.ToString();
+                                to.ProductId = row.GetCell(1)?.ToString();
+                                to.ProductName = row.GetCell(2)?.ToString();
+                                to.SUK = row.GetCell(3)?.ToString();
+                                to.ProductCode = row.GetCell(4)?.ToString();
 
-                            int d1;
-                            int.TryParse(row.GetCell(5)?.ToString(), out d1);
-                            to.Quantity = d1;
+                                int d1;
+                                int.TryParse(row.GetCell(5)?.ToString(), out d1);
+                                to.Quantity = d1;
 
-                            double d2;
-                            double.TryParse(row.GetCell(6)?.ToString(), out d2);
-                            to.Turnover = d2;
+                                double d2;
+                                double.TryParse(row.GetCell(6)?.ToString(), out d2);
+                                to.Turnover = d2;
 
-                            double d3;
-                            double.TryParse(row.GetCell(7)?.ToString(), out d3);
-                            to.Refund = d3;
+                                double d3;
+                                double.TryParse(row.GetCell(7)?.ToString(), out d3);
+                                to.Refund = d3;
 
-                            to.Sources = row.GetCell(8)?.ToString();
+                                to.Sources = row.GetCell(8)?.ToString();
 
-                            double d4;
-                            double.TryParse(row.GetCell(9)?.ToString(), out d4);
-                            to.Fee = d4;
+                                double d4;
+                                double.TryParse(row.GetCell(9)?.ToString(), out d4);
+                                to.Fee = d4;
 
-                            double d5;
-                            double.TryParse(row.GetCell(10)?.ToString(), out d5);
-                            to.Fee = d5;
+                                double d5;
+                                double.TryParse(row.GetCell(10)?.ToString(), out d5);
+                                to.Fee = d5;
 
-                            double d6;
-                            double.TryParse(row.GetCell(11)?.ToString(), out d6);
-                            to.Alliance = d6;
+                                double d6;
+                                double.TryParse(row.GetCell(11)?.ToString(), out d6);
+                                to.Alliance = d6;
 
-                            double d7;
-                            double.TryParse(row.GetCell(11)?.ToString(), out d7);
-                            to.Cashback = d7;
+                                double d7;
+                                double.TryParse(row.GetCell(11)?.ToString(), out d7);
+                                to.Cashback = d7;
 
 
-                            DateTime t1;
-                            DateTime.TryParseExact(row.GetCell(12)?.ToString(), "yyyy-MM-dd HH:mm:ss", new CultureInfo("zh-cn"), DateTimeStyles.None, out t1);
-                            to.RefundTime = t1;
+                                DateTime t1;
+                                DateTime.TryParseExact(row.GetCell(12)?.ToString(), "yyyy-MM-dd HH:mm:ss", new CultureInfo("zh-cn"), DateTimeStyles.None, out t1);
+                                to.RefundTime = t1;
 
-                            to.FileName = ss[c];
+                                to.FileName = ss[c];
 
-                            os.Add(to);
+                                os.Add(to);
+                            }
                         }
                     }
+
                 }
             }
 

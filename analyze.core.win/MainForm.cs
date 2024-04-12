@@ -29,6 +29,8 @@ namespace analyze.core.win
             }
 
         }
+
+
         Analyzer _analyzer = new Analyzer();
 
         public MainForm()
@@ -49,7 +51,7 @@ namespace analyze.core.win
             // 隐藏page
 
             // this.tabPage2.Parent = null;
-            this.tabPage3.Parent = null;
+            //this.tabPage3.Parent = null;
             this.tabPage4.Parent = null;
             this.tabPage5.Parent = null;
         }
@@ -122,9 +124,6 @@ namespace analyze.core.win
             // 切换显示 textbox
             _analyzer.Output = new FormOutput(this, this.txtProfit);
 
-            Trace.AutoFlush = true;
-
-            Trace.Listeners.Add(new TextWriterTraceListener("app.log"));
 
             if (Directory.Exists(this.txtRoot.Text) && !IsInitializePage1 && !_analyzer.IsRunning)
             {
@@ -140,6 +139,7 @@ namespace analyze.core.win
 
                     // 设置根目录，采集所有表格数据
                     _analyzer.SetRootDirectorie(this.txtRoot.Text);
+                    _analyzer.SetResourcesDirectory(TempDir);
                     _analyzer.StartCollect(CollectTypes.Shop | CollectTypes.Daily);
                     _analyzer.Output.WriteLine();
                     _analyzer.ListMissingStores(DateTime.Now);
@@ -315,7 +315,48 @@ namespace analyze.core.win
             _analyzer.BuildCompanyProfits(_analyzer.NewestDailyDate, filename);
             _analyzer.Output.WriteLine($"创建 {filename}");
         }
+        private void btnCreateRefundAll_Click(object sender, EventArgs e)
+        {
 
+            DateTime start = DateTime.Parse(dateProfitStart.Value.ToString("yyyy-MM"));
+            DateTime end = DateTime.Parse(dateProfitEnd.Value.ToString("yyyy-MM"));
+
+
+            Shop[] shops = _analyzer.ShopCatalogs.Where(s => s.Status.Equals("运营中")).ToArray();
+
+            foreach (Shop shop in shops)  // 循环每个运营中的店铺
+            {
+
+                var cnShop = _analyzer.ShopRecords.FirstOrDefault(sr => sr.Shop.CN.Equals(shop.CN));
+                for (DateTime i = start; i <= end; i = i.AddMonths(1))   // 循环选择的月份
+                {
+                    DateTime startTime = i.AddDays(1 - i.Day).Date;
+                    DateTime endTime = i.AddDays(1 - i.Day).Date.AddMonths(1).AddSeconds(-1);
+
+                    if (cnShop == null || cnShop.ShopRefundList == null || cnShop.ShopRefundList.Count() <= 0)
+                    {
+                        continue;
+                    }
+
+                    _analyzer.FillRefundForOneMonth(i.Year, i.Month, cnShop);
+                    ShopRefund[] shopRefunds = _analyzer.GetOneMonthRefund(i.Year, i.Month, cnShop);
+
+                    if (shopRefunds?.Length > 0)
+                    {
+                        string dir = Path.Combine(_analyzer.NewestReparationDirectory, $"{shop.CompanyNumber}{shop.CompanyName}");
+                        if (!Directory.Exists(dir))
+                        {
+                            Directory.CreateDirectory(dir);
+                        }
+                        string filename = Path.Combine(dir, $"{shop.CompanyName}{shop.Nick}_{shop.CN}_{i.Year}{i.Month.ToString("D2")}.xlsx");
+                        _analyzer.SaveRefund(filename, shopRefunds);
+                    }
+
+                }
+            }
+
+
+        }
         #endregion
 
 
@@ -615,6 +656,20 @@ namespace analyze.core.win
                 DateTime i = DateTime.Parse(item.Key).Date;
                 _analyzer.FillRefundForOneMonth(i.Year, i.Month, item.Value);
                 _analyzer.ShowOneMonthRefund();
+            }
+        }
+
+        private async void btnPost_Click(object sender, EventArgs e)
+        {
+            string raw = this.txtPost.Text.Trim();
+            this.txtIpShow.Clear();
+            string[] lines = File.ReadAllLines(Path.Combine(_analyzer.NewestResourcesDirectory, "country-state-city.txt"));
+            foreach (string post in this.txtPost.Lines)
+            {
+                string[] ss = post.Split(" ", StringSplitOptions.TrimEntries);
+                KeyValuePair<string, string> kv = await rolaClient.CheckPost(ss[0], ss[1], lines);
+                this.txtIpShow.AppendText(post + " " +kv.Key + " " + kv.Value + "\r\n");
+                this.txtIpShow.ScrollToCaret();
             }
         }
     }
