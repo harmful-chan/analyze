@@ -6,6 +6,7 @@ namespace analyze.core.Models.Daily
 {
     public class OnWayOrder
     {
+        public int ID { get; set; }
         public string OrderId { get; set; }
         public DateTime PaymentTime { get; set; }
         public DateTime ShippingTime { get; set; }

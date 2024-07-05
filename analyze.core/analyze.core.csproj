@@ -2,17 +2,33 @@
 
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFramework>net8.0-windows</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="resources\**" />
-    <EmbeddedResource Remove="resources\**" />
-    <None Remove="resources\**" />
+    <Content Remove="C:\Users\Administrator\.nuget\packages\dotnetcore.npoi\1.2.3\contentFiles\any\netstandard2.0\NOTICE.TXT" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Remove="C:\Users\Administrator\.nuget\packages\dotnetcore.npoi\1.2.3\contentFiles\any\netstandard2.0\NOTICE.TXT" />
+    <None Remove="Resources\country-state-city.txt" />
+    <None Remove="Resources\lend.xlsx" />
+    <None Remove="Resources\profit_statement.xlsx" />
+    <None Remove="Resources\refund.xlsx" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\country-state-city.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\lend.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\profit_statement.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\refund.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>
@@ -22,6 +38,7 @@
     <PackageReference Include="HtmlAgilityPack" Version="1.11.60" />
     <PackageReference Include="IPinfo" Version="3.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="NPOI.Extension" Version="2.2.0" />
     <PackageReference Include="PlaywrightSharp" Version="0.192.0" />
     <PackageReference Include="SocksSharp" Version="1.1.1" />
   </ItemGroup>

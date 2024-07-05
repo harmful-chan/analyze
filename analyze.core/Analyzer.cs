@@ -13,13 +13,16 @@ using NPOI.HPSF;
 using PlaywrightSharp;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using static NPOI.HSSF.Util.HSSFColor;
 
 namespace analyze.core
 {
@@ -35,18 +38,24 @@ namespace analyze.core
         #region 内部类
         public class Profit
         {
-            public int Year { get; set; }
-            public int Month { get; set; }
-            public string CN { get; set; }
-            public string CompanyName { get; set; }
-            public string Nick { get; set; }
-            public double Lend { get; set; }
-            public double Cost { get; set; }
-            public double Value { get; set; }
-            public double Rate { get; set; }
+            public double Lend { get; set; } = 0.0;
+            public double Cost { get; set; } = 0.0;
+            public double Value { get; set; } = 0.0;
+            public double Rate { get; set; } = 0.0;
+
+
+            public static Profit operator+ (Profit a, Profit b)
+            {
+                return new Profit()
+                {
+                    Lend = a.Lend + b.Lend,
+                    Cost = a.Cost + b.Cost, 
+                    Value = (a.Lend + b.Lend) - (a.Cost + b.Cost),
+                    Rate = ((a.Lend + b.Lend) - (a.Cost + b.Cost)) / (a.Cost + b.Cost),
+                };
+            }
         }
         #endregion
-
 
         #region 属性
 
@@ -100,23 +109,6 @@ namespace analyze.core
 
         #endregion
 
-
-
-
-        #region 根据输入的订单行为匹配不同订单处理动作 
-        public void OrderRun(OrderOptions o)
-        {
-            if (o.action.Equals("refund"))
-            {
-                //RefundRun(o);
-            }else if (o.action.Equals("lend"))
-            {
-                //LendRun(o);
-            }
-        }
-
-        #endregion
-
         #region 放款
         double[] randoms = [0.8753,   0.8352,   0.6807,   0.6998,   0.7895,   0.7809,   0.5627,   0.5281,   0.4465,   0.8804,   0.7130,   0.6523,   0.5964,   0.6810,   0.6780,   0.8286,  0.6819,   0.6674,   0.4785,   0.6083];
         static int randomCount = 0;
@@ -142,21 +134,12 @@ namespace analyze.core
                 bool flag3 = true;
                 bool flag4 = true;
 
-                ShopOrder[] shopOrders = shop.ShopOrderList.Where(t => t.OrderId.Equals(r.OrderId)).ToArray();
+                ShopOrder shopOrder = shop.ShopOrderList.Where(t => t.OrderId.Equals(r.OrderId)).FirstOrDefault();
                 SubmitOrder[] torders = SubmitOrders.Where(t => t.OrderId != null && t.OrderId.Contains(r.OrderId)).ToArray();
                 PurchaseOrder[] porder = PurchasesOrders.Where(t => t.OrderId != null && t.OrderId.Equals(r.OrderId)).ToArray();
 
-                string ot = shopOrders.FirstOrDefault()?.OrderTime.ToString("yyyy-MM-dd HH:mm:ss");
-                string pt = shopOrders.FirstOrDefault()?.PaymentTime.ToString("yyyy-MM-dd HH:mm:ss");
-                string st = shopOrders.FirstOrDefault()?.ShippingTime.ToString("yyyy-MM-dd HH:mm:ss");
-                string rt = shopOrders.FirstOrDefault()?.ReceiptTime.ToString("yyyy-MM-dd HH:mm:ss");
-                if (shopOrders.FirstOrDefault()?.OrderTime == DateTime.MinValue) ot = "";
-                if (shopOrders.FirstOrDefault()?.PaymentTime == DateTime.MinValue) pt = "";
-                if (shopOrders.FirstOrDefault()?.ShippingTime == DateTime.MinValue) st = "";
-                if (shopOrders.FirstOrDefault()?.ReceiptTime == DateTime.MinValue) rt = "";
-
                 string str = (flag1 ? "" : "1") + (flag2 ? "" : "2") + (flag3 ? "" : "3") + (flag4 ? "" : "4");
-                if (torders.Length > 0)
+                if (torders?.Length > 0)
                 {
                     double deductionAmount = torders.FirstOrDefault().DeductionAmount;
                     if (deductionAmount < 1)
@@ -173,12 +156,26 @@ namespace analyze.core
                 }
 
                 r.Profit = Math.Round(r.Lend - r.Cost, 2);
-                r.Rate = Math.Round((r.Profit) / r.Cost, 2);
+
+                if(r.Cost == 0)
+                {
+                    r.Rate = 1;
+                }
+                else
+                {
+                    r.Rate = Math.Round((r.Profit) / r.Cost, 2);
+                }
+                
 
             }
         }
         public Profit StatisticalProfit(int year, int month, ShopRecord shop)
         {
+            if(shop.ShopLendList == null)
+            {
+                return null;
+            }
+
             DateTime t1, t2;
             DateRange(year, month, out t1, out t2);
             ShopLend[] sureLends = shop.ShopLendList.Where(f => f.SettlementTime <= t2 && f.SettlementTime >= t1).ToArray();
@@ -200,6 +197,62 @@ namespace analyze.core
 
             };
         }
+
+        public string[] LendDataTableHeader = ["序号", "商品ID", "商品编码", "成交金额(CNY)", "放款金额(CNY)", "分销成本(CNY)", "利润统计(CNY)", "利润率", "结算时间", "订单号"];
+        public DataTable Lend2DataTables(int year, int month, ShopRecord shop)
+        {
+            if(shop == null || shop.ShopLendList == null)
+            {
+                return null;
+            }
+            DateTime t1, t2;
+            DateRange(year, month, out t1, out t2);
+            ShopLend[] sureLends = shop.ShopLendList.Where(f => f.SettlementTime <= t2 && f.SettlementTime >= t1).ToArray();
+
+            DataTable dataTable = new DataTable();
+
+
+            foreach (var item in LendDataTableHeader)
+            {
+                dataTable.Columns.Add(item);
+            }
+            //dataTable.Columns.AddRange(new DataColumn[] 
+            //{
+            //    new DataColumn("序号"),
+            //    new DataColumn("商品ID"),
+            //    new DataColumn("商品编码"),
+            //    new DataColumn("成交金额(CNY)"),
+            //    new DataColumn("放款金额(CNY)"),
+            //    new DataColumn("分销成本(CNY)"),
+            //    new DataColumn("利润统计(CNY)"),
+            //    new DataColumn("利润率"),
+            //    new DataColumn("结算时间"),
+            //    new DataColumn("订单号"),
+            //});
+            int i = 1;
+            foreach (ShopLend lend in sureLends)
+            {
+                DataRow dataRow = dataTable.NewRow();
+                dataRow["序号"] = i++;
+                dataRow["商品ID"] = lend.ProductId;
+                dataRow["商品编码"] = lend.SUK;
+                dataRow["成交金额(CNY)"] = lend.Turnover;
+                dataRow["放款金额(CNY)"] = lend.Lend;
+                dataRow["分销成本(CNY)"] = lend.Cost;
+                dataRow["利润统计(CNY)"] = lend.Profit;
+                dataRow["利润率"] = lend.Rate;
+                dataRow["结算时间"] = lend.SettlementTime.ToString("yyyy-MM-dd HH:mm:ss");
+                dataRow["订单号"] = lend.OrderId;
+
+                // 高亮分销陈本为0 利润率为1 陈本大于售价的单元格
+      
+
+                dataTable.Rows.Add(dataRow);
+            }
+
+            return dataTable;
+        }
+
         public ShopLend[] GetOneMonthLend(int year, int month, ShopRecord shop)
         {
             DateTime t1, t2;
@@ -230,8 +283,9 @@ namespace analyze.core
         public void SaveProfit(string filename, ShopLend[] shopLends)
         {
             System.Array.Sort(shopLends, (x, y) => { return x.SettlementTime.CompareTo(y.SettlementTime); });
-            _sheetClient.SaveShopLend(filename, shopLends, Path.Combine(NewestResourcesDirectory, "lend.xlsx"),  true);
+            _sheetClient.SaveShopLend(filename, shopLends, Path.Combine(TempDir, "lend.xlsx"),  true);
         }
+
 
         #endregion
 
@@ -343,8 +397,8 @@ namespace analyze.core
         }
 
         #endregion
-         
-        #region daily
+
+        #region 每日数据
         public enum OrderTypes
         {
             BeforeOneDay,
@@ -491,361 +545,6 @@ namespace analyze.core
             }
             return KeyValuePair.Create(count, total);
         }
-
-        public void DailyRun(DailyOptions o)
-        {
-            List<Shop> shops = new List<Shop>();
-            List<DailyDetail> dailys = new List<DailyDetail>();
-            SheetClient client = new SheetClient();
-            client.Output = _output;
-            ManageClient manageClient = new ManageClient();
-            IList<PurchaseOrder> brPurchases = null;
-            // 获取目录文件
-            if(Directory.Exists(o.FileDir))
-            {
-                string[] files = Directory.GetFiles(o.FileDir);
-                o.DailyFiles = files;
-            }
-
-
-            User[] users = null;
-            Recharge[] recharges = null;
-            Task<bool> task = Task.Run(async () =>
-            {
-                manageClient.LoginAdmin();
-                users = await manageClient.ListUsersAsync();
-                recharges = await manageClient.ListAllRechargeAsync();
-                return true;
-            });
-
-            // 循环读取文件
-            if (o.DailyFiles.Count() > 0)
-            {
-                foreach (string filename in o.DailyFiles)
-                {
-                    if(!Path.GetFileName(filename).StartsWith("~"))
-                    {
-                        DailyDetail daily = client.ReadDaily(filename);
-                        dailys.Add(daily);
-                    }
-                }
-                dailys.Sort();
-
-                if (File.Exists(o.ShopInfoFileName))
-                {
-                    shops = client.ReadShopCatalog(o.ShopInfoFileName).ToList();
-
-                    var runShop = shops.Where(s => s.Status.Equals("运营中")).ToArray();
-                    _output.WriteLine($"运营中：{runShop.Count()} 读取数量：{o.DailyFiles.Count()}");
-
-                    string[] arr = System.Array.ConvertAll(runShop.ToArray(), r => r.CN);
-
-                    foreach (var shop in runShop)
-                    {
-                        bool flag = false;
-                        foreach (string filename in o.DailyFiles)
-                        {
-                            if (filename.Contains(shop.CN))
-                            {
-                                flag = true;
-                                break;
-                            }
-                        }
-                        if (!flag)
-                        {
-                            _output.WriteLine(shop.CompanyNumber + shop.CN + shop.CompanyName + shop.Nick);
-
-                        }
-                    }
-                }
-                
-            }
-
-            // 判断店铺是否获取完毕
-            if (o.DailyFiles.Count() > 0)
-            {
-
-
-            }
-
-            if (File.Exists(o.BrPurchaseFilenmae))
-            {
-                brPurchases = client.ReadPurchaseOrder(1, o.BrPurchaseFilenmae);
-            }
-
-            task.Wait();
-
-            _output.WriteLine();
-
-            List<KeyValuePair<string, string>> uploadDic = new List<KeyValuePair<string, string>>();
-            double total1 = 0.0;
-            int count1 = 0;
-            double total2 = 0.0;
-            int count2 = 0;
-            DailyDetail old = null;
-
-            Dictionary<string, List<object[]>> objDic = new Dictionary<string, List<object[]>>();
-            string[] listHeader = new string[] { "Company", "CN", "Opera", "UP", "Check", "Down",
-                "IM24", "Good", "Dispute", "Wrong",
-                "Dispute Line", "F30", "D30", "Exp30", "Fin", "Dis", "Close", "Talk", "Palt",
-                "All", "Ready Line", "New", "Ready", "Wait" ,
-                "Lead", "Freeze", "OnWay", "Arre", "Lose", "Get", "Reality", "Balance"
-                };
-
-
-
-            foreach (var daily in dailys)
-            {
-                // 公司简称
-                string name = daily.Company.Replace("市", "").Replace("县", "").Substring(2, 4);
-
-                bool flag = (old == null || !old.Company.Contains(name.Substring(0, 4)));
-
-
-                var orderDic = ClassifiedOrders(daily.OrderDetails);
-                var disputeDic = ClassifiedDispute(daily.DisputeOrders);
-
-                var max = DateTime.Now;
-                var min = DateTime.Now.AddMonths(-1);
-                int disCount30 = daily.DisputeOrders.Where(o => o.DisputeTime.CompareTo(min) >= 0 && o.DisputeTime.CompareTo(max) <= 0).Count();
-                int finCount30 = orderDic[OrderTypes.Finish].Where(o => o.OrderTime.CompareTo(min) >= 0 && o.OrderTime.CompareTo(max) <= 0).Count();
-                int disCount = daily.DisputeOrders.Count();
-                int finCount = orderDic[OrderTypes.Finish].Count();
-
-                double exp30 = (disCount30 / 0.3) - disCount30 - finCount30; 
-
-                // 在途纠纷及拒付订单
-                var onwayLose = daily.OnWayOrders.Where(o => o.Reason.Contains("纠纷中") || o.Reason.Contains("拒付中"));
-                var loseAmount = onwayLose.Sum(o => o.Amount);
-
-                // 实际充值 不是索赔，不是返点
-                double reality = recharges.Where( r => r.CompanyName.Contains(daily.Company) && !r.Mark.Contains("返点") && !r.Mark.Contains("索赔") && !r.Mark.Contains("海外仓")).Sum(o => o.Amount);
-
-                // 云仓余额
-                double balance = users.Where(u => u.CompanyName.Contains(daily.Company)).FirstOrDefault().Balance;
-
-                // 实际提现
-                double withdraws = daily.Withdraws.Sum(o => o.Amount);
-
-                // 纠纷最小处理天数
-                var disputeLasts = daily.DisputeOrders.Where(d => d.LastTime != null);
-                var disputeTime = System.Array.ConvertAll(disputeLasts.ToArray(), d => d.LastTime).Min();
-
-                // 待发货最小处理天数
-                var orderLasts = daily.OrderDetails.Where(d => d.LastTime != null);
-                var orderTime = System.Array.ConvertAll(orderLasts.ToArray(), d => d.LastTime).Min();
-
-                
-                // 昨天等待发货及等待收货
-                var r1 = ClassifiedOrders(orderDic[OrderTypes.Yesterday])[OrderTypes.Ready];
-                var w1 = ClassifiedOrders(orderDic[OrderTypes.Yesterday])[OrderTypes.Wait];
-                var kvs1 = CreateDetail(r1, w1);
-
-                // 前天等待发货及等待收货
-                var r2 = ClassifiedOrders(orderDic[OrderTypes.BeforeOneDay])[OrderTypes.Ready];
-                var w2 = ClassifiedOrders(orderDic[OrderTypes.BeforeOneDay])[OrderTypes.Wait];
-                var kvs2 = CreateDetail(r2, w2);
-
-
-                var kv = CreateOverview(name + daily.Nick, r1, w1, r2, w2);
-                var n1 = CreateNumber(r1, w1);
-                var n2 = CreateNumber(r2, w2);
-
-
-                
-                old = daily;
-
-                object[] os = new object[] { name, daily.Nick, daily.Operator, daily.InSrockNumber, daily.ReviewNumber, daily.RemovedNumber,
-                    $"{daily.IM24:P2}", $"{daily.GoodReviews:P2}", $"{daily.Dispute:P2}", $"{daily.WrongGoods:P2}",
-                    disputeTime, finCount30, disCount30, Math.Round(exp30), finCount, disCount, disputeDic[DisputeTypes.Close].Count(), disputeDic[DisputeTypes.Talk].Count(), disputeDic[DisputeTypes.Platform].Count(),
-                    orderDic[OrderTypes.Ready].Count(), orderTime, orderDic[OrderTypes.Yesterday].Count(), r1.Count(),w1.Count() ,
-                    daily.Lend, daily.Freeze, daily.OnWay, daily.Arrears, Math.Round(loseAmount) ,  Math.Round(Math.Abs(withdraws)),
-                    reality, balance
-                    };
-                if (o.IsListCompany || o.IsListProfit || o.IsUploadProfit)
-                {
-                    if (!objDic.ContainsKey(name))
-                    {
-                        objDic[name] = new List<object[]> { };
-                    }
-                    objDic[name].Add(os);
-                }
-                 if (o.IsListOpera)
-                {
-                    if (!objDic.ContainsKey(daily.Operator))
-                    {
-                        objDic[daily.Operator] = new List<object[]> { };
-                    }
-                    objDic[daily.Operator].Add(os);
-                }
-
-
-                // 上传订单
-                if (o.IsUploadOrder)
-                {
-                    if (n1.Key > 0 || n2.Key > 0)
-                    {
-                        count1 += n1.Key;
-                        total1 += n1.Value;
-
-                        count2 += n2.Key;
-                        total2 += n2.Value;
-
-
-                        uploadDic.Add(kv);
-                        uploadDic.AddRange(kvs1);
-                        uploadDic.AddRange(kvs2);
-
-                        uploadDic.Add(KeyValuePair.Create("", ""));
-
-                    }
-                }
-
-            }
-
-
-
-            if (o.IsListCompany || o.IsListOpera)
-            {
-                ConsoleTable consoleTable = new ConsoleTable(listHeader);
-                foreach (var company in objDic)
-                {
-                    foreach (var item in company.Value)
-                    {
-                  
-                        _output.AddRow(item);
-                    }
-                }
-                _output.Show(listHeader);
-            }
-
-
-            Dictionary<string, List<object[]>> proDic = new Dictionary<string, List<object[]>>();
-            string[] listCompanyHeader = new string[] { "Company", "Lead", "Freeze", "OnWay", "Arre",
-                    "Lose", "Get", "Reality", "Balance", "Profit"
-                };
-
-            if (o.IsListProfit || o.IsUploadProfit)
-            {
-                foreach (var company in objDic)
-                {
-                    double lend = 0.0;
-                    double freeze = 0.0;
-                    double onWay = 0.0;
-                    double arrears = 0.0;
-                    double lose = 0.0;
-                    double withdraws = 0.0;
-                    double reality = 0.0;
-                    double balance = 0.0;
-
-                    foreach (var item in company.Value)
-                    {
-                        lend += (double)item[24];
-                        freeze += (double)item[25];
-                        onWay += (double)item[26];
-                        arrears += (double)item[27];
-                        lose += (double)item[28];
-                        withdraws += (double)item[29];
-                        reality = (double)item[30];
-                        balance = (double)item[31];
-                    }
-                    object[] os1 = new object[] { company.Key, $"{lend:0.00}", $"{freeze:0.00}", $"{onWay:0.00}", $"{arrears:0.00}",
-                        $"{lose:0.00}", $"{withdraws:0}", $"{reality:0}",$"{balance:0}", $"{lend + onWay + withdraws + balance - (arrears + lose + reality):0.00}"
-                    };
-
-                    proDic[company.Key] = new List<object[]> { os1 };
-
-                    _output.AddRow(os1);
-                }
-
-                if (o.IsListProfit)
-                {
-                    _output.Show(listCompanyHeader);
-
-                }
-
-
-            }
-
-            if (o.IsUploadProfit)
-            {
-                string[] listCompanyHeader1 = new string[] { "公司", "放款", "冻结", "在途", "欠款",
-                    "损耗", "回款", "实充", "余额", "利润" };
-                foreach (var company in proDic)
-                {
-                    object[] o1 = company.Value.First();
-                    var upload = new List<KeyValuePair<string, string>>();
-
-                    upload.Add(KeyValuePair.Create($"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}", $""));
-                    upload.Add(KeyValuePair.Create("-------------------------------", $""));
-                    upload.Add(KeyValuePair.Create($"  公司", $"{o1[0]}"));
-                    upload.Add(KeyValuePair.Create($"（加）放款", $"{o1[1]}"));
-                    upload.Add(KeyValuePair.Create($"（减）冻结", $"{o1[2]}"));
-                    upload.Add(KeyValuePair.Create($"（加）在途", $"{o1[3]}"));
-                    upload.Add(KeyValuePair.Create($"（减）欠款", $"{o1[4]}"));
-                    upload.Add(KeyValuePair.Create($"（减）损耗", $"{o1[5]}"));
-                    upload.Add(KeyValuePair.Create($"（加）回款", $"{o1[6]}"));
-                    upload.Add(KeyValuePair.Create($"（减）实充", $"{o1[7]}"));
-                    upload.Add(KeyValuePair.Create($"（加）余额", $"{o1[8]}"));
-                    upload.Add(KeyValuePair.Create($"（等）利润", $"{o1[9]}"));
-                    foreach (var os in objDic[company.Key])
-                    {
-                        upload.Add(KeyValuePair.Create("-------------------------------", $""));
-                        upload.Add(KeyValuePair.Create($"{os[0]}{os[1]}", $"{os[2]}"));
-                        upload.Add(KeyValuePair.Create($"上架:{os[3]} 审核:{os[4]} 下架:{os[5]}", ""));
-                        upload.Add(KeyValuePair.Create($"IM24:{os[6]} ", $"好评:{os[7]}"));
-                        upload.Add(KeyValuePair.Create($"纠纷:{os[8]} ", $"错发:{os[9]}"));
-                        upload.Add(KeyValuePair.Create($"纠纷处理:", $"{os[10]}"));
-                        upload.Add(KeyValuePair.Create($"发货处理:", $"{os[20]}"));
-                        upload.Add(KeyValuePair.Create($"F30:{os[11]} D30:{os[12]} ExpD30%:{os[13]}", $""));
-                        upload.Add(KeyValuePair.Create($"完成:{os[14]} 纠纷:{os[15]} 结束:{os[16]}", $""));
-                        upload.Add(KeyValuePair.Create($"协商:{os[17]} 介入:{os[18]} 总待:{os[19]}", $""));
-                        upload.Add(KeyValuePair.Create($"新单:{os[21]} 待发:{os[22]} 已发:{os[23]}", $""));
-                        upload.Add(KeyValuePair.Create($"放款:{os[24]} ", $"冻结:{os[25]}"));
-                        upload.Add(KeyValuePair.Create($"在途:{os[26]} ", $"欠款:{os[27]}"));
-                        upload.Add(KeyValuePair.Create($"损耗:{os[28]} ", $"回款:{os[29]}"));
-                    }
-                    string url = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=8af72f8c-1f27-48b0-832e-dcfb8b7f17d2";
-                    new WebhookClient().Webhook(url, "text",  upload);
-                }
-            }
-
-
-            // 显示
-            if (o.IsUploadOrder)
-            {
-                var kvt = KeyValuePair.Create($"{DateTime.Now.ToString("yyyy-MM-dd")}", $"巴西订单");
-                var kvt1 = KeyValuePair.Create($"昨天总计 {count1}单", $"R$ {total1:0.00}");
-                var kvt2 = KeyValuePair.Create($"前天总计 {count2}单", $"R$ {total2:0.00}");
-                uploadDic.Add(kvt);
-                uploadDic.Add(kvt1);
-                uploadDic.Add(kvt2);
-
-                string url = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=8af72f8c-1f27-48b0-832e-dcfb8b7f17d2";
-
-                List<KeyValuePair<string, string>> keyValuePairs = new List<KeyValuePair<string, string>>();
-
-                int len = 0;
-                foreach (var item in uploadDic)
-                {
-                    keyValuePairs.Add(KeyValuePair.Create(item.Key, item.Value));
-                    len += (item.Key.Length + item.Value.Length);
-                    if(len >= 2048)
-                    {
-
-                        new WebhookClient().Webhook(url, "text", keyValuePairs);
-                        keyValuePairs = new List<KeyValuePair<string, string>>();
-                        len = 0;
-                    }
-                }
-                new WebhookClient().Webhook(url, "text", keyValuePairs);
-            }
-            
-
-
-
-        }
-
 
         public DailyDetail[] GetDaily(DateTime dateTime)
         {
@@ -1138,7 +837,7 @@ namespace analyze.core
 
         #endregion
 
-        #region mamage 
+        #region 扣款 
 
         public List<ShipObject> ReadNeedShip(string raw)
         {
@@ -1199,6 +898,9 @@ namespace analyze.core
                     msg += _output.Write($"{order.OrderId} ", false);
                     double cost = order.Cost;
                     msg += _output.Write($"扣除金额：{cost} ", false);
+                    // 扣除金额要是 0.071
+                    // Assert(cost == 0.071, "分销成本");
+
                     ret = client.Deduction(order);
                     Assert("Success.".Equals(ret));    // 扣款失败
 
@@ -1270,109 +972,19 @@ namespace analyze.core
 
         private void Save(string orderId, string msg)
         {
-            string filename = Path.Combine(NewestDeductionDirectory, $"{orderId}.txt");
+            string dir = Path.Combine(Path.GetDirectoryName(NewestDeductionDirectory), DateTime.Now.ToString("yyyy年MM月dd日"));
+            if( !Directory.Exists(dir))
+            {
+                Directory.CreateDirectory(dir);
+            }
+            string filename = Path.Combine(dir, $"{orderId}.txt");
             File.WriteAllText(filename, msg);
-        }
-
-        public void ManageRun(ManageOptions o)
-        {
-
-            ManageClient client = new ManageClient();
-            string msg = string.Empty;
-            client.LoginAdmin();
-            if (o.IsList)
-            {
-                User[] user = client.ListUsers();
-                User[] richUser = user.Where(u => !string.IsNullOrWhiteSpace(u.CompanyName) && Regex.IsMatch($"{u.CompanyName[0]}", @"[\u4e00-\u9fa5]")).ToArray();
-                for (int i = 0; i < richUser.Length; i++)
-                {
-                    Console.WriteLine($"{i:000} {richUser[i].ClientId} {richUser[i].CompanyName}");
-                }
-                return;
-            }
-
-            if(File.Exists(o.FileName))
-            {
-                string raw = File.ReadAllText(o.FileName);
-                string[] strings = raw.Split("\r\n");
-                List<string>  ClientId = new List<string>();
-                List<string> DeductionId = new List<string>();
-                foreach (string s in strings)
-                {
-                    string[] v = s.Split(" ");
-                    ClientId.Add(v[0]);
-                    DeductionId.Add(v[1]);
-                }
-
-                o.ClientId = ClientId;
-                o.DeductionId = DeductionId;
-            }
-
-            if (o.ClientId.Count() > 0 && o.DeductionId.Count() > 0)
-            {
-                for (int i = 0; i < o.DeductionId.Count(); i++)
-                {
-                    string clientId = o.ClientId.ElementAt(i);
-                    string orderId = o.DeductionId.ElementAt(i);
-                    string ret = null;
-
-                    try
-                    {
-                        _output.Write("登录用户 ", false);
-                        client.LoginUser(clientId);
-                        _output.Write($"{clientId} ", false);
-                        Models.Manage.Order[] orders = client.ListOrder(orderId);
-                        _output.Write($"{orders.Length} ", false);
-                        if (orders.Length == 1)
-                        {
-                            Models.Manage.Order order = orders.First();
-                            _output.Write($"{order.OrderId} ", false);
-                            double cost = order.Cost;
-                            _output.Write($"扣除金额：{cost}", false);
-                            ret = client.Deduction(order);
-                            if ("Success.".Equals(ret))
-                            {
-                                DebitRecord[] debitRecords = client.ListDebitRecord();
-                                DebitRecord debitRecord = debitRecords.First();
-                                _output.Write($"{debitRecord.RecordId} {debitRecord.TradeId} {debitRecord.Cost}RMB ", false);
-                                if ((int)debitRecord.Cost == (int)cost)
-                                {
-                                    ret = client.DeductionYes(debitRecord.RecordId);
-                                    _output.Write($"{ret} ", false);
-                                    if ("审核成功".Equals(ret))
-                                    {
-                                        ret = client.DeductionPassed(debitRecord.RecordId);
-                                        _output.Write($"{ret} ", false);
-                                        if ("success".Equals(ret) && order.Status == 1)
-                                        {
-                                            ret = client.Shipments(order);
-                                            _output.Write($"{ret} ", false);
-                                        }
-
-                                    }
-                                }
-
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        _output.WriteLine(ex.Message);
-                    }
-                    finally
-                    {
-                        Save(orderId, msg);
-                        _output.Write($"结束", false);
-                        _output.WriteLine();
-                    }
-                }
-            }
         }
 
 
         #endregion
 
-        #region purchase
+        #region 采购
         public PurchaseProgress[] GetPurchaseProgress()
         {
             var sure = PurchasesOrders.Where(x => x.Country.Equals("BR") && x.OrderDate != DateTime.MinValue).ToArray();
@@ -1662,13 +1274,31 @@ namespace analyze.core
             // 读取店铺数据
             if ((CollectTypes.Shop & collectType) == CollectTypes.Shop)
             {
-                string[] dirs = Directory.GetDirectories(NewestOrderDirectory);
-
-                if (!string.IsNullOrWhiteSpace(cn))
+                // 查店铺目录 查找所有路径
+                string shopDir = Path.GetDirectoryName(NewestOrderDirectory);
+                string[] fileList = Directory.GetFiles(shopDir, "*.xlsx", SearchOption.AllDirectories)
+                    .Where(x=> ShopFileInfo.Convert(Path.GetDirectoryName(x)).CN != null).ToArray();
+                foreach (var shopCatalog in ShopCatalogs)
                 {
-                    dirs = dirs.Where(d => Path.GetFileName(d).Contains(cn)).ToArray();
+                    string shopFile = fileList.Where ( x=> Path.GetFileName(Path.GetDirectoryName(x)).Contains(shopCatalog.CN) ).LastOrDefault();
+                    if(shopFile != null)
+                    {
+                        string recordDir = Path.GetDirectoryName(shopFile);
+                        string data = Path.GetFileName(Path.GetDirectoryName(recordDir));
+                        ShopRecord shopRecord = ShopRecords.Where(sr => sr.Shop.CN.Equals(shopCatalog.CN)).FirstOrDefault();
+                        shopRecord.CollectDate = DateTime.Parse(data);
+                        shopRecord.RecordDir = recordDir;
+                    }
+                    
                 }
 
+                // string[] dirs = Directory.GetDirectories(NewestOrderDirectory);
+                // 
+                // if (!string.IsNullOrWhiteSpace(cn))
+                // {
+                //     dirs = dirs.Where(d => Path.GetFileName(d).Contains(cn)).ToArray();
+                // }
+                IEnumerable<string> dirs = ShopRecords.Where(x => Directory.Exists(x.RecordDir)).Select(y => y.RecordDir);
                 foreach (var dir in dirs)
                 {
                     string cnn = ShopFileInfo.Convert(dir).CN;
@@ -1676,9 +1306,25 @@ namespace analyze.core
 
                     if (Directory.Exists(dir) && shopRecord != null)
                     {
+
                         IList<ShopOrder> orders = _sheetClient.ReadShopOrder(Path.Combine(dir, "订单.xlsx")).OrderBy(o => o.OrderTime).ToList();
+                        if(orders.Count() == 0)
+                        {
+                            orders = _sheetClient.ReadShopOrder(Path.Combine(dir, "order.xlsx")).OrderBy(o => o.OrderTime).ToList();
+                        }
                         IList<ShopLend> lendings = _sheetClient.ReadShopLend(Path.Combine(dir, "放款.xlsx")).OrderBy(o => o.SettlementTime).ToList();
+                        if (lendings.Count() == 0)
+                        {
+                            lendings = _sheetClient.ReadShopLend(Path.Combine(dir, "settlement_order.xlsx")).OrderBy(o => o.SettlementTime).ToList();
+                        }
+
                         IList<ShopRefund> refunds = _sheetClient.ReadShopRefund(Path.Combine(dir, "退款.xlsx")).OrderBy(o => o.RefundTime).ToList();
+                        if (refunds.Count() == 0)
+                        {
+                            refunds = _sheetClient.ReadShopRefund(Path.Combine(dir, "refund_order.xlsx")).OrderBy(o => o.RefundTime).ToList();
+                        }
+
+
                         shopRecord.ShopOrderList = orders;
                         shopRecord.ShopLendList = lendings;
                         shopRecord.ShopRefundList = refunds;
@@ -1733,91 +1379,101 @@ namespace analyze.core
             }
         }
 
-
-
-        public async Task GetUrl()
+        IPage page = null;
+        public async void OpenAmazonAsync()
         {
-
+            string userDataDir = Path.Combine(NewestResourcesDirectory, "UserData");
             // 初始化 Playwright
             using var playwright = await Playwright.CreateAsync();
-            //亿牛云爬虫代理加强版的代理服务器地址和端口号
-            //var proxyServer = "http://www.16yun.cn:3100";
-            //var browser = await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
-            //{
-            //    Proxy = new ProxySettings
-            //    {
-            //        Server = proxyServer,
-            //        //亿牛云爬虫代理加强版的用户名
-            //        Username = "your_username",
-            //        //亿牛云爬虫代理加强版的密码
-            //        Password = "your_password",
-            //    }
-            //});
 
-            //var browser = await playwright.Chromium.LaunchAsync(new LaunchOptions() 
-            //{ 
-            //    Headless = false,
-            //   
-            //});
-            var browser = await playwright.Chromium.LaunchAsync();
-            // 创建一个新的页面
-            var context = await browser.NewContextAsync();
-            var page = await context.NewPageAsync();
-            await page.SetViewportSizeAsync(1280, 720);
-
-            // 导航到亚马逊网站
-            await page.GoToAsync("https://www.amazon.com.br/");
-
-            // 输入关键字搜索
-            await page.FillAsync("#twotabsearchtextbox", "B0813S9VWG");
-            await page.ClickAsync("#nav-search-submit-button");
-
-            // 等待搜索结果页面加载完成
-            await page.WaitForLoadStateAsync();
-
-            // 获取商品链接列表
-
-            var links = await page.GetAttributeAsync("div[data-asin='B0813S9VWG'] a.a-link-normal", "href");
-            // 创建任务列表
-            var tasks = new List<Task>();
-
-            // 遍历商品链接列表，采集评论数据
-            foreach (var link in links)
+            if (!Directory.Exists(userDataDir))
             {
-                tasks.Add(Task.Run(async () =>
-                {
-                    // 创建一个新的页面
-                    var page = await context.NewPageAsync();
-
-                    // 设置页面的 User-Agent
-                    //await page.SetUserAgentAsync("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Safari/537.36");
-                
-                    // 导航到商品页面
-                    //await page.GoToAsync(link);
-
-                    // 等待商品页面加载完成
-                    await page.WaitForLoadStateAsync();
-
-                    // 获取商品名称
-                    var title = await page.GetInnerTextAsync("#productTitle");
-
-                    // 获取商品评价信息
-                    var rating = await page.GetInnerTextAsync("#averageCustomerReviews .a-icon-star-small .a-icon-alt");
-                    var reviewCount = await page.GetInnerTextAsync("#acrCustomerReviewText");
-
-                    // 输出采集的数据
-                    Console.WriteLine($"{title}: {rating} ({reviewCount})");
-
-                    // 关闭页面
-                    await page.CloseAsync();
-                }));
+                Directory.CreateDirectory(userDataDir);
             }
 
+            var browser = await playwright.Chromium.LaunchPersistentContextAsync(userDataDir, new LaunchOptions()
+            {
+                Headless = false,
+                Args = ["--start-maximized"]
+            }); ;
+
+            page = await browser.NewPageAsync();
+            // 导航到亚马逊网站
+            await page.GoToAsync("https://www.amazon.com.br/");
+            await page.WaitForLoadStateAsync();
+        }
+        public async void GetUrl()
+        {
+            if(page != null)
+            {
+                // 输入邮编
+                await page.ClickAsync("#nav-global-location-popover-link");
+                await page.WaitForTimeoutAsync(1500);
+                await page.FillAsync("#GLUXZipUpdateInput_0", "28691");
+                await page.FillAsync("#GLUXZipUpdateInput_1", "970");
+                await page.ClickAsync("#GLUXZipUpdate");
+                await page.WaitForLoadStateAsync();
+
+
+                // 输入关键字搜索
+                await page.FillAsync("#twotabsearchtextbox", "B0813S9VWG");
+                await page.WaitForTimeoutAsync(1500);
+                await page.ClickAsync("#nav-search-submit-button");
+
+                // 等待搜索结果页面加载完成
+                await page.WaitForLoadStateAsync();
+
+                // 获取商品链接列表
+
+                var links = await page.GetAttributeAsync("div[data-asin='B0813S9VWG'] a.a-link-normal", "href");
+
+                await page.GoToAsync("https://www.amazon.com.br" + links);
+
+                await page.WaitForLoadStateAsync();
+                await page.ScreenshotAsync("screenshot.jpeg", false, null, false, ScreenshotFormat.Jpeg, 20);
+            }
+
+
+            //// 创建任务列表
+            //var tasks = new List<Task>();
+
+            // 遍历商品链接列表，采集评论数据
+            //foreach (var link in links)
+            //{
+            //    tasks.Add(Task.Run(async () =>
+            //    {
+            //        // 创建一个新的页面
+            //       // var page = await page.NewPageAsync();
+            //
+            //        // 设置页面的 User-Agent
+            //        //await page.SetUserAgentAsync("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Safari/537.36");
+            //    
+            //        // 导航到商品页面
+            //        //await page.GoToAsync(link);
+            //
+            //        // 等待商品页面加载完成
+            //        await page.WaitForLoadStateAsync();
+            //
+            //        // 获取商品名称
+            //        var title = await page.GetInnerTextAsync("#productTitle");
+            //
+            //        // 获取商品评价信息
+            //        var rating = await page.GetInnerTextAsync("#averageCustomerReviews .a-icon-star-small .a-icon-alt");
+            //        var reviewCount = await page.GetInnerTextAsync("#acrCustomerReviewText");
+            //
+            //        // 输出采集的数据
+            //        Console.WriteLine($"{title}: {rating} ({reviewCount})");
+            //
+            //        // 关闭页面
+            //        await page.CloseAsync();
+            //    }));
+            //}
+
             // 等待所有任务完成
-            await Task.WhenAll(tasks);
+            //await Task.WhenAll(tasks);
 
             // 关闭浏览器
-            await browser.CloseAsync();
+            //await browser.CloseAsync();
 
         }
 
@@ -1829,6 +1485,47 @@ namespace analyze.core
             {
                 throw new Exception(msg);
             }
+        }
+
+        public string TempDir
+        {
+            get
+            {
+                string path = Path.Combine(Path.GetTempPath(), "analyze.core");
+                if (!Directory.Exists(path))
+                {
+                    Directory.CreateDirectory(path);
+                }
+                return path;
+            }
+
+        }
+
+        public void LoadResources()
+        {
+            System.Reflection.Assembly assembly = Assembly.LoadFrom("analyze.core.dll");
+            string[] names = assembly.GetManifestResourceNames();
+            names = names.Where(x => !x.EndsWith("resources")).ToArray();
+            foreach (var name in names)
+            {
+                Stream? stream = assembly.GetManifestResourceStream(name);
+                string[] strings = name.Split('.');
+                string filename = strings[strings.Length - 2] + '.' + strings[strings.Length - 1];
+                FileStream fileStream = File.Create(Path.Combine(TempDir, filename));
+                stream.Seek(0, SeekOrigin.Begin);
+                stream.CopyTo(fileStream);
+                fileStream.Close();
+            }
+        }
+
+        public void SaveProfix(string filename, ShopProfit[] shopProfits)
+        {
+            string demoFilename = Path.Combine(this.NewestResourcesDirectory, "profit_statement.xlsx");
+            if (!File.Exists(demoFilename))
+            {
+                return;
+            }
+            _sheetClient.SaveProfitStatementXLSX(demoFilename, filename, shopProfits);
         }
     }
 }

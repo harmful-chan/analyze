@@ -29,13 +29,19 @@ namespace analyze.core.win
         /// </summary>
         private void InitializeComponent()
         {
+            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             tabctl = new TabControl();
             tabPage1 = new TabPage();
             panel1 = new Panel();
-            dataGridView1 = new DataGridView();
+            lbCollect = new Label();
             txtProfit = new TextBox();
+            dataGridView1 = new DataGridView();
             panelHone = new Panel();
+            btnCreateProfitAll = new Button();
+            dateRefundStart = new DateTimePicker();
+            dateRefundEnd = new DateTimePicker();
             btnCreateRefundAll = new Button();
             txtNewestProfitDirectory = new TextBox();
             txtWebhool = new TextBox();
@@ -53,7 +59,6 @@ namespace analyze.core.win
             label31 = new Label();
             btnShowRefundDetail = new Button();
             txtNewestTotalDirectory = new TextBox();
-            brnShowRefund = new Button();
             txtNewestDeductionDirectory = new TextBox();
             btnCreateRefund = new Button();
             txtNewestDailyDirectory = new TextBox();
@@ -68,7 +73,6 @@ namespace analyze.core.win
             btnShowLendDetail = new Button();
             dateProfitEnd = new DateTimePicker();
             txtNick = new TextBox();
-            btnShowProfit = new Button();
             txtCompanyNumber = new TextBox();
             cbCompany = new ComboBox();
             cbCN = new ComboBox();
@@ -217,8 +221,9 @@ namespace analyze.core.win
             // 
             // panel1
             // 
-            panel1.Controls.Add(dataGridView1);
+            panel1.Controls.Add(lbCollect);
             panel1.Controls.Add(txtProfit);
+            panel1.Controls.Add(dataGridView1);
             panel1.Controls.Add(panelHone);
             panel1.Dock = DockStyle.Fill;
             panel1.Location = new Point(0, 0);
@@ -226,29 +231,58 @@ namespace analyze.core.win
             panel1.Size = new Size(1179, 510);
             panel1.TabIndex = 0;
             // 
-            // dataGridView1
+            // lbCollect
             // 
-            dataGridView1.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridView1.Location = new Point(0, 0);
-            dataGridView1.Name = "dataGridView1";
-            dataGridView1.Size = new Size(830, 395);
-            dataGridView1.TabIndex = 49;
+            lbCollect.AutoSize = true;
+            lbCollect.Location = new Point(3, 332);
+            lbCollect.Name = "lbCollect";
+            lbCollect.Size = new Size(56, 17);
+            lbCollect.TabIndex = 50;
+            lbCollect.Text = "采集时间";
             // 
             // txtProfit
             // 
-            txtProfit.Dock = DockStyle.Bottom;
             txtProfit.Font = new Font("微软雅黑", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            txtProfit.Location = new Point(0, 401);
+            txtProfit.Location = new Point(0, 350);
             txtProfit.Multiline = true;
             txtProfit.Name = "txtProfit";
             txtProfit.ReadOnly = true;
             txtProfit.ScrollBars = ScrollBars.Both;
-            txtProfit.Size = new Size(830, 109);
+            txtProfit.Size = new Size(830, 160);
             txtProfit.TabIndex = 16;
             txtProfit.WordWrap = false;
             // 
+            // dataGridView1
+            // 
+            dataGridView1.AllowUserToAddRows = false;
+            dataGridView1.AllowUserToDeleteRows = false;
+            dataGridView1.AllowUserToResizeRows = false;
+            dataGridViewCellStyle1.BackColor = Color.Honeydew;
+            dataGridView1.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle1;
+            dataGridView1.BackgroundColor = SystemColors.ControlLight;
+            dataGridView1.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle2.BackColor = SystemColors.Window;
+            dataGridViewCellStyle2.Font = new Font("Microsoft YaHei UI", 9F);
+            dataGridViewCellStyle2.ForeColor = SystemColors.ControlText;
+            dataGridViewCellStyle2.SelectionBackColor = Color.DeepSkyBlue;
+            dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = DataGridViewTriState.False;
+            dataGridView1.DefaultCellStyle = dataGridViewCellStyle2;
+            dataGridView1.Location = new Point(0, 0);
+            dataGridView1.Name = "dataGridView1";
+            dataGridView1.RowHeadersVisible = false;
+            dataGridView1.Size = new Size(830, 329);
+            dataGridView1.TabIndex = 49;
+            dataGridView1.CellContentClick += dataGridView1_CellContentClick;
+            dataGridView1.CellValueChanged += dataGridView1_CellValueChanged;
+            dataGridView1.KeyPress += dataGridView1_KeyPress;
+            // 
             // panelHone
             // 
+            panelHone.Controls.Add(btnCreateProfitAll);
+            panelHone.Controls.Add(dateRefundStart);
+            panelHone.Controls.Add(dateRefundEnd);
             panelHone.Controls.Add(btnCreateRefundAll);
             panelHone.Controls.Add(txtNewestProfitDirectory);
             panelHone.Controls.Add(txtWebhool);
@@ -266,7 +300,6 @@ namespace analyze.core.win
             panelHone.Controls.Add(label31);
             panelHone.Controls.Add(btnShowRefundDetail);
             panelHone.Controls.Add(txtNewestTotalDirectory);
-            panelHone.Controls.Add(brnShowRefund);
             panelHone.Controls.Add(txtNewestDeductionDirectory);
             panelHone.Controls.Add(btnCreateRefund);
             panelHone.Controls.Add(txtNewestDailyDirectory);
@@ -281,7 +314,6 @@ namespace analyze.core.win
             panelHone.Controls.Add(btnShowLendDetail);
             panelHone.Controls.Add(dateProfitEnd);
             panelHone.Controls.Add(txtNick);
-            panelHone.Controls.Add(btnShowProfit);
             panelHone.Controls.Add(txtCompanyNumber);
             panelHone.Controls.Add(cbCompany);
             panelHone.Controls.Add(cbCN);
@@ -299,11 +331,41 @@ namespace analyze.core.win
             panelHone.TabIndex = 48;
             panelHone.Paint += panel4_Paint;
             // 
+            // btnCreateProfitAll
+            // 
+            btnCreateProfitAll.Location = new Point(6, 312);
+            btnCreateProfitAll.Name = "btnCreateProfitAll";
+            btnCreateProfitAll.Size = new Size(146, 23);
+            btnCreateProfitAll.TabIndex = 51;
+            btnCreateProfitAll.Text = "生成全部利润xlsx";
+            btnCreateProfitAll.UseVisualStyleBackColor = true;
+            btnCreateProfitAll.Click += btnCreateProfitAll_Click;
+            // 
+            // dateRefundStart
+            // 
+            dateRefundStart.CustomFormat = "yyyy-MM";
+            dateRefundStart.Format = DateTimePickerFormat.Custom;
+            dateRefundStart.Location = new Point(6, 283);
+            dateRefundStart.Name = "dateRefundStart";
+            dateRefundStart.Size = new Size(70, 23);
+            dateRefundStart.TabIndex = 49;
+            dateRefundStart.Value = new DateTime(2023, 6, 1, 0, 0, 0, 0);
+            // 
+            // dateRefundEnd
+            // 
+            dateRefundEnd.CustomFormat = "yyyy-MM";
+            dateRefundEnd.Format = DateTimePickerFormat.Custom;
+            dateRefundEnd.Location = new Point(82, 283);
+            dateRefundEnd.Name = "dateRefundEnd";
+            dateRefundEnd.Size = new Size(70, 23);
+            dateRefundEnd.TabIndex = 50;
+            dateRefundEnd.Value = new DateTime(2023, 6, 1, 0, 0, 0, 0);
+            // 
             // btnCreateRefundAll
             // 
-            btnCreateRefundAll.Location = new Point(192, 335);
+            btnCreateRefundAll.Location = new Point(158, 312);
             btnCreateRefundAll.Name = "btnCreateRefundAll";
-            btnCreateRefundAll.Size = new Size(154, 23);
+            btnCreateRefundAll.Size = new Size(188, 23);
             btnCreateRefundAll.TabIndex = 48;
             btnCreateRefundAll.Text = "生成全部退款xlsx";
             btnCreateRefundAll.UseVisualStyleBackColor = true;
@@ -401,7 +463,7 @@ namespace analyze.core.win
             // label33
             // 
             label33.AutoSize = true;
-            label33.Location = new Point(4, 361);
+            label33.Location = new Point(3, 361);
             label33.Name = "label33";
             label33.Size = new Size(338, 17);
             label33.TabIndex = 41;
@@ -438,7 +500,7 @@ namespace analyze.core.win
             // btnShowRefundDetail
             // 
             btnShowRefundDetail.Enabled = false;
-            btnShowRefundDetail.Location = new Point(96, 309);
+            btnShowRefundDetail.Location = new Point(158, 283);
             btnShowRefundDetail.Name = "btnShowRefundDetail";
             btnShowRefundDetail.Size = new Size(90, 23);
             btnShowRefundDetail.TabIndex = 39;
@@ -453,17 +515,6 @@ namespace analyze.core.win
             txtNewestTotalDirectory.Size = new Size(251, 23);
             txtNewestTotalDirectory.TabIndex = 11;
             // 
-            // brnShowRefund
-            // 
-            brnShowRefund.Enabled = false;
-            brnShowRefund.Location = new Point(3, 309);
-            brnShowRefund.Name = "brnShowRefund";
-            brnShowRefund.Size = new Size(90, 23);
-            brnShowRefund.TabIndex = 38;
-            brnShowRefund.Text = "显示退款";
-            brnShowRefund.UseVisualStyleBackColor = true;
-            brnShowRefund.Click += brnShowRefund_Click;
-            // 
             // txtNewestDeductionDirectory
             // 
             txtNewestDeductionDirectory.Location = new Point(65, 77);
@@ -473,9 +524,9 @@ namespace analyze.core.win
             // 
             // btnCreateRefund
             // 
-            btnCreateRefund.Location = new Point(192, 309);
+            btnCreateRefund.Location = new Point(254, 283);
             btnCreateRefund.Name = "btnCreateRefund";
-            btnCreateRefund.Size = new Size(154, 23);
+            btnCreateRefund.Size = new Size(92, 23);
             btnCreateRefund.TabIndex = 37;
             btnCreateRefund.Text = "生成退款报表";
             btnCreateRefund.UseVisualStyleBackColor = true;
@@ -530,9 +581,9 @@ namespace analyze.core.win
             // 
             // btnCreateProfitXLSX
             // 
-            btnCreateProfitXLSX.Location = new Point(192, 283);
+            btnCreateProfitXLSX.Location = new Point(254, 256);
             btnCreateProfitXLSX.Name = "btnCreateProfitXLSX";
-            btnCreateProfitXLSX.Size = new Size(154, 23);
+            btnCreateProfitXLSX.Size = new Size(95, 23);
             btnCreateProfitXLSX.TabIndex = 17;
             btnCreateProfitXLSX.Text = "生成利润报表";
             btnCreateProfitXLSX.UseVisualStyleBackColor = true;
@@ -540,9 +591,9 @@ namespace analyze.core.win
             // 
             // btnProfitClear
             // 
-            btnProfitClear.Location = new Point(192, 256);
+            btnProfitClear.Location = new Point(6, 339);
             btnProfitClear.Name = "btnProfitClear";
-            btnProfitClear.Size = new Size(154, 23);
+            btnProfitClear.Size = new Size(341, 23);
             btnProfitClear.TabIndex = 33;
             btnProfitClear.Text = "清空";
             btnProfitClear.UseVisualStyleBackColor = true;
@@ -552,16 +603,16 @@ namespace analyze.core.win
             // 
             dateProfitStart.CustomFormat = "yyyy-MM";
             dateProfitStart.Format = DateTimePickerFormat.Custom;
-            dateProfitStart.Location = new Point(3, 256);
+            dateProfitStart.Location = new Point(6, 256);
             dateProfitStart.Name = "dateProfitStart";
-            dateProfitStart.Size = new Size(90, 23);
+            dateProfitStart.Size = new Size(70, 23);
             dateProfitStart.TabIndex = 18;
-            dateProfitStart.Value = new DateTime(2024, 3, 1, 0, 0, 0, 0);
+            dateProfitStart.Value = new DateTime(2023, 6, 1, 0, 0, 0, 0);
             // 
             // btnShowLendDetail
             // 
             btnShowLendDetail.Enabled = false;
-            btnShowLendDetail.Location = new Point(96, 283);
+            btnShowLendDetail.Location = new Point(158, 256);
             btnShowLendDetail.Name = "btnShowLendDetail";
             btnShowLendDetail.Size = new Size(90, 23);
             btnShowLendDetail.TabIndex = 32;
@@ -573,11 +624,11 @@ namespace analyze.core.win
             // 
             dateProfitEnd.CustomFormat = "yyyy-MM";
             dateProfitEnd.Format = DateTimePickerFormat.Custom;
-            dateProfitEnd.Location = new Point(98, 256);
+            dateProfitEnd.Location = new Point(82, 256);
             dateProfitEnd.Name = "dateProfitEnd";
-            dateProfitEnd.Size = new Size(90, 23);
+            dateProfitEnd.Size = new Size(70, 23);
             dateProfitEnd.TabIndex = 19;
-            dateProfitEnd.Value = new DateTime(2024, 3, 1, 0, 0, 0, 0);
+            dateProfitEnd.Value = new DateTime(2023, 6, 1, 0, 0, 0, 0);
             // 
             // txtNick
             // 
@@ -585,17 +636,6 @@ namespace analyze.core.win
             txtNick.Name = "txtNick";
             txtNick.Size = new Size(56, 23);
             txtNick.TabIndex = 31;
-            // 
-            // btnShowProfit
-            // 
-            btnShowProfit.Enabled = false;
-            btnShowProfit.Location = new Point(3, 283);
-            btnShowProfit.Name = "btnShowProfit";
-            btnShowProfit.Size = new Size(90, 23);
-            btnShowProfit.TabIndex = 20;
-            btnShowProfit.Text = "显示利润";
-            btnShowProfit.UseVisualStyleBackColor = true;
-            btnShowProfit.Click += btnShowProfit_Click;
             // 
             // txtCompanyNumber
             // 
@@ -745,6 +785,8 @@ namespace analyze.core.win
             txtDeductShipDeclare.TabIndex = 0;
             txtDeductShipDeclare.WordWrap = false;
             txtDeductShipDeclare.TextChanged += txtDeductShipDeclare_TextChanged;
+            txtDeductShipDeclare.Enter += txtDeductShipDeclare_Enter;
+            txtDeductShipDeclare.Leave += txtDeductShipDeclare_Leave;
             // 
             // lbDeductShipDeclareResult
             // 
@@ -845,9 +887,10 @@ namespace analyze.core.win
             txtOrderLog.Multiline = true;
             txtOrderLog.Name = "txtOrderLog";
             txtOrderLog.ReadOnly = true;
-            txtOrderLog.ScrollBars = ScrollBars.Vertical;
+            txtOrderLog.ScrollBars = ScrollBars.Both;
             txtOrderLog.Size = new Size(905, 510);
             txtOrderLog.TabIndex = 2;
+            txtOrderLog.WordWrap = false;
             // 
             // tabPage3
             // 
@@ -878,7 +921,7 @@ namespace analyze.core.win
             // 
             // btnPost
             // 
-            btnPost.Location = new Point(785, 417);
+            btnPost.Location = new Point(858, 417);
             btnPost.Name = "btnPost";
             btnPost.Size = new Size(75, 23);
             btnPost.TabIndex = 8;
@@ -888,7 +931,7 @@ namespace analyze.core.win
             // 
             // txtPost
             // 
-            txtPost.Location = new Point(785, 302);
+            txtPost.Location = new Point(858, 302);
             txtPost.Multiline = true;
             txtPost.Name = "txtPost";
             txtPost.Size = new Size(318, 109);
@@ -896,7 +939,8 @@ namespace analyze.core.win
             // 
             // txtFous
             // 
-            txtFous.Location = new Point(785, 158);
+            txtFous.Enabled = false;
+            txtFous.Location = new Point(858, 158);
             txtFous.Multiline = true;
             txtFous.Name = "txtFous";
             txtFous.Size = new Size(318, 109);
@@ -904,7 +948,8 @@ namespace analyze.core.win
             // 
             // btnGetIpPosition
             // 
-            btnGetIpPosition.Location = new Point(866, 273);
+            btnGetIpPosition.Enabled = false;
+            btnGetIpPosition.Location = new Point(939, 273);
             btnGetIpPosition.Name = "btnGetIpPosition";
             btnGetIpPosition.Size = new Size(75, 23);
             btnGetIpPosition.TabIndex = 5;
@@ -914,7 +959,8 @@ namespace analyze.core.win
             // 
             // btnGetIP
             // 
-            btnGetIP.Location = new Point(866, 129);
+            btnGetIP.Enabled = false;
+            btnGetIP.Location = new Point(939, 129);
             btnGetIP.Name = "btnGetIP";
             btnGetIP.Size = new Size(75, 23);
             btnGetIP.TabIndex = 4;
@@ -924,7 +970,8 @@ namespace analyze.core.win
             // 
             // btnRefush
             // 
-            btnRefush.Location = new Point(785, 273);
+            btnRefush.Enabled = false;
+            btnRefush.Location = new Point(858, 273);
             btnRefush.Name = "btnRefush";
             btnRefush.Size = new Size(75, 23);
             btnRefush.TabIndex = 3;
@@ -934,7 +981,8 @@ namespace analyze.core.win
             // 
             // btnCheck
             // 
-            btnCheck.Location = new Point(785, 129);
+            btnCheck.Enabled = false;
+            btnCheck.Location = new Point(858, 129);
             btnCheck.Name = "btnCheck";
             btnCheck.Size = new Size(75, 23);
             btnCheck.TabIndex = 2;
@@ -944,7 +992,8 @@ namespace analyze.core.win
             // 
             // txtUserList
             // 
-            txtUserList.Location = new Point(785, 3);
+            txtUserList.Enabled = false;
+            txtUserList.Location = new Point(858, 3);
             txtUserList.Multiline = true;
             txtUserList.Name = "txtUserList";
             txtUserList.Size = new Size(318, 120);
@@ -952,12 +1001,11 @@ namespace analyze.core.win
             // 
             // txtIpShow
             // 
-            txtIpShow.Dock = DockStyle.Left;
             txtIpShow.Location = new Point(0, 0);
             txtIpShow.Multiline = true;
             txtIpShow.Name = "txtIpShow";
             txtIpShow.ReadOnly = true;
-            txtIpShow.Size = new Size(776, 510);
+            txtIpShow.Size = new Size(852, 510);
             txtIpShow.TabIndex = 0;
             // 
             // tabPage4
@@ -1750,7 +1798,6 @@ namespace analyze.core.win
         private DateTimePicker dateProfitStart;
         private Button btnCreateProfitXLSX;
         private ComboBox cbCompany;
-        private Button btnShowProfit;
         private DateTimePicker dateProfitEnd;
         private Button button8;
         private Button button7;
@@ -1770,11 +1817,9 @@ namespace analyze.core.win
         private TextBox txtNewestResourcesFileName;
         private Label label32;
         private Button btnShowRefundDetail;
-        private Button brnShowRefund;
         private Button btnCreateRefund;
         private TabPage tabPage3;
         private Panel panel3;
-        private Label label33;
         private Button btnShowPurchase;
         private Button btnCheck;
         private TextBox txtUserList;
@@ -1797,10 +1842,15 @@ namespace analyze.core.win
         private Label lbDeductShipDeclareResult;
         private Label lbDeductShipDeclareCount;
         private GroupBox groupBox1;
-        private DataGridView dataGridView1;
         private Button btnCreateRefundAll;
         private Button btnPost;
         private TextBox txtPost;
+        private DataGridView dataGridView1;
+        private DateTimePicker dateRefundStart;
+        private DateTimePicker dateRefundEnd;
+        private Label lbCollect;
+        private Button btnCreateProfitAll;
+        private Label label33;
     }
 }
 

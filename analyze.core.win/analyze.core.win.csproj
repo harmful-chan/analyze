@@ -2,26 +2,27 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows10.0.17763.0</TargetFramework>
+    <TargetFramework>net8.0-windows7.0</TargetFramework>
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
     <PackageIcon>logo.ico</PackageIcon>
-    <AssemblyVersion>1.1.0.101</AssemblyVersion>
+    <AssemblyVersion>1.1.0.102</AssemblyVersion>
     <ApplicationIcon>Resources\logo.ico</ApplicationIcon>
+    <SupportedOSPlatformVersion>7.0</SupportedOSPlatformVersion>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Models\**" />
+    <EmbeddedResource Remove="Models\**" />
+    <None Remove="Models\**" />
+  </ItemGroup>
 
   <ItemGroup>
     <None Remove="Docs\README.md" />
     <None Remove="Docs\Revision.txt" />
     <None Remove="Docs\TODO.md" />
-    <None Remove="Resources\country-state-city.txt" />
-    <None Remove="Resources\lend.xlsx" />
-    <None Remove="Resources\refund.xlsx" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="Resources\logo.ico" />
+    <None Remove="Resources\logo.ico" />
   </ItemGroup>
 
   <ItemGroup>
@@ -34,16 +35,7 @@
     <EmbeddedResource Include="Docs\TODO.md">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resources\country-state-city.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\lend.xlsx">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
     <EmbeddedResource Include="Resources\logo.ico">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\refund.xlsx">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>
@@ -68,21 +60,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Models\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <EmbeddedResource Update="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="Resources\logo.ico">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
   </ItemGroup>
 
 </Project>

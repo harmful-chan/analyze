@@ -11,6 +11,7 @@ namespace analyze.core.Models.Daily
 
     public class OrderDetail
     {
+        public int ID { get; set; }
         public string OrderId { get; set; }
         public DateTime OrderTime { get; set; }
         public string Remark { get; set; }

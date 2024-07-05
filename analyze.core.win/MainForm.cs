@@ -8,6 +8,7 @@ using analyze.core.Models.Sheet;
 using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
+using System.Reflection;
 
 namespace analyze.core.win
 {
@@ -123,7 +124,11 @@ namespace analyze.core.win
         {
             // 切换显示 textbox
             _analyzer.Output = new FormOutput(this, this.txtProfit);
-
+            string text = this.txtRoot.Text;
+            if (!Directory.Exists(text))
+            {
+                this.txtRoot.Text = "C:\\我的坚果云\\数据采集";
+            }
 
             if (Directory.Exists(this.txtRoot.Text) && !IsInitializePage1 && !_analyzer.IsRunning)
             {
@@ -138,6 +143,7 @@ namespace analyze.core.win
                     }));
 
                     // 设置根目录，采集所有表格数据
+
                     _analyzer.SetRootDirectorie(this.txtRoot.Text);
                     _analyzer.SetResourcesDirectory(TempDir);
                     _analyzer.StartCollect(CollectTypes.Shop | CollectTypes.Daily);
@@ -146,14 +152,14 @@ namespace analyze.core.win
                     _analyzer.Output.WriteLine("读取完成");
 
                     ShopRecord[] shopRecords = _analyzer.ShopRecords.ToArray();
-                    var sGroup = shopRecords.GroupBy(x => x.Shop.CompanyName);
+                    Array.Sort(shopRecords);
+                    var sGroup = shopRecords.GroupBy(x => x.Shop.CompanyNumber);
 
 
                     this.BeginInvoke(new Action(() =>
                     {
                         this.cbCompany.Items.Clear();
-                        string[] companys = sGroup.Select(y => y.Key).ToArray();
-                        System.Array.Sort(companys);
+                        string[] companys = sGroup.Where(x => x.First().Shop.Status.Equals("运营中")).Select(y => y.First().Shop.CompanyName).ToArray();
                         this.cbCompany.Items.AddRange(companys);
                         this.cbCompany.SelectedIndex = 0;
                         this.txtNewestTotalDirectory.Text = _analyzer.NewestTotalDirectory;
@@ -220,26 +226,84 @@ namespace analyze.core.win
                 }
             }
             this.cbCN.SelectedIndex = 0;
+
+
+
         }
 
         private void cbCN_SelectedIndexChanged(object sender, EventArgs e)
         {
             // 设置昵称
             ShopRecord[] shopRecords = _analyzer.ShopRecords.ToArray();
-            string text = ((ComboBox)sender).Text;
+            string text = this.cbCN.Text;
             this.txtNick.Text = shopRecords.Where(s => s.Shop.CN.Equals(text)).First().Shop.Nick;
+
+
+            ShopRecord shopRecord = shopRecords.Where(x => x.Shop.CompanyName.Equals(this.cbCompany.Text) && x.Shop.CN.Equals(text)).First();
+            // 设置放款日期
+            if (shopRecord.ShopLendList != null && shopRecord.ShopLendList.Count > 0)
+            {
+                this.dateProfitStart.Value = shopRecord.ShopLendList.First().SettlementTime;
+                this.dateProfitEnd.Value = shopRecord.ShopLendList.Last().SettlementTime;
+            }
+            else
+            {
+                this.dateProfitStart.Value = DateTime.Parse("2023-06");
+                this.dateProfitEnd.Value = DateTime.Parse("2023-06");
+            }
+
+
+            // 设置退款日期
+            if (shopRecord.ShopRefundList != null && shopRecord.ShopRefundList.Count > 0)
+            {
+                this.dateRefundStart.Value = shopRecord.ShopRefundList.First().RefundTime;
+                this.dateRefundEnd.Value = shopRecord.ShopRefundList.Last().RefundTime;
+            }
+            else
+            {
+                this.dateRefundStart.Value = DateTime.Parse("2023-06");
+                this.dateRefundEnd.Value = DateTime.Parse("2023-06");
+            }
+
         }
 
         private void btnListLend_Click(object sender, EventArgs e)
         {
-
-            foreach (var item in SureShopRecordDic())
+            DataTable dt = new DataTable();
+            Analyzer.Profit profit = new Analyzer.Profit();
+            // 填充利润数据，创建datatable
+            var dic = SureShopRecordDic();
+            foreach (var item in dic)
             {
                 DateTime i = DateTime.Parse(item.Key);
-                var p = _analyzer.StatisticalProfit(i.Year, i.Month, item.Value);
-                _analyzer.ShowOneMonthLend(i.Year, i.Month, item.Value, p);
+                if (item.Value != null)
+                {
+                    _analyzer.FillProfitForOneMonth(i.Year, i.Month, item.Value);
+                    Analyzer.Profit p = _analyzer.StatisticalProfit(i.Year, i.Month, item.Value);
+                    profit += p;
+                    DataTable dataTable = _analyzer.Lend2DataTables(i.Year, i.Month, item.Value);
+                    dt.Merge(dataTable);
+                }
             }
+
+            // 添加序号
+            int j = 1;
+            foreach (DataRow row in dt.Rows)
+            {
+                row[0] = j++.ToString("D2");
+            }
+
+            this.dataGridView1.DataSource = dt;
+
+            SetTip($"采集时间:{dic.First().Value.CollectDate.ToString("yyyy-MM-dd")} 数据开始日期:{dic.First().Key} - {dic.Last().Key} " +
+                $"放款:{Math.Round(profit.Lend, 2)} 成本:{Math.Round(profit.Cost, 2)} 利润:{Math.Round(profit.Value, 2)} 利润率:{profit.Rate.ToString("P")}");
         }
+
+        public void SetTip(string text = "")
+        {
+            this.lbCollect.Text = text;
+        }
+
         private void btnProfitClear_Click(object sender, EventArgs e)
         {
             this.txtProfit.Clear();
@@ -318,8 +382,8 @@ namespace analyze.core.win
         private void btnCreateRefundAll_Click(object sender, EventArgs e)
         {
 
-            DateTime start = DateTime.Parse(dateProfitStart.Value.ToString("yyyy-MM"));
-            DateTime end = DateTime.Parse(dateProfitEnd.Value.ToString("yyyy-MM"));
+            DateTime start = DateTime.Parse(dateRefundStart.Value.ToString("yyyy-MM"));
+            DateTime end = DateTime.Parse(dateRefundEnd.Value.ToString("yyyy-MM"));
 
 
             Shop[] shops = _analyzer.ShopCatalogs.Where(s => s.Status.Equals("运营中")).ToArray();
@@ -420,6 +484,8 @@ namespace analyze.core.win
         private void InitializePage2()
         {
             _analyzer.Output = new FormOutput(this, this.txtOrderLog);
+            this.txtDeductShipDeclare.ForeColor = Color.LightGray;
+            this.txtDeductShipDeclare.Text = _tipText;
         }
 
         private void ForEachShipObject(IEnumerable<ShipObject> shipObjects, Action<ShipObject> action)
@@ -446,15 +512,16 @@ namespace analyze.core.win
                     {
                         string s = $"{i:00} ";
                         _analyzer.Output.Write(s);
-                        action(item);
-                        _analyzer.Output.WriteLine();
-
                         this.BeginInvoke(new Action(() =>
                         {
                             this.lbDeductShipDeclareResult.Text = $"数量：{i}";
                             this.txtOrderLog.SelectionStart = this.txtOrderLog.Text.Length;
                             this.txtOrderLog.ScrollToCaret();
                         }));
+                        action(item);
+                        _analyzer.Output.WriteLine();
+
+
 
                         i++;
                     }
@@ -539,11 +606,34 @@ namespace analyze.core.win
                 _analyzer.DeductShipDeclare(x);
                 this.BeginInvoke(new Action(() =>
                 {
-                    this.txtDeductShipDeclareResult.AppendText($"{x.OrderID}\t{x.TrackingNumberOld}\t{x.CarrierOld}\t{x.TradeID}\r\n");
-
+                    this.txtDeductShipDeclareResult.AppendText($"{x.OrderID}\t{x.TrackingNumberOld}\t{x.CarrierOld}\t{x.TradeID}\t已发货\r\n");
                 }));
             });
         }
+
+        private string _tipText = "5376860\t8187682453505513\tNC551495508BR\tCORREIOS_L_BR\r\n5377140\t8187163076287470\tNC551455945BR\tCORREIOS_L_BR\r\n5377140\t8187065200071535\tNC551496857BR\tCORREIOS_L_BR\r\n5377140\t8187552783737529\tNC551474998BR\tCORREIOS_L_BR\r\n5377235\t8187682375917530\tNC551479108BR\tCORREIOS_L_BR\r\n5377235\t8187681818180554\tNC551477098BR\tCORREIOS_L_BR\r\n5377235\t8187162837897566\tNC551482464BR\tCORREIOS_L_BR\r\n5377235\t8187065520029549\tNC551472396BR\tCORREIOS_L_BR";
+        private void txtDeductShipDeclare_Enter(object sender, EventArgs e)
+        {
+            this.txtDeductShipDeclare.ForeColor = Color.Black;
+            if (this.txtDeductShipDeclare.Text.Equals(_tipText.Replace('\t', ' ')))
+            {
+                this.txtDeductShipDeclare.Text = "";
+            }
+        }
+
+        private void txtDeductShipDeclare_Leave(object sender, EventArgs e)
+        {
+            if (string.IsNullOrEmpty(this.txtDeductShipDeclare.Text))
+            {
+                this.txtDeductShipDeclare.ForeColor = Color.LightGray;
+                this.txtDeductShipDeclare.Text = _tipText;
+            }
+            else
+            {
+                this.txtDeductShipDeclare.ForeColor = Color.Black;
+            }
+        }
+
         #endregion
 
 
@@ -564,18 +654,6 @@ namespace analyze.core.win
             }
         }
         #endregion
-
-        #region page6
-
-        private void InitializePage6()
-        {
-
-        }
-
-
-
-        #endregion
-
 
 
         private async void btnRefush_Click(object sender, EventArgs e)
@@ -668,8 +746,133 @@ namespace analyze.core.win
             {
                 string[] ss = post.Split(" ", StringSplitOptions.TrimEntries);
                 KeyValuePair<string, string> kv = await rolaClient.CheckPost(ss[0], ss[1], lines);
-                this.txtIpShow.AppendText(post + " " +kv.Key + " " + kv.Value + "\r\n");
+                this.txtIpShow.AppendText(post + " " + kv.Key + " " + kv.Value + "\r\n");
                 this.txtIpShow.ScrollToCaret();
+            }
+        }
+
+        private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+
+        }
+
+        private void dataGridView1_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar == 22)
+            {
+                PasteData();
+            }
+        }
+        private void PasteData()
+        {
+            // 复制粘贴板的数据到 tables
+            string clipboardText = Clipboard.GetText(); //獲取剪貼板中的內容
+            if (string.IsNullOrEmpty(clipboardText))
+            {
+                return;
+            }
+
+            string[,] tables = null;
+            string[] rows = clipboardText.Split("\r\n");
+            for (int i = 0; i < rows.Length; i++)
+            {
+                string[] cells = rows[i].Split('\t');
+                if (tables == null)
+                {
+                    tables = new string[rows.Length, cells.Length];
+                }
+                for (int j = 0; j < cells.Length; j++)
+                {
+                    tables[i, j] = cells[j];
+                }
+            }
+
+            // 填写数据
+            int selectedRowIndex = this.dataGridView1.CurrentRow.Index;
+            int selectedColIndex = this.dataGridView1.CurrentCell.ColumnIndex;
+
+            for (int i = 0; i < tables.GetLength(0); i++)
+            {
+                for (int j = 0; j < tables.GetLength(1); j++)
+                {
+                    ((DataTable)this.dataGridView1.DataSource).Rows[selectedRowIndex + i][selectedColIndex + j] = tables[i, j];
+                    //this.dataGridView1.Rows[selectedRowIndex + i].Cells[selectedColIndex + j].Value = tables[i, j];
+                }
+            }
+        }
+
+        private void dataGridView1_CellValueChanged(object sender, DataGridViewCellEventArgs e)
+        {
+            DataTable dataTable = (DataTable)(sender as DataGridView).DataSource;
+
+            // 获取 表头放进 buf 匹配不同表格
+            string[] buf = new string[dataGridView1.Columns.Count];
+            for (int i = 0; i < dataGridView1.Columns.Count; i++)
+            {
+                buf[i] = dataGridView1.Columns[i].HeaderText;
+            }
+
+            // 放款表
+            if (buf.SequenceEqual(_analyzer.LendDataTableHeader))
+            {
+                Analyzer.Profit profit = new Analyzer.Profit();
+                for (int i = 0; i < dataGridView1.Rows.Count; i++)
+                {
+                    for (int j = 0; j < dataGridView1.Columns.Count; i++)
+                    {
+
+                    }
+                }
+                // foreach (DataRow row in dataTable.Rows)
+                // {
+                //     Analyzer.Profit p = new Analyzer.Profit();
+                //     p.Lend = (double)row["放款金额(CNY)"];
+                //     p.Cost = (double)row["分销成本(CNY)"];
+                //     p.Value = (double)row["利润统计(CNY)"];
+                //     p.Rate = (double)row["利润率"];
+                // }
+            }
+
+
+        }
+
+        private void btnCreateProfitAll_Click(object sender, EventArgs e)
+        {
+            DateTime start = DateTime.Parse(dateProfitStart.Value.ToString("yyyy-MM"));
+            DateTime end = DateTime.Parse(dateProfitEnd.Value.ToString("yyyy-MM"));
+
+
+            Shop[] shops = _analyzer.ShopCatalogs.Where(s => s.Status.Equals("运营中")).ToArray();
+
+            foreach (Shop shop in shops)  // 循环每个运营中的店铺
+            {
+
+                var cnShop = _analyzer.ShopRecords.FirstOrDefault(sr => sr.Shop.CN.Equals(shop.CN));
+                for (DateTime i = start; i <= end; i = i.AddMonths(1))   // 循环选择的月份
+                {
+                    DateTime startTime = i.AddDays(1 - i.Day).Date;
+                    DateTime endTime = i.AddDays(1 - i.Day).Date.AddMonths(1).AddSeconds(-1);
+
+                    if (cnShop == null || cnShop.ShopLendList == null || cnShop.ShopLendList.Count() <= 0)
+                    {
+                        continue;
+                    }
+                    _analyzer.FillProfitForOneMonth(i.Year, i.Month, cnShop);
+
+                    ShopLend[] shopLends = _analyzer.GetOneMonthLend(i.Year, i.Month, cnShop);
+
+                    if (shopLends?.Length > 0)
+                    {
+                        string dir = Path.Combine(_analyzer.NewestProfitDirectory, $"{shop.CompanyNumber}{shop.CompanyName}");
+                        if (!Directory.Exists(dir))
+                        {
+                            Directory.CreateDirectory(dir);
+                        }
+                        string filename = Path.Combine(dir, $"{shop.CompanyName}{shop.Nick}_{shop.CN}_{i.Year}{i.Month.ToString("D2")}.xlsx");
+                        _analyzer.SaveProfit(filename, shopLends);
+                    }
+
+                }
             }
         }
     }

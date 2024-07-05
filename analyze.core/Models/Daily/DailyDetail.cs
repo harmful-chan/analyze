@@ -7,7 +7,7 @@ namespace analyze.core.Models.Daily
 {
     public class DailyDetail : IComparable<DailyDetail>
     {
-
+        public int ID { get; set; }
         public DateTime CollectionDate { get; set; }
         public string CompanyNumber { get; set; }
         public string Company { get; set; }
@@ -33,15 +33,15 @@ namespace analyze.core.Models.Daily
         public double OnWay { get; set; }
         public double Arrears { get; set; }
 
-        public Withdraw[] Withdraws { get; set; }
-        public NotShip[] NotShips { get; set; }
-        public OrderDetail[] OrderDetails { get; set; }
-        public Dispute[] DisputeOrders { get; set; }
+        public ICollection<Withdraw> Withdraws { get; set; }
+        public ICollection<NotShip> NotShips { get; set; }
+        public ICollection<OrderDetail> OrderDetails { get; set; }
+        public ICollection<Dispute> DisputeOrders { get; set; }
 
-        public OnWayOrder[] OnWayOrders { get; set; }
+        public ICollection<OnWayOrder> OnWayOrders { get; set; }
 
 
-        public PromotionDetail[] PromotionDetails { get; set; }
+        public ICollection<PromotionDetail> PromotionDetails { get; set; }
 
         public int CompareTo([AllowNull] DailyDetail other)
             

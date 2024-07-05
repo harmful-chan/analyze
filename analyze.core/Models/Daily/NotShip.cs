@@ -4,6 +4,7 @@ namespace analyze.core.Models.Daily
 {
     public class NotShip
     {
+        public int ID { get; set; }
         public DateTime OrderTime { get; set; }
         public string Symbol { get; set; }
         public double Amount { get; set; }

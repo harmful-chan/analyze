@@ -78,7 +78,7 @@ namespace analyze.core.test
             analyzer.Output = output;
             if (analyzer.SetRootDirectorie("D:\\我的坚果云\\数据采集"))
             {
-                analyzer.DailyRun(o);
+                //analyzer.DailyRun(o);
             }
         }
 
@@ -87,7 +87,7 @@ namespace analyze.core.test
         {
             DebugOutput output = new DebugOutput();
             Analyzer analyzer = new Analyzer();
-            await analyzer.GetUrl();
+            //await analyzer.GetUrl();
         }
 
 
@@ -201,6 +201,76 @@ namespace analyze.core.test
             RolaClient rolaClient = new RolaClient();
             //KeyValuePair<string, string> result = rolaClient.CheckPost("fr", "44730").Result;
 
+
+        }
+
+        [Test]
+        public void GetProfix()
+        {
+            DateTime start = DateTime.Parse("2024-01");
+            DateTime end = DateTime.Parse("2024-04");
+
+            // 希音
+            //string[] arra = ["cn1083409115cclae", "cn1083409116oxeae", "cn1081658119xxsae", "cn1083481135nthae", "cn1083481136ignae", "cn1081971110vuyae"];
+            // 炬马
+            // string[] arra = ["cn1079617241kcsae", "cn1079617246mlwae", "cn1077602209gxcae", "cn1078224227wboae", "cn1077506308barae", "cn1079641273alaae"];
+
+            // 炬皓
+            string[] arra = ["cn1078344252curae", "cn1079785058nmlae", "cn1078368050eljae", "cn1077770069zgpae", "cn1079785064lsqae", "cn1077794059itdae"];
+
+            Analyzer analyzer = new Analyzer();
+            analyzer.Output = new DebugOutput();
+            analyzer.SetRootDirectorie("D:\\我的坚果云\\数据采集");
+            analyzer.LoadResources();
+            analyzer.StartCollect(CollectTypes.Shop);
+
+
+
+            Shop[] shops = analyzer.ShopCatalogs.Where(s => arra.Contains(s.CN)).ToArray();
+
+
+            foreach (Shop shop in shops)  // 循环每个运营中的店铺
+            {
+
+                var cnShop = analyzer.ShopRecords.FirstOrDefault(sr => sr.Shop.CN.Equals(shop.CN));
+
+                List<ShopLend> sureLend = new List<ShopLend>();
+                for (DateTime i = start; i <= end; i = i.AddMonths(1))   // 循环选择的月份
+                {
+                    DateTime startTime = i.AddDays(1 - i.Day).Date;
+                    DateTime endTime = i.AddDays(1 - i.Day).Date.AddMonths(1).AddSeconds(-1);
+
+                    if (cnShop == null || cnShop.ShopRefundList == null || cnShop.ShopRefundList.Count() <= 0)
+                    {
+                        continue;
+                    }
+
+                    analyzer.FillProfitForOneMonth(i.Year, i.Month, cnShop);
+                    ShopLend[] shopLends = analyzer.GetOneMonthLend(i.Year, i.Month, cnShop);
+                    sureLend.AddRange(shopLends);
+
+                }
+
+                string dir = Path.Combine(analyzer.NewestProfitDirectory, $"{cnShop.Shop.CompanyNumber}{cnShop.Shop.CompanyName}");
+                if (!Directory.Exists(dir))
+                {
+                    Directory.CreateDirectory(dir);
+                }
+                if(sureLend.Count() > 0)
+                {
+                    DateTime sTime = sureLend.First().SettlementTime;
+                    DateTime eTime = sureLend.Last().SettlementTime;
+                    string filename = Path.Combine(dir, $"{shop.CompanyName}{shop.Nick}_{shop.CN}_{sTime.ToString("yyyyMMddHHmmss")}_{eTime.ToString("yyyyMMddHHmmss")}.xlsx");
+                    analyzer.SaveProfit(filename, sureLend.ToArray());
+                }
+
+            }
+
+        }
+
+        [Test]
+        public void SaveProfix()
+        {
 
         }
     }

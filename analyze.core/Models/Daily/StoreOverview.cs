@@ -8,6 +8,7 @@ namespace analyze.core.Models.Daily
 {
     public class StoreOverview
     {
+        public int ID { get; set; }
         public string Company { get; set; }
         public string CN { get; set; }
         public string Opera { get; set; }

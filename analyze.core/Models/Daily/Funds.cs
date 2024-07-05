@@ -8,6 +8,7 @@ namespace analyze.core.Models.Daily
 {
     public class Funds
     {
+        public int ID { get; set; }
         public double Lend { get; set; }
         public double Freeze { get; set; }
         public double OnWay { get; set; }

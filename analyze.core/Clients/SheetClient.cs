@@ -1,12 +1,9 @@
 ﻿using analyze.core.Models.Daily;
 using analyze.core.Models.Sheet;
 using analyze.core.Outputs;
-using IPinfo.Models;
 using NPOI.HSSF.UserModel;
-using NPOI.SS.Formula.Functions;
 using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
-using NPOI.XWPF.UserModel;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -14,11 +11,12 @@ using System.Data;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Reflection;                
-using System.Text;
 using System.Text.RegularExpressions;
 using ICell = NPOI.SS.UserModel.ICell;
-
+using NPOI.SS.UserModel;
+using NPOI.XSSF.UserModel;
+using NPOI.HPSF;
+using static ICSharpCode.SharpZipLib.Zip.FastZip;
 namespace analyze.core.Clients
 {
     public class SheetClient
@@ -37,7 +35,7 @@ namespace analyze.core.Clients
 
         public SheetClient()
         {
-            
+
         }
 
         #region XLSX操作
@@ -65,7 +63,7 @@ namespace analyze.core.Clients
                             }
 
                             PurchaseOrder to = new PurchaseOrder();
-                            
+
                             // 去除表格 us A1空 B1=操作人
 
 
@@ -87,7 +85,7 @@ namespace analyze.core.Clients
 
 
 
-                                
+
                                 to.Country = "BR";
                                 if (row.GetCell(0)?.CellType == CellType.Numeric && HSSFDateUtil.IsCellDateFormatted(row.GetCell(0)))
                                 {
@@ -96,7 +94,7 @@ namespace analyze.core.Clients
 
                                 if (row.GetCell(1)?.CellType == CellType.Numeric)
                                 {
-                                    
+
                                     to.OrderOverdue = (int)row.GetCell(1).NumericCellValue;
                                 }
                                 else
@@ -104,7 +102,7 @@ namespace analyze.core.Clients
                                     to.OrderOverdue = -1;
                                 }
 
-                                
+
                                 if (row.GetCell(3)?.CellType == CellType.Numeric && HSSFDateUtil.IsCellDateFormatted(row.GetCell(3)))
                                 {
                                     to.SubmissionDate = (DateTime)(row.GetCell(3)?.DateCellValue);
@@ -205,14 +203,22 @@ namespace analyze.core.Clients
                                 to.Alliance = d6;
 
                                 double d7;
-                                double.TryParse(row.GetCell(11)?.ToString(), out d7);
+                                double.TryParse(row.GetCell(12)?.ToString(), out d7);
                                 to.Cashback = d7;
 
-
-                                DateTime t1;
-                                DateTime.TryParseExact(row.GetCell(12)?.ToString(), "yyyy-MM-dd HH:mm:ss", new CultureInfo("zh-cn"), DateTimeStyles.None, out t1);
-                                to.RefundTime = t1;
-
+                                if(row.Cells.Count == 13)
+                                {
+                                    DateTime t1;
+                                    DateTime.TryParseExact(row.GetCell(12)?.ToString(), "yyyy-MM-dd HH:mm:ss", new CultureInfo("zh-cn"), DateTimeStyles.None, out t1);
+                                    to.RefundTime = t1;
+                                }
+                                else
+                                {
+                                    DateTime t1;
+                                    DateTime.TryParseExact(row.GetCell(13)?.ToString(), "yyyy-MM-dd HH:mm:ss", new CultureInfo("zh-cn"), DateTimeStyles.None, out t1);
+                                    to.RefundTime = t1;
+                                }
+                      
                                 to.FileName = ss[c];
 
                                 os.Add(to);
@@ -236,72 +242,72 @@ namespace analyze.core.Clients
                 workbook = WorkbookFactory.Create(fs);
             }
             #region 设置数据
-                ICellStyle style = workbook.CreateCellStyle();
-                style.Alignment = HorizontalAlignment.Center;
-                style.VerticalAlignment = VerticalAlignment.Center;
-                ISheet sheet = workbook.GetSheetAt(0);
-                for (int i = 0; i < shopLends.Length; i++)
-                {
-                    IRow row = sheet.CreateRow(i + 1);
+            ICellStyle style = workbook.CreateCellStyle();
+            style.Alignment = HorizontalAlignment.Center;
+            style.VerticalAlignment = VerticalAlignment.Center;
+            ISheet sheet = workbook.GetSheetAt(0);
+            for (int i = 0; i < shopLends.Length; i++)
+            {
+                IRow row = sheet.CreateRow(i + 1);
 
 
 
-                    ICell cell0 = row.CreateCell(0); cell0.SetCellType(CellType.Numeric); cell0.CellStyle = style; cell0.SetCellValue(i + 1);
-                    ICell cell1 = row.CreateCell(1); cell1.SetCellType(CellType.String); cell1.CellStyle = style; cell1.SetCellValue(shopLends[i].ProductId);
-                    ICell cell2 = row.CreateCell(2); cell2.SetCellType(CellType.String); cell2.SetCellValue(shopLends[i].ProdectName);
-                    ICell cell3 = row.CreateCell(3); cell3.SetCellType(CellType.String); cell3.SetCellValue(shopLends[i].SUK);
-                    ICell cell4 = row.CreateCell(4); cell4.SetCellType(CellType.String); cell4.SetCellValue(shopLends[i].ProductCode);
-                    ICell cell5 = row.CreateCell(5); cell5.SetCellType(CellType.Numeric); cell5.CellStyle = style; cell5.SetCellValue(shopLends[i].Quantity);
-                    ICell cell6 = row.CreateCell(6); cell6.SetCellType(CellType.String); cell6.SetCellValue(shopLends[i].ProductImage);
-                    ICell cell7 = row.CreateCell(7); cell7.SetCellType(CellType.Numeric); cell7.CellStyle = style; cell7.SetCellValue(shopLends[i].Turnover);
-                    ICell cell8 = row.CreateCell(8); cell8.SetCellType(CellType.Numeric); cell8.CellStyle = style; cell8.SetCellValue(shopLends[i].Lend);
-                    ICell cell9 = row.CreateCell(9); cell9.SetCellType(CellType.Numeric); cell9.CellStyle = style; cell9.SetCellValue(shopLends[i].Cost);
-                    ICell cell10 = row.CreateCell(10); cell10.SetCellType(CellType.Numeric); cell10.CellStyle = style; cell10.SetCellValue(shopLends[i].Profit);
-                    ICell cell11 = row.CreateCell(11); cell11.SetCellType(CellType.Numeric); cell11.CellStyle = style; cell11.SetCellValue(shopLends[i].Rate);
+                ICell cell0 = row.CreateCell(0); cell0.SetCellType(CellType.Numeric); cell0.CellStyle = style; cell0.SetCellValue(i + 1);
+                ICell cell1 = row.CreateCell(1); cell1.SetCellType(CellType.String); cell1.CellStyle = style; cell1.SetCellValue(shopLends[i].ProductId);
+                ICell cell2 = row.CreateCell(2); cell2.SetCellType(CellType.String); cell2.SetCellValue(shopLends[i].ProdectName);
+                ICell cell3 = row.CreateCell(3); cell3.SetCellType(CellType.String); cell3.SetCellValue(shopLends[i].SUK);
+                ICell cell4 = row.CreateCell(4); cell4.SetCellType(CellType.String); cell4.SetCellValue(shopLends[i].ProductCode);
+                ICell cell5 = row.CreateCell(5); cell5.SetCellType(CellType.Numeric); cell5.CellStyle = style; cell5.SetCellValue(shopLends[i].Quantity);
+                ICell cell6 = row.CreateCell(6); cell6.SetCellType(CellType.String); cell6.SetCellValue(shopLends[i].ProductImage);
+                ICell cell7 = row.CreateCell(7); cell7.SetCellType(CellType.Numeric); cell7.CellStyle = style; cell7.SetCellValue(shopLends[i].Turnover);
+                ICell cell8 = row.CreateCell(8); cell8.SetCellType(CellType.Numeric); cell8.CellStyle = style; cell8.SetCellValue(shopLends[i].Lend);
+                ICell cell9 = row.CreateCell(9); cell9.SetCellType(CellType.Numeric); cell9.CellStyle = style; cell9.SetCellValue(shopLends[i].Cost);
+                ICell cell10 = row.CreateCell(10); cell10.SetCellType(CellType.Numeric); cell10.CellStyle = style; cell10.SetCellValue(shopLends[i].Profit);
+                ICell cell11 = row.CreateCell(11); cell11.SetCellType(CellType.Numeric); cell11.CellStyle = style; cell11.SetCellValue(shopLends[i].Rate);
 
-                    ICell cell12 = row.CreateCell(12);
-                    ICellStyle style1 = workbook.CreateCellStyle();
-                    style1.DataFormat = workbook.CreateDataFormat().GetFormat("yyyy-MM-dd HH:mm:ss");
-                    style1.Alignment = HorizontalAlignment.Center;
-                    style1.VerticalAlignment = VerticalAlignment.Center;
-                    cell12.CellStyle = style1;
-                    cell12.SetCellValue(shopLends[i].SettlementTime);
+                ICell cell12 = row.CreateCell(12);
+                ICellStyle style1 = workbook.CreateCellStyle();
+                style1.DataFormat = workbook.CreateDataFormat().GetFormat("yyyy-MM-dd HH:mm:ss");
+                style1.Alignment = HorizontalAlignment.Center;
+                style1.VerticalAlignment = VerticalAlignment.Center;
+                cell12.CellStyle = style1;
+                cell12.SetCellValue(shopLends[i].SettlementTime);
 
-                    ICell cell13 = row.CreateCell(13); cell13.SetCellType(CellType.String); cell13.CellStyle = style; cell13.SetCellValue(shopLends[i].OrderId);
+                ICell cell13 = row.CreateCell(13); cell13.SetCellType(CellType.String); cell13.CellStyle = style; cell13.SetCellValue(shopLends[i].OrderId);
 
-                }
-                IRow totalRow = sheet.CreateRow(shopLends.Length + 2);
-                ICell c0 = totalRow.CreateCell(7);
-                c0.SetCellType(CellType.String);
-                c0.CellStyle = style;
-                c0.SetCellValue("总额:");
-                ICell c1 = totalRow.CreateCell(8);
-                c1.SetCellType(CellType.Numeric);
-                c1.CellStyle = style;
-                c1.SetCellFormula($"SUBTOTAL(9, I2:I{shopLends.Length + 1})");
-                ICell c2 = totalRow.CreateCell(9);
-                c2.SetCellType(CellType.Numeric);
-                c2.CellStyle = style;
-                c2.SetCellFormula($"SUBTOTAL(9, J2:J{shopLends.Length + 1})");
-                ICell c3 = totalRow.CreateCell(10);
-                c3.SetCellType(CellType.Numeric);
-                c3.CellStyle = style;
-                c3.SetCellFormula($"SUBTOTAL(9, K2:K{shopLends.Length + 1})");
+            }
+            IRow totalRow = sheet.CreateRow(shopLends.Length + 2);
+            ICell c0 = totalRow.CreateCell(7);
+            c0.SetCellType(CellType.String);
+            c0.CellStyle = style;
+            c0.SetCellValue("总额:");
+            ICell c1 = totalRow.CreateCell(8);
+            c1.SetCellType(CellType.Numeric);
+            c1.CellStyle = style;
+            c1.SetCellFormula($"SUBTOTAL(9, I2:I{shopLends.Length + 1})");
+            ICell c2 = totalRow.CreateCell(9);
+            c2.SetCellType(CellType.Numeric);
+            c2.CellStyle = style;
+            c2.SetCellFormula($"SUBTOTAL(9, J2:J{shopLends.Length + 1})");
+            ICell c3 = totalRow.CreateCell(10);
+            c3.SetCellType(CellType.Numeric);
+            c3.CellStyle = style;
+            c3.SetCellFormula($"SUBTOTAL(9, K2:K{shopLends.Length + 1})");
 
-                double lend = 0.0;
-                double profix = 0.0;
-                double cost = 0.0;
-                foreach (var item in shopLends)
-                {
-                    lend += item.Lend;
-                    cost += item.Cost;
-                    profix += item.Profit;
-                }
+            double lend = 0.0;
+            double profix = 0.0;
+            double cost = 0.0;
+            foreach (var item in shopLends)
+            {
+                lend += item.Lend;
+                cost += item.Cost;
+                profix += item.Profit;
+            }
 
-                ICell c4 = totalRow.CreateCell(11);
-                c4.SetCellType(CellType.Numeric);
-                c4.CellStyle = style;
-                c4.SetCellValue(Math.Round(profix / cost, 2));
+            ICell c4 = totalRow.CreateCell(11);
+            c4.SetCellType(CellType.Numeric);
+            c4.CellStyle = style;
+            c4.SetCellValue(Math.Round(profix / cost, 2));
             #endregion
             FileStream fileStream = File.Create(fileName);
             workbook.Write(fileStream);
@@ -401,15 +407,30 @@ namespace analyze.core.Clients
                             to.ProductCode = row.GetCell(3)?.ToString();
                             to.Quantity = row.GetCell(4).NumericCellValue;
                             to.ProductImage = row.GetCell(5)?.ToString();
-                            to.Turnover = row.GetCell(6).NumericCellValue ;
+                            to.Turnover = row.GetCell(6).NumericCellValue;
                             to.Lend = row.GetCell(7).NumericCellValue;
                             to.Fee = row.GetCell(8).NumericCellValue;
                             to.Affiliate = row.GetCell(9).NumericCellValue;
                             to.Cashback = row.GetCell(10).NumericCellValue;
-                            DateTime t1;
-                            DateTime.TryParseExact(row.GetCell(11)?.ToString(), "yyyy-MM-dd HH:mm:ss", new CultureInfo("zh-cn"), DateTimeStyles.None, out t1);
-                            to.SettlementTime = t1;
-                            to.OrderId = row.GetCell(12)?.ToString();
+                            
+                            if( row.Cells.Count == 13)
+                            {
+                                DateTime t1;
+                                DateTime.TryParseExact(row.GetCell(11)?.ToString(), "yyyy-MM-dd HH:mm:ss", new CultureInfo("zh-cn"), DateTimeStyles.None, out t1);
+                                to.SettlementTime = t1;
+                                to.OrderId = row.GetCell(12)?.ToString();
+                            }
+                            else
+                            {
+                                DateTime t1;
+                                DateTime.TryParseExact(row.GetCell(12)?.ToString(), "yyyy-MM-dd HH:mm:ss", new CultureInfo("zh-cn"), DateTimeStyles.None, out t1);
+                                to.SettlementTime = t1;
+                                to.OrderId = row.GetCell(13)?.ToString();
+                            }
+
+                            
+                            
+                           
                             to.FileName = ss[c];
                             os.Add(to);
                         }
@@ -512,10 +533,21 @@ namespace analyze.core.Clients
                             to.OrderId = row.GetCell(4)?.ToString();
                             to.OrderStatus = row.GetCell(5)?.ToString();
 
-                            string time = row.GetCell(7)?.ToString();
-                            DateTime dateTime = new DateTime();
-                            DateTime.TryParseExact(time, "yyyy/MM/dd hh:mm:ss", new CultureInfo("en-US"), DateTimeStyles.None, out dateTime);
-                            to.OrderTime = dateTime;
+                            //string time = row.GetCell(7)?.ToString();
+                            //DateTime dateTime = new DateTime();
+
+                            //DateTime.TryParseExact(time, "yyyy/MM/dd hh:mm:ss", new CultureInfo("en-US"), DateTimeStyles.None, out dateTime);
+                            //to.OrderTime = dateTime;
+                            //to.OrderTime = row.GetCell(7).DateCellValue;
+                            ICell cell = row.GetCell(7);
+                            //Cell为非NUMERIC时，调用IsCellDateFormatted方法会报错，所以先要进行类型判断
+                            if (cell.CellType == CellType.Numeric && DateUtil.IsCellDateFormatted(cell))
+                                to.OrderTime = cell.DateCellValue;
+                            else
+                            {
+                                to.OrderTime = DateTime.MinValue;
+                            }
+
 
                             double cost;
                             double.TryParse(row.GetCell(13)?.ToString(), out cost);
@@ -579,6 +611,8 @@ namespace analyze.core.Clients
             return os;
         }
 
+
+
         public KeyValuePair<string, double> SplitAmount(string raw)
         {
             if (!string.IsNullOrWhiteSpace(raw))
@@ -610,9 +644,9 @@ namespace analyze.core.Clients
             for (int i = 0; i < sheet.LastRowNum; i++)
             {
                 ICell cell = sheet.GetRow(i).GetCell(0);
-                if(cell!=null &&  cell.CellType == CellType.String)
+                if (cell != null && cell.CellType == CellType.String)
                 {
-                    if ( header.Equals(cell.StringCellValue) && headerList.Contains(cell.StringCellValue))
+                    if (header.Equals(cell.StringCellValue) && headerList.Contains(cell.StringCellValue))
                     {
                         start = i;
                         break;
@@ -620,7 +654,7 @@ namespace analyze.core.Clients
                 }
             }
             // 搜索结束序号，搜不到就用表格最后一行
-            if(start != -1)
+            if (start != -1)
             {
                 ArrayList arrayList = new ArrayList(headerList);
                 arrayList.Remove(header);
@@ -638,15 +672,15 @@ namespace analyze.core.Clients
                     }
                 }
 
-                if(end == -1)
+                if (end == -1)
                 {
                     end = sheet.LastRowNum;
                 }
             }
 
 
-            return start == -1 ? null: new int[] { start, end-1 };
-        } 
+            return start == -1 ? null : new int[] { start, end - 1 };
+        }
 
         private string[] headerFirst = new string[] { "时间", "订单号", "订单信息", "订单详情", "日期" };
         public DailyDetail ReadDaily(string filename)
@@ -724,11 +758,11 @@ namespace analyze.core.Clients
                 daily.Promotion = SplitAmount(r1.GetCell(5)?.ToString()).Value;
 
                 // 提现数据
-                var ints = GetHeaderLine(sheet, "时间", headerFirst); 
-                if(ints != null)
+                var ints = GetHeaderLine(sheet, "时间", headerFirst);
+                if (ints != null)
                 {
                     List<Withdraw> withdraws = new List<Withdraw>();
-                    for (int i = ints[0]; i < ints[1]; i++) 
+                    for (int i = ints[0]; i < ints[1]; i++)
                     {
                         var row = sheet.GetRow(i);
                         string v = row.GetCell(0).ToString();
@@ -757,7 +791,7 @@ namespace analyze.core.Clients
 
                         var row = sheet.GetRow(j);
                         OnWayOrder onWayOrder = new OnWayOrder();
-                    
+
                         if (row.GetCell(0).CellType == CellType.String)
                         {
                             var v = row.GetCell(0).StringCellValue;
@@ -766,7 +800,7 @@ namespace analyze.core.Clients
                                 continue;
                             }
                         }
-                    
+
                         onWayOrder.OrderId = row.GetCell(0).NumericCellValue.ToString();
                         onWayOrder.PaymentTime = row.GetCell(1).DateCellValue;
                         onWayOrder.ShippingTime = row.GetCell(2) == null ? default : row.GetCell(2).DateCellValue;
@@ -783,7 +817,6 @@ namespace analyze.core.Clients
                 }
 
                 //// 纠纷订单
-
                 ints = GetHeaderLine(sheet, "订单信息", headerFirst);
                 if (ints != null)
                 {
@@ -797,7 +830,7 @@ namespace analyze.core.Clients
                             continue;
                         }
 
-                    
+
                         Dispute dispute = new Dispute();
                         string c0 = row.GetCell(0).ToString();
                         // 订单
@@ -806,10 +839,11 @@ namespace analyze.core.Clients
                         /// 下单时间
                         string time = Regex.Match(c0, @"下单时间\s*([\d-]+\s[\d:]+)").Groups[1].Value;
                         DateTime dateTime;
-                        DateTime.TryParseExact(time, "yyyy-MM-dd HH:mm", new CultureInfo("en-US"), DateTimeStyles.None, out dateTime);
+                        //DateTime.TryParseExact(time, "yyyy-MM-dd HH:mm", new CultureInfo("en-US"), DateTimeStyles.None, out dateTime);
+                        DateTime.TryParse(time, out dateTime);
                         dispute.OrderTime = dateTime;
                         dispute.DisputeTime = row.GetCell(4).DateCellValue;
-                    
+
                         var c5 = row.GetCell(5)?.ToString();
                         dispute.Status = c5.Split('\n')[0];
                         if (c5.Contains("剩余："))
@@ -817,7 +851,7 @@ namespace analyze.core.Clients
                             int index = c5.IndexOf("剩余：");
                             dispute.LastTime = c5.Substring(index + 4);
                         }
-                    
+
                         disputes.Add(dispute);
                     }
                     daily.DisputeOrders = disputes.ToArray();
@@ -870,16 +904,17 @@ namespace analyze.core.Clients
                         {
                             continue;
                         }
-                    
+
                         // 订单
                         /// 订单号
                         od.OrderId = Regex.Match(c0, @"订单号:\s*(\d+)").Groups[1].Value;
                         /// 下单时间
                         string time = Regex.Match(c0, @"下单时间:\s*([\d-]+\s[\d:]+)").Groups[1].Value;
                         DateTime dateTime;
-                        DateTime.TryParseExact(time, "yyyy-MM-dd HH:mm", new CultureInfo("en-US"), DateTimeStyles.None, out dateTime);
+                        //DateTime.TryParseExact(time, "yyyy-MM-dd HH:mm", new CultureInfo("en-US"), DateTimeStyles.None, out dateTime);
+                        DateTime.TryParse(time, out dateTime);
                         od.OrderTime = dateTime;
-                    
+
                         // 标题
                         var c2 = row.GetCell(2)?.ToString();
                         string[] raw = c2.Split('\n');
@@ -887,7 +922,7 @@ namespace analyze.core.Clients
                         od.IsAssess = raw.Contains("上网时效考核订单");
                         for (int i = 0; i < raw.Length; i++)
                         {
-                            if (raw[i].Equals("商品属性:") && raw[i+1].IndexOf("United States", StringComparison.OrdinalIgnoreCase) >= 0)
+                            if (raw[i].Equals("商品属性:") && raw[i + 1].IndexOf("United States", StringComparison.OrdinalIgnoreCase) >= 0)
                             {
                                 od.ShipsFrom = OrderShipsFromTypes.UnitedStates;
                             }
@@ -901,7 +936,7 @@ namespace analyze.core.Clients
 
                         // 数量 
                         var c3 = row.GetCell(3)?.ToString();
-                        string n = string.IsNullOrWhiteSpace(c3) ? "1" :  c3.Substring(1);
+                        string n = string.IsNullOrWhiteSpace(c3) ? "1" : c3.Substring(1);
                         int d1;
                         int.TryParse(n, out d1);
                         od.Quantity = d1;
@@ -910,7 +945,7 @@ namespace analyze.core.Clients
                         //售后
                         var c4 = row.GetCell(4)?.ToString();
                         od.After = c4;
-                    
+
                         // 金额
                         var c5 = row.GetCell(5)?.ToString();
                         od.RMB = SplitAmount(c5.Split('\n')[0]).Value;
@@ -924,8 +959,8 @@ namespace analyze.core.Clients
                         {
                             od.Amount = 0.0;
                         }
-                    
-                    
+
+
                         // 状态
                         var c6 = row.GetCell(6)?.ToString();
                         od.Status = c6.Split('\n')[0];
@@ -936,7 +971,7 @@ namespace analyze.core.Clients
                         }
                         orderDetails.Add(od);
                     }
-                    
+
                     daily.NotShips = notShips.ToArray();
                     daily.OrderDetails = orderDetails.GroupBy(x => x.OrderId).Select(y => y.First()).ToArray();
                 }
@@ -979,7 +1014,7 @@ namespace analyze.core.Clients
             return daily;
         }
 
-        public  DataTable ExcelToDataTable(string fileName, bool isColumnName)
+        public DataTable ExcelToDataTable(string fileName, bool isColumnName)
         {
             DataTable dataTable = null;
             FileStream fs = null;
@@ -1148,16 +1183,133 @@ namespace analyze.core.Clients
         }
 
         #endregion
-        public static string[] ReadSortFiles(string fileName)
+
+
+
+
+        public string[] ReadSortFiles(string fileName)
         {
             string fullPath = Path.GetFullPath(fileName);
             string[] fs = Directory.GetFiles(Path.GetDirectoryName(fullPath));
 
-            fs = fs.Where(s => 
+            fs = fs.Where(s =>
             Path.GetFileName(s).StartsWith(Path.GetFileNameWithoutExtension(fileName))
             && !Path.GetFileName(s).StartsWith("~")).ToArray();
-            Array.Sort(fs);
+            System.Array.Sort(fs);
             return fs;
+        }
+
+
+        public void SaveProfitStatementXLSX(string demoFilename, string filename, ShopProfit[] shopProfits)
+        {
+            if (!File.Exists(demoFilename))
+            {
+                return;
+            }
+
+            File.Copy(demoFilename, filename, true);
+
+            IWorkbook workbook;
+            using (FileStream fs = new FileStream(filename, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None))
+            {
+                workbook = WorkbookFactory.Create(fs);
+            }
+
+            // #region 设置数据
+            // ICellStyle style = workbook.CreateCellStyle();
+            // style.Alignment = HorizontalAlignment.Center;
+            // style.VerticalAlignment = VerticalAlignment.Center;
+            // ISheet sheet = workbook.GetSheetAt(0);
+            // for (int i = 0; i < shopProfits.Length; i++)
+            // {
+            //     IRow row = sheet.CreateRow(i + 1);
+            // 
+            // 
+            // 
+            //     ICell cell0 = row.CreateCell(0); cell0.SetCellType(CellType.Numeric); cell0.CellStyle = style; cell0.SetCellValue(i + 1);
+            //     ICell cell1 = row.CreateCell(1); cell1.SetCellType(CellType.String); cell1.CellStyle = style; cell1.SetCellValue(shopLends[i].ProductId);
+            //     ICell cell2 = row.CreateCell(2); cell2.SetCellType(CellType.String); cell2.SetCellValue(shopLends[i].ProdectName);
+            //     ICell cell3 = row.CreateCell(3); cell3.SetCellType(CellType.String); cell3.SetCellValue(shopLends[i].SUK);
+            //     ICell cell4 = row.CreateCell(4); cell4.SetCellType(CellType.String); cell4.SetCellValue(shopLends[i].ProductCode);
+            //     ICell cell5 = row.CreateCell(5); cell5.SetCellType(CellType.Numeric); cell5.CellStyle = style; cell5.SetCellValue(shopLends[i].Quantity);
+            //     ICell cell6 = row.CreateCell(6); cell6.SetCellType(CellType.String); cell6.SetCellValue(shopLends[i].ProductImage);
+            //     ICell cell7 = row.CreateCell(7); cell7.SetCellType(CellType.Numeric); cell7.CellStyle = style; cell7.SetCellValue(shopLends[i].Turnover);
+            //     ICell cell8 = row.CreateCell(8); cell8.SetCellType(CellType.Numeric); cell8.CellStyle = style; cell8.SetCellValue(shopLends[i].Lend);
+            //     ICell cell9 = row.CreateCell(9); cell9.SetCellType(CellType.Numeric); cell9.CellStyle = style; cell9.SetCellValue(shopLends[i].Cost);
+            //     ICell cell10 = row.CreateCell(10); cell10.SetCellType(CellType.Numeric); cell10.CellStyle = style; cell10.SetCellValue(shopLends[i].Profit);
+            //     ICell cell11 = row.CreateCell(11); cell11.SetCellType(CellType.Numeric); cell11.CellStyle = style; cell11.SetCellValue(shopLends[i].Rate);
+            // 
+            //     ICell cell12 = row.CreateCell(12);
+            //     ICellStyle style1 = workbook.CreateCellStyle();
+            //     style1.DataFormat = workbook.CreateDataFormat().GetFormat("yyyy-MM-dd HH:mm:ss");
+            //     style1.Alignment = HorizontalAlignment.Center;
+            //     style1.VerticalAlignment = VerticalAlignment.Center;
+            //     cell12.CellStyle = style1;
+            //     cell12.SetCellValue(shopLends[i].SettlementTime);
+            // 
+            //     ICell cell13 = row.CreateCell(13); cell13.SetCellType(CellType.String); cell13.CellStyle = style; cell13.SetCellValue(shopLends[i].OrderId);
+            // 
+            // }
+            // IRow totalRow = sheet.CreateRow(shopLends.Length + 2);
+            // ICell c0 = totalRow.CreateCell(7);
+            // c0.SetCellType(CellType.String);
+            // c0.CellStyle = style;
+            // c0.SetCellValue("总额:");
+            // ICell c1 = totalRow.CreateCell(8);
+            // c1.SetCellType(CellType.Numeric);
+            // c1.CellStyle = style;
+            // c1.SetCellFormula($"SUBTOTAL(9, I2:I{shopLends.Length + 1})");
+            // ICell c2 = totalRow.CreateCell(9);
+            // c2.SetCellType(CellType.Numeric);
+            // c2.CellStyle = style;
+            // c2.SetCellFormula($"SUBTOTAL(9, J2:J{shopLends.Length + 1})");
+            // ICell c3 = totalRow.CreateCell(10);
+            // c3.SetCellType(CellType.Numeric);
+            // c3.CellStyle = style;
+            // c3.SetCellFormula($"SUBTOTAL(9, K2:K{shopLends.Length + 1})");
+            // 
+            // double lend = 0.0;
+            // double profix = 0.0;
+            // double cost = 0.0;
+            // foreach (var item in shopLends)
+            // {
+            //     lend += item.Lend;
+            //     cost += item.Cost;
+            //     profix += item.Profit;
+            // }
+            // 
+            // ICell c4 = totalRow.CreateCell(11);
+            // c4.SetCellType(CellType.Numeric);
+            // c4.CellStyle = style;
+            // c4.SetCellValue(Math.Round(profix / cost, 2));
+            // #endregion
+
+            ISheet sheet = workbook.GetSheetAt(0);
+            // 公司名
+            sheet.GetRow(5).GetCell(1).SetCellValue(shopProfits.First().CompanyName);
+
+            for (int i = 2; i < shopProfits.Length + 2; i++)
+            {
+                sheet.GetRow(i).GetCell(3).SetCellValue(shopProfits[i].StartDate.ToString("yyyy年MM月dd日"));
+                sheet.GetRow(i).GetCell(4).SetCellValue(shopProfits[i].EndDate.ToString("yyyy年MM月dd日"));
+                sheet.GetRow(i).GetCell(5).SetCellValue(shopProfits[i].Platfrom);
+                sheet.GetRow(i).GetCell(6).SetCellValue(shopProfits[i].CN);
+                sheet.GetRow(i).GetCell(7).SetCellValue(shopProfits[i].Category);
+                sheet.GetRow(i).GetCell(8).SetCellValue(shopProfits[i].Nick);
+                sheet.GetRow(i).GetCell(9).SetCellValue(shopProfits[i].Payee);
+                sheet.GetRow(i).GetCell(10).SetCellValue(shopProfits[i].Cost);
+                sheet.GetRow(i).GetCell(11).SetCellValue(shopProfits[i].Profix);
+                sheet.GetRow(i).GetCell(12).SetCellValue(shopProfits[i].Rate);
+                sheet.GetRow(i).GetCell(13).SetCellValue(shopProfits[i].Withdraw);
+                sheet.GetRow(i).GetCell(14).SetCellValue(shopProfits[i].Mark);
+            }
+
+
+            FileStream fileStream = File.Create(filename);
+            workbook.Write(fileStream);
+            _output.WriteLine($"保存 {filename}");
+            workbook.Close();
+            fileStream.Close();
         }
     }
 }
